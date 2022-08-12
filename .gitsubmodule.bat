@@ -1,0 +1,1 @@
+git submodule add https://github.com/BrianLakstins/MaxFactry.Core.git _sm/MaxFactry.Core
