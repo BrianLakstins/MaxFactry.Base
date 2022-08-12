@@ -1,0 +1,167 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{B4784207-457E-4C7C-BF95-F72A901ED032}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>MaxFactry.Base</RootNamespace>
+    <AssemblyName>MaxFactry.Base-NF-2.0</AssemblyName>
+    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;net2</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE;net2</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>MaxFactry.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="BusinessLayer\Entity\MaxBaseEmailEntity.cs" />
+    <Compile Include="BusinessLayer\Entity\MaxBaseIdEntity.cs" />
+    <Compile Include="BusinessLayer\Entity\MaxBaseIdFileEntity.cs" />
+    <Compile Include="BusinessLayer\Entity\MaxBaseIdIndexEntity.cs" />
+    <Compile Include="BusinessLayer\Entity\MaxBaseIdVersionedEntity.cs" />
+    <Compile Include="BusinessLayer\Entity\MaxBasePersonEntity.cs" />
+    <Compile Include="BusinessLayer\Entity\MaxBaseTemplateEntity.cs" />
+    <Compile Include="BusinessLayer\Entity\MaxBaseUSPostalAddressEntity.cs" />
+    <Compile Include="BusinessLayer\Entity\MaxEntity.cs" />
+    <Compile Include="BusinessLayer\Entity\MaxIdGuidEntity.cs" />
+    <Compile Include="BusinessLayer\Entity\MaxIdIntegerEntity.cs" />
+    <Compile Include="BusinessLayer\Entity\MaxIdStringEntity.cs" />
+    <Compile Include="BusinessLayer\Entity\MaxRelationEntity.cs" />
+    <Compile Include="BusinessLayer\Library\Interface\IMaxBusinessLibraryProvider.cs" />
+    <Compile Include="BusinessLayer\Library\MaxBusinessLibrary.cs" />
+    <Compile Include="BusinessLayer\Library\Provider\MaxBusinessLibraryDefaultProvider.cs" />
+    <Compile Include="BusinessLayer\MaxEntityEventArgs.cs" />
+    <Compile Include="BusinessLayer\MaxEntityList.cs" />
+    <Compile Include="DataLayer\DataModel\Interface\IMaxMessageDataModel.cs" />
+    <Compile Include="DataLayer\DataModel\MaxBaseEmailDataModel.cs" />
+    <Compile Include="DataLayer\DataModel\MaxBaseIdBranchDataModel.cs" />
+    <Compile Include="DataLayer\DataModel\MaxBaseIdDataModel.cs" />
+    <Compile Include="DataLayer\DataModel\MaxBaseIdFileDataModel.cs" />
+    <Compile Include="DataLayer\DataModel\MaxBaseIdIndexDataModel.cs" />
+    <Compile Include="DataLayer\DataModel\MaxBaseIdMessageDataModel.cs" />
+    <Compile Include="DataLayer\DataModel\MaxBaseIdVersionedDataModel.cs" />
+    <Compile Include="DataLayer\DataModel\MaxBasePersonDataModel.cs" />
+    <Compile Include="DataLayer\DataModel\MaxBaseTemplateDataModel.cs" />
+    <Compile Include="DataLayer\DataModel\MaxBaseUSPostalAddressDataModel.cs" />
+    <Compile Include="DataLayer\DataModel\MaxDataModel.cs" />
+    <Compile Include="DataLayer\DataModel\MaxIdGuidDataModel.cs" />
+    <Compile Include="DataLayer\DataModel\MaxIdIntegerDataModel.cs" />
+    <Compile Include="DataLayer\DataModel\MaxIdStringDataModel.cs" />
+    <Compile Include="DataLayer\DataModel\MaxRelationDataModel.cs" />
+    <Compile Include="DataLayer\Library\Interface\IMaxDataContextProvider.cs" />
+    <Compile Include="DataLayer\Library\Interface\IMaxDataLibraryProvider.cs" />
+    <Compile Include="DataLayer\Library\Interface\IMaxSqlGenerationLibraryProvider.cs" />
+    <Compile Include="DataLayer\Library\MaxDataLibrary.cs" />
+    <Compile Include="DataLayer\Library\MaxDataStreamFolderLibrary.cs" />
+    <Compile Include="DataLayer\Library\MaxSqlGenerationLibrary.cs" />
+    <Compile Include="DataLayer\Repository\Provider\MaxDataContextDefaultProvider.cs" />
+    <Compile Include="DataLayer\Library\Provider\MaxDataLibraryDefaultProvider.cs" />
+    <Compile Include="DataLayer\Library\Provider\MaxSqlGenerationLibraryDefaultProvider.cs" />
+    <Compile Include="DataLayer\Library\Provider\MaxSqlGenerationLibraryMSAccessProvider.cs" />
+    <Compile Include="DataLayer\Library\Provider\MaxSqlGenerationLibraryMSSql2000Provider.cs" />
+    <Compile Include="DataLayer\Library\Provider\MaxSqlGenerationLibraryMSSql2005Provider.cs" />
+    <Compile Include="DataLayer\Library\Provider\MaxSqlGenerationLibraryMSSql2008Provider.cs" />
+    <Compile Include="DataLayer\Library\Provider\MaxSqlGenerationLibraryMSSqlAzureProvider.cs" />
+    <Compile Include="DataLayer\MaxData.cs" />
+    <Compile Include="DataLayer\MaxDataFilter.cs" />
+    <Compile Include="DataLayer\MaxDataList.cs" />
+    <Compile Include="DataLayer\MaxDataQuery.cs" />
+    <Compile Include="DataLayer\MaxLongString.cs" />
+    <Compile Include="DataLayer\MaxShortString.cs" />
+    <Compile Include="DataLayer\Repository\Interface\IMaxBaseIdIndexRepositoryProvider.cs" />
+    <Compile Include="DataLayer\Repository\Interface\IMaxBaseIdRepositoryProvider.cs" />
+    <Compile Include="DataLayer\Repository\Interface\IMaxBaseIdVersionedRepositoryProvider.cs" />
+    <Compile Include="DataLayer\Repository\Interface\IMaxBaseTemplateRepositoryProvider.cs" />
+    <Compile Include="DataLayer\Repository\Interface\IMaxCacheRepositoryProvider.cs" />
+    <Compile Include="DataLayer\Repository\Interface\IMaxMessageRepositoryProvider.cs" />
+    <Compile Include="DataLayer\Repository\Interface\IMaxRepositoryProvider.cs" />
+    <Compile Include="DataLayer\Repository\Interface\IMaxStorageReadRepositoryProvider.cs" />
+    <Compile Include="DataLayer\Repository\Interface\IMaxStorageWriteRepositoryProvider.cs" />
+    <Compile Include="DataLayer\Repository\MaxBaseIdIndexRepository.cs" />
+    <Compile Include="DataLayer\Repository\MaxBaseIdRepository.cs" />
+    <Compile Include="DataLayer\Repository\MaxBaseIdVersionedRepository.cs" />
+    <Compile Include="DataLayer\Repository\MaxBaseTemplateRepository.cs" />
+    <Compile Include="DataLayer\Repository\MaxCacheRepository.cs" />
+    <Compile Include="DataLayer\Repository\MaxIdGuidRepository.cs" />
+    <Compile Include="DataLayer\Repository\MaxIdIntegerRepository.cs" />
+    <Compile Include="DataLayer\Repository\MaxIdStringRepository.cs" />
+    <Compile Include="DataLayer\Repository\MaxMessageRepository.cs" />
+    <Compile Include="DataLayer\Repository\MaxRelationRepository.cs" />
+    <Compile Include="DataLayer\Repository\MaxStorageReadRepository.cs" />
+    <Compile Include="DataLayer\Repository\MaxStorageWriteRepository.cs" />
+    <Compile Include="DataLayer\Repository\Provider\MaxBaseIdIndexRepositoryDefaultProvider.cs" />
+    <Compile Include="DataLayer\Repository\Provider\MaxBaseIdRepositoryDefaultProvider.cs" />
+    <Compile Include="DataLayer\Repository\Provider\MaxBaseIdVersionedRepositoryDefaultProvider.cs" />
+    <Compile Include="DataLayer\Repository\Provider\MaxBaseTemplateRepositoryDefaultProvider.cs" />
+    <Compile Include="DataLayer\Repository\Provider\MaxCacheRepositoryDefaultProvider.cs" />
+    <Compile Include="DataLayer\Repository\Provider\MaxMessageRepositoryDefaultProvider.cs" />
+    <Compile Include="DataLayer\Repository\Provider\MaxStorageReadRepositoryDefaultProvider.cs" />
+    <Compile Include="DataLayer\Repository\Provider\MaxStorageWriteRepositoryDefaultProvider.cs" />
+    <Compile Include="MaxResource.cs" />
+    <Compile Include="MaxStartup.cs" />
+    <Compile Include="PresentationLayer\Models\MaxBaseViewModel.cs" />
+    <Compile Include="PresentationLayer\Models\MaxBaseIdFileViewModel.cs" />
+    <Compile Include="PresentationLayer\Models\MaxBaseIdViewModel.cs" />
+    <Compile Include="PresentationLayer\Models\MaxBasePersonViewModel.cs" />
+    <Compile Include="PresentationLayer\Models\MaxBaseTemplateViewModel.cs" />
+    <Compile Include="PresentationLayer\Models\MaxBaseUSPostalAddressViewModel.cs" />
+    <Compile Include="PresentationLayer\Models\MaxIdGuidViewModel.cs" />
+    <Compile Include="PresentationLayer\Models\MaxBaseEntityViewModel.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="MaxFactry.snk" />
+    <None Include="Resources\mimetypes.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\_sm\MaxFactry.Core\MaxFactry.Core-NF-2.0\MaxFactry.Core-NF-2.0.csproj">
+      <Project>{27e6cf32-fd87-4ae5-afa2-fad5cb86ae0c}</Project>
+      <Name>MaxFactry.Core-NF-2.0</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

@@ -1,0 +1,65 @@
+﻿// <copyright file="MaxBaseTemplateDataModel.cs" company="Lakstins Family, LLC">
+// Copyright (c) Brian A. Lakstins (http://www.lakstins.com/brian/)
+// </copyright>
+
+#region License
+// <license>
+// This software is provided 'as-is', without any express or implied warranty. In no 
+// event will the author be held liable for any damages arising from the use of this 
+// software.
+//  
+// Permission is granted to anyone to use this software for any purpose, including 
+// commercial applications, and to alter it and redistribute it freely, subject to the 
+// following restrictions:
+// 
+// 1. The origin of this software must not be misrepresented; you must not claim that 
+// you wrote the original software. If you use this software in a product, an 
+// acknowledgment (see the following) in the product documentation is required.
+// 
+// Portions Copyright (c) Brian A. Lakstins (http://www.lakstins.com/brian/)
+// 
+// 2. Altered source versions must be plainly marked as such, and must not be 
+// misrepresented as being the original software.
+// 
+// 3. This notice may not be removed or altered from any source distribution.
+// </license>
+#endregion
+
+#region Change Log
+// <changelog>
+// <change date="4/4/2015" author="Brian A. Lakstins" description="Initial creation.">
+// </changelog>
+#endregion
+
+namespace MaxFactry.Module.Template.DataLayer
+{
+    using System;
+    using MaxFactry.Base.DataLayer;
+
+    /// <summary>
+    /// Defines base data model to use as a template for defining new data models
+    /// </summary>
+    public class MaxBaseTemplateDataModel : MaxFactry.Base.DataLayer.MaxBaseIdDataModel
+    {
+        /// <summary>
+        /// Holder for some property
+        /// </summary>
+        public readonly string Property = "Property";
+
+        /// <summary>
+        /// Initializes a new instance of the MaxBaseTemplateDataModel class
+        /// </summary>
+        public MaxBaseTemplateDataModel()
+            : base()
+        {
+            this.RepositoryProviderType = typeof(MaxFactry.Module.Template.DataLayer.Provider.MaxBaseTemplateRepositoryDefaultProvider);
+            this.RepositoryType = typeof(MaxBaseTemplateRepository);
+            this.SetDataStorageName("MaxTemplate");
+            this.AddType(this.Property, typeof(MaxShortString));
+            this.AddType(this.Property, typeof(string));
+            this.AddType(this.Property, typeof(MaxLongString));
+            this.AddNullable(this.Property, typeof(MaxLongString));
+            this.AddPropertyAttribute(this.Property, "IsEncrypted", "true");
+        }
+    }
+}
