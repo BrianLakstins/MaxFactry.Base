@@ -1,0 +1,1 @@
+﻿MaxFactry Base is the base portion of the MaxFactry Framework.  It contains Libraries to support dynamic three layer application development.
