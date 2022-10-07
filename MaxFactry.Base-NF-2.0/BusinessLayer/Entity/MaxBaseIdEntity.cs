@@ -208,20 +208,20 @@ namespace MaxFactry.Base.BusinessLayer
             return MaxConvertLibrary.ConvertToSortString(typeof(object), this.CreatedDate) + base.GetDefaultSortString();
         }
 
-        public override MaxEntityList LoadAllCache(params string[] laField)
+        public override MaxEntityList LoadAllCache(params string[] laFields)
         {
-            MaxEntityList loR = base.LoadAllCache(laField);
+            MaxEntityList loR = base.LoadAllCache(laFields);
             if (this.CheckDefaults(loR))
             {
-                loR = base.LoadAllCache(laField);
+                loR = base.LoadAllCache(laFields);
             }
 
             return loR;
         }
 
-        public virtual MaxEntityList LoadAllActiveCache()
+        public virtual MaxEntityList LoadAllActiveCache(params string[] laFields)
         {
-            MaxEntityList loR = base.LoadAllByPropertyCache(this.MaxBaseIdDataModel.IsActive, true);
+            MaxEntityList loR = base.LoadAllByPropertyCache(this.MaxBaseIdDataModel.IsActive, true, laFields);
             return loR;
         }
 
@@ -443,21 +443,10 @@ namespace MaxFactry.Base.BusinessLayer
         }
 
         /// <summary>
-        /// Loads all entities of this type that have not been marked as deleted.
-        /// </summary>
-        /// <returns>List of entities</returns>
-        public override MaxEntityList LoadAll()
-        {
-            MaxDataList loDataList = MaxBaseIdRepository.SelectAll(this.Data);
-            MaxEntityList loEntityList = MaxEntityList.Create(this.GetType(), loDataList);
-            return loEntityList;
-        }
-
-        /// <summary>
         /// Loads all entities of this type that have not been marked as deleted and updated since the date passed
         /// <param name="ldLastUpdate">Date to use to look up</param>
         /// <returns>List of entities</returns>
-        public virtual MaxEntityList LoadAllSinceLastUpdateDate(DateTime ldLastUpdate)
+        public virtual MaxEntityList LoadAllSinceLastUpdateDate(DateTime ldLastUpdate, params string[] laFields)
         {
             //// Add a Query 
             MaxDataQuery loDataQuery = new MaxDataQuery();
@@ -465,8 +454,9 @@ namespace MaxFactry.Base.BusinessLayer
             loDataQuery.AddFilter(this.MaxBaseIdDataModel.LastUpdateDate, ">", ldLastUpdate);
             loDataQuery.EndGroup();
             int lnTotal = 0;
-            MaxDataList loDataList = MaxBaseIdRepository.Select(this.GetData(), loDataQuery, 0, 0, string.Empty, out lnTotal);
+            MaxDataList loDataList = MaxBaseIdRepository.Select(this.GetData(), loDataQuery, 0, 0, string.Empty, out lnTotal, laFields);
             MaxEntityList loEntityList = MaxEntityList.Create(this.GetType(), loDataList);
+            loEntityList.Total = lnTotal;
             return loEntityList;
         }
 

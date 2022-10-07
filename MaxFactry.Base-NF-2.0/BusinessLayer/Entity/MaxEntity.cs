@@ -664,10 +664,12 @@ namespace MaxFactry.Base.BusinessLayer
         /// Loads all entities of this type
         /// </summary>
         /// <returns>List of entities</returns>
-        public virtual MaxEntityList LoadAll()
+        public virtual MaxEntityList LoadAll(params string[] laFields)
         {
-            MaxDataList loDataList = MaxStorageReadRepository.SelectAll(this.Data);
+            int lnTotal = 0;
+            MaxDataList loDataList = MaxStorageReadRepository.SelectAll(this.Data, 0, 0, string.Empty, out lnTotal, laFields);
             MaxEntityList loEntityList = MaxEntityList.Create(this.GetType(), loDataList);
+            loEntityList.Total = lnTotal;
             return loEntityList;
         }
 
@@ -675,13 +677,13 @@ namespace MaxFactry.Base.BusinessLayer
         /// Loads all entities of this type into cache
         /// </summary>
         /// <returns>List of entities</returns>
-        public virtual MaxEntityList LoadAllCache(params string[] laField)
+        public virtual MaxEntityList LoadAllCache(params string[] laFields)
         {
             string lsCacheDataKey = this.GetCacheKey() + "LoadAll";
-            if (null != laField && laField.Length > 0)
+            if (null != laFields && laFields.Length > 0)
             {
                 lsCacheDataKey += "/FieldList=";
-                foreach (string lsField in laField)
+                foreach (string lsField in laFields)
                 {
                     lsCacheDataKey += lsField;
                 }
@@ -690,11 +692,14 @@ namespace MaxFactry.Base.BusinessLayer
             MaxDataList loDataList = MaxCacheRepository.Get(this.GetType(), lsCacheDataKey, typeof(MaxDataList)) as MaxDataList;
             if (null == loDataList)
             {
-                loDataList = MaxStorageReadRepository.SelectAll(this.Data, laField);
+                int lnTotal = 0;
+                loDataList = MaxStorageReadRepository.SelectAll(this.Data, 0, 0, string.Empty, out lnTotal, laFields);
+                loDataList.TotalCount = lnTotal;
                 MaxCacheRepository.Set(this.GetType(), lsCacheDataKey, loDataList);
             }
 
             MaxEntityList loEntityList = MaxEntityList.Create(this.GetType(), loDataList);
+            loEntityList.Total = loDataList.TotalCount;
             return loEntityList;
         }
 
@@ -704,10 +709,10 @@ namespace MaxFactry.Base.BusinessLayer
         /// <param name="lsPropertyName">Name of the property</param>
         /// <param name="loPropertyValue">Value to match</param>
         /// <returns>List of matching entities</returns>
-        public virtual MaxEntityList LoadAllByProperty(string lsPropertyName, object loPropertyValue)
+        public virtual MaxEntityList LoadAllByProperty(string lsPropertyName, object loPropertyValue, params string[] laFields)
         {
             MaxEntityList loR = MaxEntityList.Create(this.GetType());
-            MaxDataList loDataList = MaxBaseIdRepository.SelectAllByProperty(this.Data, lsPropertyName, loPropertyValue);
+            MaxDataList loDataList = MaxBaseIdRepository.SelectAllByProperty(this.Data, lsPropertyName, loPropertyValue, laFields);
             loR = MaxEntityList.Create(this.GetType(), loDataList);
             return loR;
         }
@@ -719,11 +724,11 @@ namespace MaxFactry.Base.BusinessLayer
         /// <param name="lnPageSize">Items per page</param>
         /// <param name="lsSort">Sort information</param>
         /// <returns>List of matching entities</returns>
-        public virtual MaxEntityList LoadAllByPage(int lnPageIndex, int lnPageSize, string lsSort)
+        public virtual MaxEntityList LoadAllByPage(int lnPageIndex, int lnPageSize, string lsSort, params string[] laFields)
         {
             MaxEntityList loR = MaxEntityList.Create(this.GetType());
             int lnTotal = int.MinValue;
-            MaxDataList loDataList = MaxBaseIdRepository.Select(this.Data, new MaxDataQuery(), lnPageIndex, lnPageSize, lsSort, out lnTotal);
+            MaxDataList loDataList = MaxBaseIdRepository.Select(this.Data, new MaxDataQuery(), lnPageIndex, lnPageSize, lsSort, out lnTotal, laFields);
             loR = MaxEntityList.Create(this.GetType(), loDataList);
             loR.Total = lnTotal;
             return loR;
@@ -735,14 +740,14 @@ namespace MaxFactry.Base.BusinessLayer
         /// <param name="lsPropertyName">Name of the property</param>
         /// <param name="loPropertyValue">Value to match</param>
         /// <returns>List of matching entities</returns>
-        public virtual MaxEntityList LoadAllByPropertyCache(string lsPropertyName, object loPropertyValue, params string[] laField)
+        public virtual MaxEntityList LoadAllByPropertyCache(string lsPropertyName, object loPropertyValue, params string[] laFields)
         {
             MaxEntityList loR = MaxEntityList.Create(this.GetType());
             string lsCacheDataKey = this.GetCacheKey() + "LoadAllByPropertyCache/" + lsPropertyName + "/" + MaxConvertLibrary.ConvertToString(typeof(object), loPropertyValue);
-            if (null != laField && laField.Length > 0)
+            if (null != laFields && laFields.Length > 0)
             {
                 lsCacheDataKey += "/FieldList=";
-                foreach (string lsField in laField)
+                foreach (string lsField in laFields)
                 {
                     lsCacheDataKey += lsField;
                 }
@@ -751,7 +756,7 @@ namespace MaxFactry.Base.BusinessLayer
             MaxDataList loDataList = MaxCacheRepository.Get(this.GetType(), lsCacheDataKey, typeof(MaxDataList)) as MaxDataList;
             if (null == loDataList)
             {
-                loDataList = MaxBaseIdRepository.SelectAllByProperty(this.Data, lsPropertyName, loPropertyValue, laField);
+                loDataList = MaxBaseIdRepository.SelectAllByProperty(this.Data, lsPropertyName, loPropertyValue, laFields);
                 if (this.ArchiveDate != DateTime.MinValue)
                 {
                     //// Try loading from archive
@@ -761,7 +766,7 @@ namespace MaxFactry.Base.BusinessLayer
                         if (null != loDataModel)
                         {
                             MaxData loDataArchive = this.Data.Clone(loDataModel);
-                            MaxDataList loArchiveDataList = MaxBaseIdRepository.SelectAllByProperty(loDataArchive, lsPropertyName, loPropertyValue, laField);
+                            MaxDataList loArchiveDataList = MaxBaseIdRepository.SelectAllByProperty(loDataArchive, lsPropertyName, loPropertyValue, laFields);
                             for (int lnD = 0; lnD < loArchiveDataList.Count; lnD++)
                             {
                                 loDataList.Add(loArchiveDataList[lnD]);
