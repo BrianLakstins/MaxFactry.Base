@@ -33,33 +33,27 @@
 
 namespace MaxFactry.Base
 {
-    using System;
     using System.Reflection;
-    using System.IO;
+    using System.Resources;
+    using System.Collections;
+
     public class MaxResource
     {
         public static string GetString(string lsKey)
         {
             string lsR = string.Empty;
-            if (lsKey.Equals("mimetypes", StringComparison.CurrentCultureIgnoreCase))
+            Assembly loAssembly = typeof(MaxResource).GetTypeInfo().Assembly;
+            string[] laName = loAssembly.GetManifestResourceNames();
+            foreach (string lsName in laName)
             {
-                Assembly loAssembly = typeof(MaxResource).GetTypeInfo().Assembly;
-                Stream loStream = loAssembly.GetManifestResourceStream("MyLibrary.Resources.mimetypes.txt");
-                try
+                ResourceSet loSet = new ResourceSet(loAssembly.GetManifestResourceStream(lsName));
+                foreach (DictionaryEntry loEntry in loSet)
                 {
-                    StreamReader loReader = new StreamReader(loStream);
-                    try
+                    string lsCurrentKey = MaxFactry.Core.MaxConvertLibrary.ConvertToString(typeof(object), loEntry.Key);
+                    if (lsCurrentKey == lsKey)
                     {
-                        lsR = loReader.ReadToEnd();
+                        lsR = MaxFactry.Core.MaxConvertLibrary.ConvertToString(typeof(object), loEntry.Value);
                     }
-                    finally
-                    {
-                        loReader.Close();
-                    }
-                }
-                finally
-                {
-                    loStream.Close();
                 }
             }
 
