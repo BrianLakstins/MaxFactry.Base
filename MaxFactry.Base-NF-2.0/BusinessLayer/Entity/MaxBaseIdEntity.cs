@@ -333,19 +333,10 @@ namespace MaxFactry.Base.BusinessLayer
 
                 if (MaxStorageWriteRepository.Update(this.Data))
                 {
-                    string lsCacheKey = this.GetCacheKey() + "LoadById/" + this.Id;
+                    string lsCacheKey = this.GetCacheKey() + "LoadAllBy*";
+                    MaxCacheRepository.Remove(this.GetType(), lsCacheKey);
+                    lsCacheKey = this.GetCacheKey() + "LoadById/" + this.Id;
                     MaxCacheRepository.Set(this.GetType(), lsCacheKey, this.Data);
-                    laKey = loPropertyChangedIndex.GetSortedKeyList();
-                    foreach (string lsKey in laKey)
-                    {
-                        string lsProperty = loPropertyChangedIndex[lsKey] as string;
-                        if (!string.IsNullOrEmpty(lsProperty))
-                        {
-                            lsCacheKey = this.GetCacheKey() + "LoadAllByPropertyCache/" + lsProperty + "/*";
-                            MaxCacheRepository.Remove(this.GetType(), lsCacheKey);
-                        }
-                    }
-
                     OnUpdateAfter();
                     return true;
                 }
