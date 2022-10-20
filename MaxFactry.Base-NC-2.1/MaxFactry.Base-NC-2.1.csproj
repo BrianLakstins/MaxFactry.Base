@@ -126,10 +126,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\_sm\MaxFactry.Core\MaxFactry.Core-NC-2.1\MaxFactry.Core-NC-2.1.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
