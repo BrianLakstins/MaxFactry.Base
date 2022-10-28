@@ -61,6 +61,12 @@
     <Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxBasePersonEntity.cs">
       <Link>BusinessLayer\Entity\MaxBasePersonEntity.cs</Link>
     </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxBaseRelationDateEntity.cs">
+      <Link>BusinessLayer\Entity\MaxBaseRelationDateEntity.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxBaseRelationEntity.cs">
+      <Link>BusinessLayer\Entity\MaxBaseRelationEntity.cs</Link>
+    </Compile>
     <Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxBaseTemplateEntity.cs">
       <Link>BusinessLayer\Entity\MaxBaseTemplateEntity.cs</Link>
     </Compile>
@@ -123,6 +129,12 @@
     </Compile>
     <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBasePersonDataModel.cs">
       <Link>DataLayer\DataModel\MaxBasePersonDataModel.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseRelationDataModel.cs">
+      <Link>DataLayer\DataModel\MaxBaseRelationDataModel.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseRelationDateDataModel.cs">
+      <Link>DataLayer\DataModel\MaxBaseRelationDateDataModel.cs</Link>
     </Compile>
     <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseTemplateDataModel.cs">
       <Link>DataLayer\DataModel\MaxBaseTemplateDataModel.cs</Link>

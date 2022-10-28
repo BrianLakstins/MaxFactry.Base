@@ -301,18 +301,20 @@ namespace MaxFactry.Base.DataLayer
                         this._oChangedIndex.Add(lsKey, IsChanged(loCurrent, loValue));
                     }
 
+                    string lsKeyCheck = lsKey;
                     bool lbFound = false;
                     foreach (string lsDataKey in this.KeyList)
                     {
-                        if (lsDataKey.Equals(lsKey))
+                        if (lsDataKey.Equals(lsKey, StringComparison.InvariantCultureIgnoreCase))
                         {
                             lbFound = true;
+                            lsKeyCheck = lsDataKey;
                         }
                     }
 
                     if (lbFound)
                     {
-                        this._oIndex.Add(lsKey, loValue);
+                        this._oIndex.Add(lsKeyCheck, loValue);
                     }
                     else
                     {

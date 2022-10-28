@@ -23,6 +23,8 @@
     <Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxBaseIdIndexEntity.cs" Link="BusinessLayer\Entity\MaxBaseIdIndexEntity.cs" />
     <Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxBaseIdVersionedEntity.cs" Link="BusinessLayer\Entity\MaxBaseIdVersionedEntity.cs" />
     <Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxBasePersonEntity.cs" Link="BusinessLayer\Entity\MaxBasePersonEntity.cs" />
+    <Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxBaseRelationDateEntity.cs" Link="BusinessLayer\Entity\MaxBaseRelationDateEntity.cs" />
+    <Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxBaseRelationEntity.cs" Link="BusinessLayer\Entity\MaxBaseRelationEntity.cs" />
     <Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxBaseTemplateEntity.cs" Link="BusinessLayer\Entity\MaxBaseTemplateEntity.cs" />
     <Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxBaseUSPostalAddressEntity.cs" Link="BusinessLayer\Entity\MaxBaseUSPostalAddressEntity.cs" />
     <Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxEntity.cs" Link="BusinessLayer\Entity\MaxEntity.cs" />
@@ -44,6 +46,8 @@
     <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseIdMessageDataModel.cs" Link="DataLayer\DataModel\MaxBaseIdMessageDataModel.cs" />
     <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseIdVersionedDataModel.cs" Link="DataLayer\DataModel\MaxBaseIdVersionedDataModel.cs" />
     <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBasePersonDataModel.cs" Link="DataLayer\DataModel\MaxBasePersonDataModel.cs" />
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseRelationDataModel.cs" Link="DataLayer\DataModel\MaxBaseRelationDataModel.cs" />
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseRelationDateDataModel.cs" Link="DataLayer\DataModel\MaxBaseRelationDateDataModel.cs" />
     <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseTemplateDataModel.cs" Link="DataLayer\DataModel\MaxBaseTemplateDataModel.cs" />
     <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseUSPostalAddressDataModel.cs" Link="DataLayer\DataModel\MaxBaseUSPostalAddressDataModel.cs" />
     <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxDataModel.cs" Link="DataLayer\DataModel\MaxDataModel.cs" />
