@@ -495,11 +495,14 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
             string lsR = string.Empty;
             string lsSqlWhere = this.GetWhere(loData, loDataQuery);
             MaxIndex loFieldsList = new MaxIndex();
-            foreach (string lsField in laFields)
+            if (null != laFields)
             {
-                if (lsField.Length > 0)
+                foreach (string lsField in laFields)
                 {
-                    loFieldsList.Add(lsField);
+                    if (lsField.Length > 0)
+                    {
+                        loFieldsList.Add(lsField);
+                    }
                 }
             }
 
@@ -591,11 +594,14 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
         {
             string lsR = string.Empty;
             MaxIndex loFieldsList = new MaxIndex();
-            foreach (string lsField in laFields)
+            if (null != laFields)
             {
-                if (lsField.Length > 0)
+                foreach (string lsField in laFields)
                 {
-                    loFieldsList.Add(lsField);
+                    if (lsField.Length > 0)
+                    {
+                        loFieldsList.Add(lsField);
+                    }
                 }
             }
 
