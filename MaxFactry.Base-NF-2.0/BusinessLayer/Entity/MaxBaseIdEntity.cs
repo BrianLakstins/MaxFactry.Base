@@ -333,7 +333,7 @@ namespace MaxFactry.Base.BusinessLayer
 
                 if (MaxStorageWriteRepository.Update(this.Data))
                 {
-                    string lsCacheKey = this.GetCacheKey() + "LoadAllBy*";
+                    string lsCacheKey = this.GetCacheKey() + "LoadAll*";
                     MaxCacheRepository.Remove(this.GetType(), lsCacheKey);
                     lsCacheKey = this.GetCacheKey() + "LoadById/" + this.Id;
                     MaxCacheRepository.Set(this.GetType(), lsCacheKey, this.Data);
