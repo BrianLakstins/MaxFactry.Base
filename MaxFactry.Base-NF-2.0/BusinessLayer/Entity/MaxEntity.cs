@@ -373,9 +373,10 @@ namespace MaxFactry.Base.BusinessLayer
 
         protected virtual bool HasIndexPropertyName(string[] laPropertyNames, string lsPropertyName)
         {
-            bool lbR = false;
+            bool lbR = true;
             if (null != laPropertyNames && laPropertyNames.Length > 0)
             {
+                lbR = false;
                 foreach (string lsPropertyNameCheck in laPropertyNames)
                 {
                     if (lsPropertyNameCheck == this.GetType().ToString() + "." + lsPropertyName ||
