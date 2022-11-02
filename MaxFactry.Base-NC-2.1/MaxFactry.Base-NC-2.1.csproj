@@ -3,9 +3,9 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <RootNamespace>MaxFactry.Base_NC_2._1</RootNamespace>
-	  <Version>1.0.7</Version>
+	  <Version>1.0.8</Version>
 	  <AssemblyVersion>1.0.7</AssemblyVersion>
-	  <FileVersion>2022.11.02.01</FileVersion>
+	  <FileVersion>2022.11.02.02</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
