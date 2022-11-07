@@ -347,11 +347,37 @@ namespace MaxFactry.Base.BusinessLayer
                     {
                         loR.Add(lsPropertyNameIndex, ((MaxEntity)loValue).MapIndex(laPropertyNames));
                     }
+                    else if (loValue is double)
+                    {
+                        if (double.MinValue != (double)loValue)
+                        {
+                            loR.Add(lsPropertyNameIndex, loValue);
+                        }
+                        else
+                        {
+                            loR.Add(lsPropertyNameIndex, string.Empty);
+                        }
+                    }
+                    else if (loValue is int)
+                    {
+                        if (int.MinValue != (int)loValue)
+                        {
+                            loR.Add(lsPropertyNameIndex, loValue);
+                        }
+                        else
+                        {
+                            loR.Add(lsPropertyNameIndex, string.Empty);
+                        }
+                    }
                     else if (loValue is Guid)
                     {
                         if (Guid.Empty != (Guid)loValue)
                         {
                             loR.Add(lsPropertyNameIndex, loValue);
+                        }
+                        else
+                        {
+                            loR.Add(lsPropertyNameIndex, string.Empty);
                         }
                     }
                     else if (loValue is DateTime)
@@ -359,6 +385,10 @@ namespace MaxFactry.Base.BusinessLayer
                         if ((DateTime)loValue > DateTime.MinValue)
                         {
                             loR.Add(lsPropertyNameIndex, MaxConvertLibrary.ConvertToDateTimeFromUtc(typeof(object), loValue).ToString("g"));
+                        }
+                        else
+                        {
+                            loR.Add(lsPropertyNameIndex, string.Empty);
                         }
                     }
                     else if (loValue != null && !(loValue is Stream))
