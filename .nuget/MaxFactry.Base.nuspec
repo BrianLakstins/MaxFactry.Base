@@ -15,13 +15,25 @@
     <tags></tags>
 	  <dependencies>
 		  <group targetFramework="net20">
-			  <dependency id="MaxFactry.Core" version="1.0.3" />
+			  <dependency id="MaxFactry.Core" version="1.0.4" />
 		  </group>
 		  <group targetFramework="net452">
-			  <dependency id="MaxFactry.Core" version="1.0.3" />
+			  <dependency id="MaxFactry.Core" version="1.0.4" />
+		  </group>
+		  <group targetFramework="net472">
+			  <dependency id="MaxFactry.Core" version="1.0.4" />
+		  </group>
+		  <group targetFramework="net48">
+			  <dependency id="MaxFactry.Core" version="1.0.4" />
 		  </group>
 		  <group targetFramework="netcoreapp2.1">
-			  <dependency id="MaxFactry.Core" version="1.0.3" />
+			  <dependency id="MaxFactry.Core" version="1.0.4" />
+		  </group>
+		  <group targetFramework="netcoreapp3.1">
+			  <dependency id="MaxFactry.Core" version="1.0.4" />
+		  </group>
+		  <group targetFramework="net6.0">
+			  <dependency id="MaxFactry.Core" version="1.0.4" />
 		  </group>
 	  </dependencies>
 	<summary>MaxFactry Base supports the MaxFactry Framework</summary>
