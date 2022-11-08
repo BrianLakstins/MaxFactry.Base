@@ -22,7 +22,7 @@ namespace MaxFactry.Base.Properties {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    public class Resources {
+    internal class Resources {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
@@ -36,7 +36,7 @@ namespace MaxFactry.Base.Properties {
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        public static global::System.Resources.ResourceManager ResourceManager {
+        internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("MaxFactry.Base.Properties.Resources", typeof(Resources).Assembly);
@@ -51,7 +51,7 @@ namespace MaxFactry.Base.Properties {
         ///   resource lookups using this strongly typed resource class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        public static global::System.Globalization.CultureInfo Culture {
+        internal static global::System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
@@ -70,7 +70,7 @@ namespace MaxFactry.Base.Properties {
         ///# here to guide configurations toward known types and to make it easier to
         ///# identify &quot;new&quot; types.  File extensions are also commonly used to i [rest of string was truncated]&quot;;.
         /// </summary>
-        public static string mimetypes {
+        internal static string mimetypes {
             get {
                 return ResourceManager.GetString("mimetypes", resourceCulture);
             }

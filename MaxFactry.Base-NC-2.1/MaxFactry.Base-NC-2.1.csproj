@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-    <RootNamespace>MaxFactry.Base_NC_2._1</RootNamespace>
+    <RootNamespace>MaxFactry.Base</RootNamespace>
 	  <Version>1.0.10</Version>
 	  <AssemblyVersion>1.0.10</AssemblyVersion>
 	  <FileVersion>2022.11.07.01</FileVersion>
@@ -126,7 +126,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="MaxFactry.Core" Version="1.0.3" />
+    <PackageReference Include="MaxFactry.Core" Version="1.0.4" />
   </ItemGroup>
 
   <ItemGroup>
