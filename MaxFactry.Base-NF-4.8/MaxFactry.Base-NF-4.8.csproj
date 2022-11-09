@@ -13,330 +13,330 @@
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
   </PropertyGroup>
-	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-		<DebugSymbols>true</DebugSymbols>
-		<DebugType>full</DebugType>
-		<Optimize>false</Optimize>
-		<OutputPath>bin\Debug\</OutputPath>
-		<DefineConstants>TRACE;DEBUG;net2;net4_52;net4_72;net4_8</DefineConstants>
-		<ErrorReport>prompt</ErrorReport>
-		<WarningLevel>4</WarningLevel>
-	</PropertyGroup>
-	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-		<DebugType>pdbonly</DebugType>
-		<Optimize>true</Optimize>
-		<OutputPath>bin\Release\</OutputPath>
-		<DefineConstants>TRACE;net2;net4_52;net4_72;net4_8</DefineConstants>
-		<ErrorReport>prompt</ErrorReport>
-		<WarningLevel>4</WarningLevel>
-	</PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;net2;net4_52;net4_72;net4_8</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE;net2;net4_52;net4_72;net4_8</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Data" />
   </ItemGroup>
-	<ItemGroup>
-		<Compile Include="..\MaxFactry.Base-NC-2.1\MaxResource.cs">
-			<Link>MaxResource.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxBaseEmailEntity.cs">
-			<Link>BusinessLayer\Entity\MaxBaseEmailEntity.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxBaseIdEntity.cs">
-			<Link>BusinessLayer\Entity\MaxBaseIdEntity.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxBaseIdFileEntity.cs">
-			<Link>BusinessLayer\Entity\MaxBaseIdFileEntity.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxBaseIdIndexEntity.cs">
-			<Link>BusinessLayer\Entity\MaxBaseIdIndexEntity.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxBaseIdVersionedEntity.cs">
-			<Link>BusinessLayer\Entity\MaxBaseIdVersionedEntity.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxBasePersonEntity.cs">
-			<Link>BusinessLayer\Entity\MaxBasePersonEntity.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxBaseRelationDateEntity.cs">
-			<Link>BusinessLayer\Entity\MaxBaseRelationDateEntity.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxBaseRelationEntity.cs">
-			<Link>BusinessLayer\Entity\MaxBaseRelationEntity.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxBaseTemplateEntity.cs">
-			<Link>BusinessLayer\Entity\MaxBaseTemplateEntity.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxBaseUSPostalAddressEntity.cs">
-			<Link>BusinessLayer\Entity\MaxBaseUSPostalAddressEntity.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxEntity.cs">
-			<Link>BusinessLayer\Entity\MaxEntity.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxIdGuidEntity.cs">
-			<Link>BusinessLayer\Entity\MaxIdGuidEntity.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxIdIntegerEntity.cs">
-			<Link>BusinessLayer\Entity\MaxIdIntegerEntity.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxIdStringEntity.cs">
-			<Link>BusinessLayer\Entity\MaxIdStringEntity.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxRelationEntity.cs">
-			<Link>BusinessLayer\Entity\MaxRelationEntity.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Library\Interface\IMaxBusinessLibraryProvider.cs">
-			<Link>BusinessLayer\Library\Interface\IMaxBusinessLibraryProvider.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Library\MaxBusinessLibrary.cs">
-			<Link>BusinessLayer\Library\MaxBusinessLibrary.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Library\Provider\MaxBusinessLibraryDefaultProvider.cs">
-			<Link>BusinessLayer\Library\Provider\MaxBusinessLibraryDefaultProvider.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\MaxEntityEventArgs.cs">
-			<Link>BusinessLayer\MaxEntityEventArgs.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\MaxEntityList.cs">
-			<Link>BusinessLayer\MaxEntityList.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\Interface\IMaxMessageDataModel.cs">
-			<Link>DataLayer\DataModel\Interface\IMaxMessageDataModel.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseEmailDataModel.cs">
-			<Link>DataLayer\DataModel\MaxBaseEmailDataModel.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseIdBranchDataModel.cs">
-			<Link>DataLayer\DataModel\MaxBaseIdBranchDataModel.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseIdDataModel.cs">
-			<Link>DataLayer\DataModel\MaxBaseIdDataModel.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseIdFileDataModel.cs">
-			<Link>DataLayer\DataModel\MaxBaseIdFileDataModel.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseIdIndexDataModel.cs">
-			<Link>DataLayer\DataModel\MaxBaseIdIndexDataModel.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseIdMessageDataModel.cs">
-			<Link>DataLayer\DataModel\MaxBaseIdMessageDataModel.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseIdVersionedDataModel.cs">
-			<Link>DataLayer\DataModel\MaxBaseIdVersionedDataModel.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBasePersonDataModel.cs">
-			<Link>DataLayer\DataModel\MaxBasePersonDataModel.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseRelationDataModel.cs">
-			<Link>DataLayer\DataModel\MaxBaseRelationDataModel.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseRelationDateDataModel.cs">
-			<Link>DataLayer\DataModel\MaxBaseRelationDateDataModel.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseTemplateDataModel.cs">
-			<Link>DataLayer\DataModel\MaxBaseTemplateDataModel.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseUSPostalAddressDataModel.cs">
-			<Link>DataLayer\DataModel\MaxBaseUSPostalAddressDataModel.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxDataModel.cs">
-			<Link>DataLayer\DataModel\MaxDataModel.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxIdGuidDataModel.cs">
-			<Link>DataLayer\DataModel\MaxIdGuidDataModel.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxIdIntegerDataModel.cs">
-			<Link>DataLayer\DataModel\MaxIdIntegerDataModel.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxIdStringDataModel.cs">
-			<Link>DataLayer\DataModel\MaxIdStringDataModel.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxRelationDataModel.cs">
-			<Link>DataLayer\DataModel\MaxRelationDataModel.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Interface\IMaxDataContextProvider.cs">
-			<Link>DataLayer\Library\Interface\IMaxDataContextProvider.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Interface\IMaxDataLibraryProvider.cs">
-			<Link>DataLayer\Library\Interface\IMaxDataLibraryProvider.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Interface\IMaxSqlGenerationLibraryProvider.cs">
-			<Link>DataLayer\Library\Interface\IMaxSqlGenerationLibraryProvider.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\MaxDataLibrary.cs">
-			<Link>DataLayer\Library\MaxDataLibrary.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\MaxDataStreamFolderLibrary.cs">
-			<Link>DataLayer\Library\MaxDataStreamFolderLibrary.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\MaxSqlGenerationLibrary.cs">
-			<Link>DataLayer\Library\MaxSqlGenerationLibrary.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Provider\MaxDataLibraryDefaultProvider.cs">
-			<Link>DataLayer\Library\Provider\MaxDataLibraryDefaultProvider.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Provider\MaxSqlGenerationLibraryDefaultProvider.cs">
-			<Link>DataLayer\Library\Provider\MaxSqlGenerationLibraryDefaultProvider.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Provider\MaxSqlGenerationLibraryMSAccessProvider.cs">
-			<Link>DataLayer\Library\Provider\MaxSqlGenerationLibraryMSAccessProvider.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Provider\MaxSqlGenerationLibraryMSSql2000Provider.cs">
-			<Link>DataLayer\Library\Provider\MaxSqlGenerationLibraryMSSql2000Provider.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Provider\MaxSqlGenerationLibraryMSSql2005Provider.cs">
-			<Link>DataLayer\Library\Provider\MaxSqlGenerationLibraryMSSql2005Provider.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Provider\MaxSqlGenerationLibraryMSSql2008Provider.cs">
-			<Link>DataLayer\Library\Provider\MaxSqlGenerationLibraryMSSql2008Provider.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Provider\MaxSqlGenerationLibraryMSSql2019Provider.cs">
-			<Link>DataLayer\Library\Provider\MaxSqlGenerationLibraryMSSql2019Provider.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Provider\MaxSqlGenerationLibraryMSSqlAzureProvider.cs">
-			<Link>DataLayer\Library\Provider\MaxSqlGenerationLibraryMSSqlAzureProvider.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\MaxData.cs">
-			<Link>DataLayer\MaxData.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\MaxDataFilter.cs">
-			<Link>DataLayer\MaxDataFilter.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\MaxDataList.cs">
-			<Link>DataLayer\MaxDataList.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\MaxDataQuery.cs">
-			<Link>DataLayer\MaxDataQuery.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\MaxLongString.cs">
-			<Link>DataLayer\MaxLongString.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\MaxShortString.cs">
-			<Link>DataLayer\MaxShortString.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Interface\IMaxBaseIdIndexRepositoryProvider.cs">
-			<Link>DataLayer\Repository\Interface\IMaxBaseIdIndexRepositoryProvider.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Interface\IMaxBaseIdRepositoryProvider.cs">
-			<Link>DataLayer\Repository\Interface\IMaxBaseIdRepositoryProvider.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Interface\IMaxBaseIdVersionedRepositoryProvider.cs">
-			<Link>DataLayer\Repository\Interface\IMaxBaseIdVersionedRepositoryProvider.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Interface\IMaxBaseTemplateRepositoryProvider.cs">
-			<Link>DataLayer\Repository\Interface\IMaxBaseTemplateRepositoryProvider.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Interface\IMaxCacheRepositoryProvider.cs">
-			<Link>DataLayer\Repository\Interface\IMaxCacheRepositoryProvider.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Interface\IMaxMessageRepositoryProvider.cs">
-			<Link>DataLayer\Repository\Interface\IMaxMessageRepositoryProvider.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Interface\IMaxRepositoryProvider.cs">
-			<Link>DataLayer\Repository\Interface\IMaxRepositoryProvider.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Interface\IMaxStorageReadRepositoryProvider.cs">
-			<Link>DataLayer\Repository\Interface\IMaxStorageReadRepositoryProvider.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Interface\IMaxStorageWriteRepositoryProvider.cs">
-			<Link>DataLayer\Repository\Interface\IMaxStorageWriteRepositoryProvider.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\MaxBaseIdIndexRepository.cs">
-			<Link>DataLayer\Repository\MaxBaseIdIndexRepository.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\MaxBaseIdRepository.cs">
-			<Link>DataLayer\Repository\MaxBaseIdRepository.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\MaxBaseIdVersionedRepository.cs">
-			<Link>DataLayer\Repository\MaxBaseIdVersionedRepository.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\MaxBaseTemplateRepository.cs">
-			<Link>DataLayer\Repository\MaxBaseTemplateRepository.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\MaxCacheRepository.cs">
-			<Link>DataLayer\Repository\MaxCacheRepository.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\MaxIdGuidRepository.cs">
-			<Link>DataLayer\Repository\MaxIdGuidRepository.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\MaxIdIntegerRepository.cs">
-			<Link>DataLayer\Repository\MaxIdIntegerRepository.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\MaxIdStringRepository.cs">
-			<Link>DataLayer\Repository\MaxIdStringRepository.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\MaxMessageRepository.cs">
-			<Link>DataLayer\Repository\MaxMessageRepository.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\MaxRelationRepository.cs">
-			<Link>DataLayer\Repository\MaxRelationRepository.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\MaxStorageReadRepository.cs">
-			<Link>DataLayer\Repository\MaxStorageReadRepository.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\MaxStorageWriteRepository.cs">
-			<Link>DataLayer\Repository\MaxStorageWriteRepository.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Provider\MaxBaseIdIndexRepositoryDefaultProvider.cs">
-			<Link>DataLayer\Repository\Provider\MaxBaseIdIndexRepositoryDefaultProvider.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Provider\MaxBaseIdRepositoryDefaultProvider.cs">
-			<Link>DataLayer\Repository\Provider\MaxBaseIdRepositoryDefaultProvider.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Provider\MaxBaseIdVersionedRepositoryDefaultProvider.cs">
-			<Link>DataLayer\Repository\Provider\MaxBaseIdVersionedRepositoryDefaultProvider.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Provider\MaxBaseTemplateRepositoryDefaultProvider.cs">
-			<Link>DataLayer\Repository\Provider\MaxBaseTemplateRepositoryDefaultProvider.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Provider\MaxCacheRepositoryDefaultProvider.cs">
-			<Link>DataLayer\Repository\Provider\MaxCacheRepositoryDefaultProvider.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Provider\MaxDataContextDefaultProvider.cs">
-			<Link>DataLayer\Repository\Provider\MaxDataContextDefaultProvider.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Provider\MaxMessageRepositoryDefaultProvider.cs">
-			<Link>DataLayer\Repository\Provider\MaxMessageRepositoryDefaultProvider.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Provider\MaxStorageReadRepositoryDefaultProvider.cs">
-			<Link>DataLayer\Repository\Provider\MaxStorageReadRepositoryDefaultProvider.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Provider\MaxStorageWriteRepositoryDefaultProvider.cs">
-			<Link>DataLayer\Repository\Provider\MaxStorageWriteRepositoryDefaultProvider.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\MaxStartup.cs">
-			<Link>MaxStartup.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\PresentationLayer\Models\MaxBaseEntityViewModel.cs">
-			<Link>PresentationLayer\Models\MaxBaseEntityViewModel.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\PresentationLayer\Models\MaxBaseIdFileViewModel.cs">
-			<Link>PresentationLayer\Models\MaxBaseIdFileViewModel.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\PresentationLayer\Models\MaxBaseIdViewModel.cs">
-			<Link>PresentationLayer\Models\MaxBaseIdViewModel.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\PresentationLayer\Models\MaxBasePersonViewModel.cs">
-			<Link>PresentationLayer\Models\MaxBasePersonViewModel.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\PresentationLayer\Models\MaxBaseTemplateViewModel.cs">
-			<Link>PresentationLayer\Models\MaxBaseTemplateViewModel.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\PresentationLayer\Models\MaxBaseUSPostalAddressViewModel.cs">
-			<Link>PresentationLayer\Models\MaxBaseUSPostalAddressViewModel.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\PresentationLayer\Models\MaxBaseViewModel.cs">
-			<Link>PresentationLayer\Models\MaxBaseViewModel.cs</Link>
-		</Compile>
-		<Compile Include="..\MaxFactry.Base-NF-2.0\PresentationLayer\Models\MaxIdGuidViewModel.cs">
-			<Link>PresentationLayer\Models\MaxIdGuidViewModel.cs</Link>
-		</Compile>
-		<Compile Include="Properties\AssemblyInfo.cs" />
-		<Compile Include="Properties\Resources.Designer.cs">
-			<AutoGen>True</AutoGen>
-			<DesignTime>True</DesignTime>
-			<DependentUpon>Resources.resx</DependentUpon>
-		</Compile>
-	</ItemGroup>
-	<ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\MaxFactry.Base-NC-2.1\MaxResource.cs">
+      <Link>MaxResource.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxBaseEmailEntity.cs">
+      <Link>BusinessLayer\Entity\MaxBaseEmailEntity.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxBaseIdEntity.cs">
+      <Link>BusinessLayer\Entity\MaxBaseIdEntity.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxBaseIdFileEntity.cs">
+      <Link>BusinessLayer\Entity\MaxBaseIdFileEntity.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxBaseIdIndexEntity.cs">
+      <Link>BusinessLayer\Entity\MaxBaseIdIndexEntity.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxBaseIdVersionedEntity.cs">
+      <Link>BusinessLayer\Entity\MaxBaseIdVersionedEntity.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxBasePersonEntity.cs">
+      <Link>BusinessLayer\Entity\MaxBasePersonEntity.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxBaseRelationDateEntity.cs">
+      <Link>BusinessLayer\Entity\MaxBaseRelationDateEntity.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxBaseRelationEntity.cs">
+      <Link>BusinessLayer\Entity\MaxBaseRelationEntity.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxBaseTemplateEntity.cs">
+      <Link>BusinessLayer\Entity\MaxBaseTemplateEntity.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxBaseUSPostalAddressEntity.cs">
+      <Link>BusinessLayer\Entity\MaxBaseUSPostalAddressEntity.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxEntity.cs">
+      <Link>BusinessLayer\Entity\MaxEntity.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxIdGuidEntity.cs">
+      <Link>BusinessLayer\Entity\MaxIdGuidEntity.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxIdIntegerEntity.cs">
+      <Link>BusinessLayer\Entity\MaxIdIntegerEntity.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxIdStringEntity.cs">
+      <Link>BusinessLayer\Entity\MaxIdStringEntity.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxRelationEntity.cs">
+      <Link>BusinessLayer\Entity\MaxRelationEntity.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Library\Interface\IMaxBusinessLibraryProvider.cs">
+      <Link>BusinessLayer\Library\Interface\IMaxBusinessLibraryProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Library\MaxBusinessLibrary.cs">
+      <Link>BusinessLayer\Library\MaxBusinessLibrary.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Library\Provider\MaxBusinessLibraryDefaultProvider.cs">
+      <Link>BusinessLayer\Library\Provider\MaxBusinessLibraryDefaultProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\MaxEntityEventArgs.cs">
+      <Link>BusinessLayer\MaxEntityEventArgs.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\MaxEntityList.cs">
+      <Link>BusinessLayer\MaxEntityList.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\Interface\IMaxMessageDataModel.cs">
+      <Link>DataLayer\DataModel\Interface\IMaxMessageDataModel.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseEmailDataModel.cs">
+      <Link>DataLayer\DataModel\MaxBaseEmailDataModel.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseIdBranchDataModel.cs">
+      <Link>DataLayer\DataModel\MaxBaseIdBranchDataModel.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseIdDataModel.cs">
+      <Link>DataLayer\DataModel\MaxBaseIdDataModel.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseIdFileDataModel.cs">
+      <Link>DataLayer\DataModel\MaxBaseIdFileDataModel.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseIdIndexDataModel.cs">
+      <Link>DataLayer\DataModel\MaxBaseIdIndexDataModel.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseIdMessageDataModel.cs">
+      <Link>DataLayer\DataModel\MaxBaseIdMessageDataModel.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseIdVersionedDataModel.cs">
+      <Link>DataLayer\DataModel\MaxBaseIdVersionedDataModel.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBasePersonDataModel.cs">
+      <Link>DataLayer\DataModel\MaxBasePersonDataModel.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseRelationDataModel.cs">
+      <Link>DataLayer\DataModel\MaxBaseRelationDataModel.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseRelationDateDataModel.cs">
+      <Link>DataLayer\DataModel\MaxBaseRelationDateDataModel.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseTemplateDataModel.cs">
+      <Link>DataLayer\DataModel\MaxBaseTemplateDataModel.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseUSPostalAddressDataModel.cs">
+      <Link>DataLayer\DataModel\MaxBaseUSPostalAddressDataModel.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxDataModel.cs">
+      <Link>DataLayer\DataModel\MaxDataModel.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxIdGuidDataModel.cs">
+      <Link>DataLayer\DataModel\MaxIdGuidDataModel.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxIdIntegerDataModel.cs">
+      <Link>DataLayer\DataModel\MaxIdIntegerDataModel.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxIdStringDataModel.cs">
+      <Link>DataLayer\DataModel\MaxIdStringDataModel.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxRelationDataModel.cs">
+      <Link>DataLayer\DataModel\MaxRelationDataModel.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Interface\IMaxDataContextProvider.cs">
+      <Link>DataLayer\Library\Interface\IMaxDataContextProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Interface\IMaxDataLibraryProvider.cs">
+      <Link>DataLayer\Library\Interface\IMaxDataLibraryProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Interface\IMaxSqlGenerationLibraryProvider.cs">
+      <Link>DataLayer\Library\Interface\IMaxSqlGenerationLibraryProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\MaxDataLibrary.cs">
+      <Link>DataLayer\Library\MaxDataLibrary.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\MaxDataStreamFolderLibrary.cs">
+      <Link>DataLayer\Library\MaxDataStreamFolderLibrary.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\MaxSqlGenerationLibrary.cs">
+      <Link>DataLayer\Library\MaxSqlGenerationLibrary.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Provider\MaxDataLibraryDefaultProvider.cs">
+      <Link>DataLayer\Library\Provider\MaxDataLibraryDefaultProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Provider\MaxSqlGenerationLibraryDefaultProvider.cs">
+      <Link>DataLayer\Library\Provider\MaxSqlGenerationLibraryDefaultProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Provider\MaxSqlGenerationLibraryMSAccessProvider.cs">
+      <Link>DataLayer\Library\Provider\MaxSqlGenerationLibraryMSAccessProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Provider\MaxSqlGenerationLibraryMSSql2000Provider.cs">
+      <Link>DataLayer\Library\Provider\MaxSqlGenerationLibraryMSSql2000Provider.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Provider\MaxSqlGenerationLibraryMSSql2005Provider.cs">
+      <Link>DataLayer\Library\Provider\MaxSqlGenerationLibraryMSSql2005Provider.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Provider\MaxSqlGenerationLibraryMSSql2008Provider.cs">
+      <Link>DataLayer\Library\Provider\MaxSqlGenerationLibraryMSSql2008Provider.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Provider\MaxSqlGenerationLibraryMSSql2019Provider.cs">
+      <Link>DataLayer\Library\Provider\MaxSqlGenerationLibraryMSSql2019Provider.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Provider\MaxSqlGenerationLibraryMSSqlAzureProvider.cs">
+      <Link>DataLayer\Library\Provider\MaxSqlGenerationLibraryMSSqlAzureProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\MaxData.cs">
+      <Link>DataLayer\MaxData.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\MaxDataFilter.cs">
+      <Link>DataLayer\MaxDataFilter.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\MaxDataList.cs">
+      <Link>DataLayer\MaxDataList.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\MaxDataQuery.cs">
+      <Link>DataLayer\MaxDataQuery.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\MaxLongString.cs">
+      <Link>DataLayer\MaxLongString.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\MaxShortString.cs">
+      <Link>DataLayer\MaxShortString.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Interface\IMaxBaseIdIndexRepositoryProvider.cs">
+      <Link>DataLayer\Repository\Interface\IMaxBaseIdIndexRepositoryProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Interface\IMaxBaseIdRepositoryProvider.cs">
+      <Link>DataLayer\Repository\Interface\IMaxBaseIdRepositoryProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Interface\IMaxBaseIdVersionedRepositoryProvider.cs">
+      <Link>DataLayer\Repository\Interface\IMaxBaseIdVersionedRepositoryProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Interface\IMaxBaseTemplateRepositoryProvider.cs">
+      <Link>DataLayer\Repository\Interface\IMaxBaseTemplateRepositoryProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Interface\IMaxCacheRepositoryProvider.cs">
+      <Link>DataLayer\Repository\Interface\IMaxCacheRepositoryProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Interface\IMaxMessageRepositoryProvider.cs">
+      <Link>DataLayer\Repository\Interface\IMaxMessageRepositoryProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Interface\IMaxRepositoryProvider.cs">
+      <Link>DataLayer\Repository\Interface\IMaxRepositoryProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Interface\IMaxStorageReadRepositoryProvider.cs">
+      <Link>DataLayer\Repository\Interface\IMaxStorageReadRepositoryProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Interface\IMaxStorageWriteRepositoryProvider.cs">
+      <Link>DataLayer\Repository\Interface\IMaxStorageWriteRepositoryProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\MaxBaseIdIndexRepository.cs">
+      <Link>DataLayer\Repository\MaxBaseIdIndexRepository.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\MaxBaseIdRepository.cs">
+      <Link>DataLayer\Repository\MaxBaseIdRepository.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\MaxBaseIdVersionedRepository.cs">
+      <Link>DataLayer\Repository\MaxBaseIdVersionedRepository.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\MaxBaseTemplateRepository.cs">
+      <Link>DataLayer\Repository\MaxBaseTemplateRepository.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\MaxCacheRepository.cs">
+      <Link>DataLayer\Repository\MaxCacheRepository.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\MaxIdGuidRepository.cs">
+      <Link>DataLayer\Repository\MaxIdGuidRepository.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\MaxIdIntegerRepository.cs">
+      <Link>DataLayer\Repository\MaxIdIntegerRepository.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\MaxIdStringRepository.cs">
+      <Link>DataLayer\Repository\MaxIdStringRepository.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\MaxMessageRepository.cs">
+      <Link>DataLayer\Repository\MaxMessageRepository.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\MaxRelationRepository.cs">
+      <Link>DataLayer\Repository\MaxRelationRepository.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\MaxStorageReadRepository.cs">
+      <Link>DataLayer\Repository\MaxStorageReadRepository.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\MaxStorageWriteRepository.cs">
+      <Link>DataLayer\Repository\MaxStorageWriteRepository.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Provider\MaxBaseIdIndexRepositoryDefaultProvider.cs">
+      <Link>DataLayer\Repository\Provider\MaxBaseIdIndexRepositoryDefaultProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Provider\MaxBaseIdRepositoryDefaultProvider.cs">
+      <Link>DataLayer\Repository\Provider\MaxBaseIdRepositoryDefaultProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Provider\MaxBaseIdVersionedRepositoryDefaultProvider.cs">
+      <Link>DataLayer\Repository\Provider\MaxBaseIdVersionedRepositoryDefaultProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Provider\MaxBaseTemplateRepositoryDefaultProvider.cs">
+      <Link>DataLayer\Repository\Provider\MaxBaseTemplateRepositoryDefaultProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Provider\MaxCacheRepositoryDefaultProvider.cs">
+      <Link>DataLayer\Repository\Provider\MaxCacheRepositoryDefaultProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Provider\MaxDataContextDefaultProvider.cs">
+      <Link>DataLayer\Repository\Provider\MaxDataContextDefaultProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Provider\MaxMessageRepositoryDefaultProvider.cs">
+      <Link>DataLayer\Repository\Provider\MaxMessageRepositoryDefaultProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Provider\MaxStorageReadRepositoryDefaultProvider.cs">
+      <Link>DataLayer\Repository\Provider\MaxStorageReadRepositoryDefaultProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Provider\MaxStorageWriteRepositoryDefaultProvider.cs">
+      <Link>DataLayer\Repository\Provider\MaxStorageWriteRepositoryDefaultProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\MaxStartup.cs">
+      <Link>MaxStartup.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\PresentationLayer\Models\MaxBaseEntityViewModel.cs">
+      <Link>PresentationLayer\Models\MaxBaseEntityViewModel.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\PresentationLayer\Models\MaxBaseIdFileViewModel.cs">
+      <Link>PresentationLayer\Models\MaxBaseIdFileViewModel.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\PresentationLayer\Models\MaxBaseIdViewModel.cs">
+      <Link>PresentationLayer\Models\MaxBaseIdViewModel.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\PresentationLayer\Models\MaxBasePersonViewModel.cs">
+      <Link>PresentationLayer\Models\MaxBasePersonViewModel.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\PresentationLayer\Models\MaxBaseTemplateViewModel.cs">
+      <Link>PresentationLayer\Models\MaxBaseTemplateViewModel.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\PresentationLayer\Models\MaxBaseUSPostalAddressViewModel.cs">
+      <Link>PresentationLayer\Models\MaxBaseUSPostalAddressViewModel.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\PresentationLayer\Models\MaxBaseViewModel.cs">
+      <Link>PresentationLayer\Models\MaxBaseViewModel.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\PresentationLayer\Models\MaxIdGuidViewModel.cs">
+      <Link>PresentationLayer\Models\MaxIdGuidViewModel.cs</Link>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -349,7 +349,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="MaxFactry.Core">
-      <Version>1.0.4</Version>
+      <Version>1.0.5</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
