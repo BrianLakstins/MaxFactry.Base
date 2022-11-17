@@ -766,6 +766,43 @@ namespace MaxFactry.Base.BusinessLayer
         }
 
         /// <summary>
+        /// Loads all entities for a particular page using a filter
+        /// </summary>
+        /// <param name="lnPageIndex"></param>
+        /// <param name="lnPageSize"></param>
+        /// <param name="lsSort"></param>
+        /// <param name="loFilter"></param>
+        /// <param name="laFields"></param>
+        /// <returns></returns>
+        public virtual MaxEntityList LoadAllByPageFilter(int lnPageIndex, int lnPageSize, string lsSort, MaxIndex loFilter, params string[] laFields)
+        {
+            MaxEntityList loR = MaxEntityList.Create(this.GetType());
+            int lnTotal = int.MinValue;
+            MaxDataQuery loDataQuery = new MaxDataQuery();
+            string[] laKey = loFilter.GetSortedKeyList();
+            if (laKey.Length > 0)
+            {
+                loDataQuery.StartGroup();
+                foreach (string lsKey in laKey)
+                {
+                    MaxIndex loDetail = loFilter[lsKey] as MaxIndex;
+                    loDataQuery.AddFilter(loDetail.GetValueString("Name"), loDetail.GetValueString("Operator"), loDetail.GetValueString("Value"));
+                    if (loDetail.Contains("Condition"))
+                    {
+                        loDataQuery.AddCondition(loDetail.GetValueString("Condition"));
+                    }
+                }
+
+                loDataQuery.EndGroup();
+            }
+
+            MaxDataList loDataList = MaxBaseIdRepository.Select(this.Data, loDataQuery, lnPageIndex, lnPageSize, lsSort, out lnTotal, laFields);
+            loR = MaxEntityList.Create(this.GetType(), loDataList);
+            loR.Total = lnTotal;
+            return loR;
+        }
+
+        /// <summary>
         /// Loads all entities matching the property and caches them
         /// </summary>
         /// <param name="lsPropertyName">Name of the property</param>
