@@ -2,7 +2,7 @@
 <package  xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
   <metadata>    
     <id>MaxFactry.Base</id>
-    <version>1.0.11</version>
+    <version>1.0.12</version>
     <title>MaxFactry Base</title>
     <authors>Brian Lakstins</authors>
     <owners>brianlakstins</owners>
@@ -15,25 +15,25 @@
     <tags></tags>
 	  <dependencies>
 		  <group targetFramework="net20">
-			  <dependency id="MaxFactry.Core" version="1.0.5" />
+			  <dependency id="MaxFactry.Core" version="1.0.6" />
 		  </group>
 		  <group targetFramework="net452">
-			  <dependency id="MaxFactry.Core" version="1.0.5" />
+			  <dependency id="MaxFactry.Core" version="1.0.6" />
 		  </group>
 		  <group targetFramework="net472">
-			  <dependency id="MaxFactry.Core" version="1.0.5" />
+			  <dependency id="MaxFactry.Core" version="1.0.6" />
 		  </group>
 		  <group targetFramework="net48">
-			  <dependency id="MaxFactry.Core" version="1.0.5" />
+			  <dependency id="MaxFactry.Core" version="1.0.6" />
 		  </group>
 		  <group targetFramework="netcoreapp2.1">
-			  <dependency id="MaxFactry.Core" version="1.0.5" />
+			  <dependency id="MaxFactry.Core" version="1.0.6" />
 		  </group>
 		  <group targetFramework="netcoreapp3.1">
-			  <dependency id="MaxFactry.Core" version="1.0.5" />
+			  <dependency id="MaxFactry.Core" version="1.0.6" />
 		  </group>
 		  <group targetFramework="net6.0">
-			  <dependency id="MaxFactry.Core" version="1.0.5" />
+			  <dependency id="MaxFactry.Core" version="1.0.6" />
 		  </group>
 	  </dependencies>
 	<summary>MaxFactry Base supports the MaxFactry Framework</summary>
