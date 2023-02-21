@@ -2,10 +2,10 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-    <RootNamespace>MaxFactry.Base_NC_2._1</RootNamespace>
-    <Version>2022.10.07.01</Version>
-    <AssemblyVersion>1.0.0.0</AssemblyVersion>
-    <FileVersion>1.0</FileVersion>
+    <RootNamespace>MaxFactry.Base</RootNamespace>
+	  <Version>1.0.11</Version>
+	  <AssemblyVersion>1.0.11</AssemblyVersion>
+	  <FileVersion>2022.11.09.01</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -23,6 +23,8 @@
     <Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxBaseIdIndexEntity.cs" Link="BusinessLayer\Entity\MaxBaseIdIndexEntity.cs" />
     <Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxBaseIdVersionedEntity.cs" Link="BusinessLayer\Entity\MaxBaseIdVersionedEntity.cs" />
     <Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxBasePersonEntity.cs" Link="BusinessLayer\Entity\MaxBasePersonEntity.cs" />
+    <Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxBaseRelationDateEntity.cs" Link="BusinessLayer\Entity\MaxBaseRelationDateEntity.cs" />
+    <Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxBaseRelationEntity.cs" Link="BusinessLayer\Entity\MaxBaseRelationEntity.cs" />
     <Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxBaseTemplateEntity.cs" Link="BusinessLayer\Entity\MaxBaseTemplateEntity.cs" />
     <Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxBaseUSPostalAddressEntity.cs" Link="BusinessLayer\Entity\MaxBaseUSPostalAddressEntity.cs" />
     <Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxEntity.cs" Link="BusinessLayer\Entity\MaxEntity.cs" />
@@ -44,6 +46,8 @@
     <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseIdMessageDataModel.cs" Link="DataLayer\DataModel\MaxBaseIdMessageDataModel.cs" />
     <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseIdVersionedDataModel.cs" Link="DataLayer\DataModel\MaxBaseIdVersionedDataModel.cs" />
     <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBasePersonDataModel.cs" Link="DataLayer\DataModel\MaxBasePersonDataModel.cs" />
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseRelationDataModel.cs" Link="DataLayer\DataModel\MaxBaseRelationDataModel.cs" />
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseRelationDateDataModel.cs" Link="DataLayer\DataModel\MaxBaseRelationDateDataModel.cs" />
     <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseTemplateDataModel.cs" Link="DataLayer\DataModel\MaxBaseTemplateDataModel.cs" />
     <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseUSPostalAddressDataModel.cs" Link="DataLayer\DataModel\MaxBaseUSPostalAddressDataModel.cs" />
     <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxDataModel.cs" Link="DataLayer\DataModel\MaxDataModel.cs" />
@@ -122,11 +126,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="MaxFactry.Core" Version="1.0.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\_sm\MaxFactry.Core\MaxFactry.Core-NC-2.1\MaxFactry.Core-NC-2.1.csproj" />
+    <ProjectReference Include="..\..\MaxFactry.Core\MaxFactry.Core-NC-2.1\MaxFactry.Core-NC-2.1.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -139,7 +139,7 @@
 
   <ItemGroup>
     <EmbeddedResource Update="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
+      <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
