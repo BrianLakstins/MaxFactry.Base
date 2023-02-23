@@ -16,13 +16,14 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NuGet", "NuGet", "{D195F6EF-7B0F-4391-86F5-9E77242FCE9D}"
 	ProjectSection(SolutionItems) = preProject
 		.nuget\MaxFactry.Base.nuspec = .nuget\MaxFactry.Base.nuspec
+		.nuget\nuget.config = .nuget\nuget.config
 		.nuget\package.bat = .nuget\package.bat
 		.nuget\readme.md = .nuget\readme.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MaxFactry.Base-NC-3.1", "MaxFactry.Base-NC-3.1\MaxFactry.Base-NC-3.1.csproj", "{8C38882A-BFC6-419D-8AB2-61BE0ED35E40}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MaxFactry.Base-NC-3.1", "MaxFactry.Base-NC-3.1\MaxFactry.Base-NC-3.1.csproj", "{8C38882A-BFC6-419D-8AB2-61BE0ED35E40}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MaxFactry.Base-NC-6.0", "MaxFactry.Base-NC-6.0\MaxFactry.Base-NC-6.0.csproj", "{2F68F0F5-9F4D-440B-879B-D4C51BD62DDE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MaxFactry.Base-NC-6.0", "MaxFactry.Base-NC-6.0\MaxFactry.Base-NC-6.0.csproj", "{2F68F0F5-9F4D-440B-879B-D4C51BD62DDE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MaxFactry.Base-NF-4.7.2", "MaxFactry.Base-NF-4.7.2\MaxFactry.Base-NF-4.7.2.csproj", "{1FC100F5-8AA8-465A-9B7B-45DB5AEB7A59}"
 EndProject
