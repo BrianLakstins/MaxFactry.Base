@@ -6,6 +6,8 @@
 	  <Version>1.0.13</Version>
 	  <AssemblyVersion>1.0.13</AssemblyVersion>
 	  <FileVersion>2023.02.23.01</FileVersion>
+	  <SignAssembly>True</SignAssembly>
+	  <AssemblyOriginatorKeyFile>MaxFactry.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
 

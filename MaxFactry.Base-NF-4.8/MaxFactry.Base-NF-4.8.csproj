@@ -30,6 +30,12 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>MaxFactry.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -337,6 +343,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="MaxFactry.snk" />
     <None Include="Resources\mimetypes.txt" />
   </ItemGroup>
   <ItemGroup>
