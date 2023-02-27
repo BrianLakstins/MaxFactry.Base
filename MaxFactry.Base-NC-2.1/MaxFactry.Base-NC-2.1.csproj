@@ -3,11 +3,11 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <RootNamespace>MaxFactry.Base</RootNamespace>
-	  <Version>1.0.13</Version>
-	  <AssemblyVersion>1.0.13</AssemblyVersion>
-	  <FileVersion>2023.02.23.01</FileVersion>
+	  <Version>1.0.15</Version>
+	  <AssemblyVersion>1.0.15</AssemblyVersion>
+	  <FileVersion>2023.02.27.01</FileVersion>
 	  <SignAssembly>True</SignAssembly>
-	  <AssemblyOriginatorKeyFile>C:\data\github.com\BrianLakstins\MaxFactry.Base\MaxFactry.Base-NC-3.1\MaxFactry.snk</AssemblyOriginatorKeyFile>
+	  <AssemblyOriginatorKeyFile>MaxFactry.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -130,7 +130,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="MaxFactry.Core" Version="1.0.6" />
+    <PackageReference Include="MaxFactry.Core" Version="1.0.7.1" />
   </ItemGroup>
 
   <ItemGroup>
