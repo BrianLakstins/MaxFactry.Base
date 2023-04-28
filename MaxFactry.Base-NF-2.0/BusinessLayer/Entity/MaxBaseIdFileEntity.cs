@@ -49,6 +49,7 @@ namespace MaxFactry.Base.BusinessLayer
     using MaxFactry.Core;
     using MaxFactry.Base.BusinessLayer;
     using MaxFactry.Base.DataLayer;
+    using System.Runtime.CompilerServices;
 
     /// <summary>
     /// Base entity for interacting with files.
@@ -59,16 +60,6 @@ namespace MaxFactry.Base.BusinessLayer
         /// Long string of spaces to help with creating sorted strings.
         /// </summary>
         private static string _sSpace = "                                                                                                         ";
-
-        /// <summary>
-        /// An index to hold extensions and mime types.
-        /// </summary>
-        private static MaxIndex _oMimeTypeIndex = null;
-
-        /// <summary>
-        /// Lock to protect threads.
-        /// </summary>
-        private static object _oLock = new object();
 
         /// <summary>
         /// Initializes a new instance of the MaxBaseIdFileEntity class
@@ -223,71 +214,6 @@ namespace MaxFactry.Base.BusinessLayer
         }
 
         /// <summary>
-        /// Gets an index to hold extensions and mime types.
-        /// </summary>
-        protected static MaxIndex MimeTypeIndex
-        {
-            get
-            {
-                if (null == _oMimeTypeIndex)
-                {
-                    lock (_oLock)
-                    {
-                        if (null == _oMimeTypeIndex)
-                        {
-                            _oMimeTypeIndex = new MaxIndex();
-                            string lsContent = MaxFactryLibrary.GetStringResource(typeof(MaxBaseIdFileEntity), "mimetypes");
-                            if (lsContent.Contains("\n") && lsContent.Contains("\r"))
-                            {
-                                lsContent = lsContent.Replace('\r', ' ');
-                            }
-                            else if (lsContent.Contains("\r"))
-                            {
-                                lsContent = lsContent.Replace('\r', '\n');
-                            }
-
-                            string[] laContent = lsContent.Split('\n');
-                            foreach (string lsLine in laContent)
-                            {
-                                if (lsLine.Length > 1 && !lsLine.Substring(0, 1).Equals("#") && lsLine.Contains("\t"))
-                                {
-                                    string[] laLine = lsLine.Split('\t');
-                                    string lsMimeType = laLine[0];
-                                    if (lsMimeType.Length > 0)
-                                    {
-                                        for (int lnM = 1; lnM < laLine.Length; lnM++)
-                                        {
-                                            string lsExtensionList = laLine[lnM].Trim();
-                                            if (null != lsExtensionList && lsExtensionList.Length > 0)
-                                            {
-                                                string[] laExtensionList = lsExtensionList.Split(' ');
-                                                for (int lnE = 0; lnE < laExtensionList.Length; lnE++)
-                                                {
-                                                    string lsExtensionPossible = laExtensionList[lnE].Trim().ToLower();
-                                                    if (!_oMimeTypeIndex.Contains(lsExtensionPossible))
-                                                    {
-                                                        _oMimeTypeIndex.Add(lsExtensionPossible, lsMimeType);
-                                                    }
-                                                    else if (!(MaxConvertLibrary.ConvertToString(typeof(object), _oMimeTypeIndex[lsExtensionPossible]).ToLower().IndexOf(lsExtensionPossible) >= 0) &&
-                                                        lsMimeType.ToLower().IndexOf(lsExtensionPossible) >= 0)
-                                                    {
-                                                        _oMimeTypeIndex[lsExtensionPossible] = lsMimeType;
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                return _oMimeTypeIndex;
-            }
-        }
-
-        /// <summary>
         /// Gets the Data Model for this entity
         /// </summary>
         protected MaxBaseIdFileDataModel MaxBaseIdFileDataModel
@@ -299,38 +225,13 @@ namespace MaxFactry.Base.BusinessLayer
         }
 
         /// <summary>
-        /// Gets the extension of a file name.
-        /// </summary>
-        /// <param name="lsName">Name of a file.</param>
-        /// <returns>Extension of the file.</returns>
-        public static string GetFileNameExtension(string lsName)
-        {
-            string lsR = string.Empty;
-            if (lsName.IndexOf(".") >= 0 && lsName.LastIndexOf('.') != lsName.Length - 1)
-            {
-                lsR = lsName.Substring(lsName.LastIndexOf('.') + 1);
-            }
-
-            return lsR;
-        }
-
-        /// <summary>
         /// Gets the mime-type of the file.
         /// </summary>
         /// <param name="lsName">File name</param>
         /// <returns>Data updated based on sending of message.</returns>
         public static string GetMimeType(string lsName)
         {
-            string lsR = "application/octet-stream";
-            string lsExtension = GetFileNameExtension(lsName);
-            if (null != lsExtension && lsExtension.Length > 0)
-            {
-                if (MimeTypeIndex.Contains(lsExtension.ToLower()))
-                {
-                    lsR = MimeTypeIndex[lsExtension.ToLower()].ToString();
-                }
-            }
-
+            string lsR = MaxStorageReadRepository.GetMimeType(new MaxData(new MaxBaseIdFileDataModel()), lsName);
             return lsR;
         }
 

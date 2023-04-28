@@ -39,11 +39,11 @@ namespace MaxFactry.Base.DataLayer
 	using System;
     using System.IO;
 
-	/// <summary>
-	/// Provides methods to manipulate storage of data
-	/// </summary>
+    /// <summary>
+    /// Provides methods to manipulate storage of data
+    /// </summary>
     public interface IMaxStorageReadRepositoryProvider : IMaxRepositoryProvider
-	{
+    {
         /// <summary>
         /// Selects all data from the data storage name for the specified type.
         /// </summary>
@@ -80,5 +80,12 @@ namespace MaxFactry.Base.DataLayer
         /// <param name="lsKey">Data element name</param>
         /// <returns>Url to stream.</returns>
         string GetStreamUrl(MaxData loData, string lsKey);
-	}
+
+        /// <summary>
+        /// Gets the mime-type of the file.
+        /// </summary>
+        /// <param name="lsName">File name</param>
+        /// <returns>Data updated based on sending of message.</returns>
+        string GetMimeType(string lsName);
+    }
 }

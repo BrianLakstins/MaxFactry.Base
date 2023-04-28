@@ -936,7 +936,7 @@ namespace MaxFactry.Base.BusinessLayer
         /// Sets the name of the repository provider
         /// </summary>
         /// <param name="lsName">Name of the repository provider</param>
-        public virtual void SetStorageRepositorProviderName(string lsName)
+        public virtual void SetStorageRepositoryProviderName(string lsName)
         {
             this.Data.Set("MaxStorageRepositoryName", lsName);
         }

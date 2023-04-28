@@ -231,6 +231,19 @@ namespace MaxFactry.Base.DataLayer
         }
 
         /// <summary>
+        /// Gets the mime-type of the file.
+        /// </summary>
+        /// <param name="loData">The data index for the object</param>
+        /// <param name="lsName">File name</param>
+        /// <returns>Data updated based on sending of message.</returns>
+        public static string GetMimeType(MaxData loData, string lsName)
+        {
+            IMaxStorageReadRepositoryProvider loProvider = Instance.GetStorageReadRepositoryProvider(loData);
+            string lsR = loProvider.GetMimeType(lsName);
+            return lsR;
+        }
+
+        /// <summary>
         /// Gets the provider based on the type of object being stored
         /// Use MaxStorageRepositoryName for a name of a provider to use to override
         /// Or override based on RepositoryProviderType 
