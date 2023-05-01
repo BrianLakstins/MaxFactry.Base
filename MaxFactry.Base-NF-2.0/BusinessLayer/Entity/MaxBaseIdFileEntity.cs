@@ -225,17 +225,6 @@ namespace MaxFactry.Base.BusinessLayer
         }
 
         /// <summary>
-        /// Gets the mime-type of the file.
-        /// </summary>
-        /// <param name="lsName">File name</param>
-        /// <returns>Data updated based on sending of message.</returns>
-        public static string GetMimeType(string lsName)
-        {
-            string lsR = MaxStorageReadRepository.GetMimeType(new MaxData(new MaxBaseIdFileDataModel()), lsName);
-            return lsR;
-        }
-
-        /// <summary>
         /// Gets a string that can be used to sort a list of this entity.
         /// </summary>
         /// <returns>Lowercase version of Name padded to 100 characters.</returns>
@@ -257,7 +246,17 @@ namespace MaxFactry.Base.BusinessLayer
         /// <returns>Data updated based on sending of message.</returns>
         public string GetMimeType()
         {
-            return GetMimeType(this.FileName);
+            return this.GetMimeType(this.ContentName);
+        }
+
+        /// <summary>
+        /// Gets the mime-type of the file.
+        /// </summary>
+        /// <returns>Data updated based on sending of message.</returns>
+        public string GetMimeType(string lsFileName)
+        {
+            string lsR = MaxStorageReadRepository.GetMimeType(this.Data, lsFileName);
+            return lsR;
         }
     }
 }

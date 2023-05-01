@@ -50,6 +50,7 @@ namespace MaxFactry.Base.DataLayer
 {
 	using System;
     using System.IO;
+    using MaxFactry.Base.DataLayer.Provider;
     using MaxFactry.Core;
 
     /// <summary>
@@ -316,7 +317,14 @@ namespace MaxFactry.Base.DataLayer
             IMaxStorageReadRepositoryProvider loR = loProvider as IMaxStorageReadRepositoryProvider;
             if (null == loR)
             {
-                throw new MaxException("Error casting [" + loR.GetType() + "] for Provider");
+                MaxException loE = new MaxException("Error casting for Provider of type IMaxStorageReadRepositoryProvider");
+                if (null != loProvider)
+                {
+                    loE = new MaxException("Error casting [" + loProvider.GetType() + "] for Provider of type IMaxStorageReadRepositoryProvider");
+                }
+
+                loE.Data.Add("MaxDataString", loData.ToString());
+                throw loE;
             }
 
             return loR;
