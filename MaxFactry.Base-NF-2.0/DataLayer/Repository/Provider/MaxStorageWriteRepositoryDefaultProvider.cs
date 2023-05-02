@@ -131,6 +131,25 @@ namespace MaxFactry.Base.DataLayer.Provider
         /// <returns>Number of bytes written to storage.</returns>
         public virtual bool StreamSave(MaxData loData, string lsKey)
         {
+            if (loData.DataModel is MaxBaseIdFileDataModel)
+            {
+                MaxBaseIdFileDataModel loDataModel = loData.DataModel as MaxBaseIdFileDataModel;
+                if (null == loData.Get(loDataModel.Content))
+                {
+                    string lsFromFileName = loData.Get(loDataModel.FromFileName) as string;
+                    if (!string.IsNullOrEmpty(lsFromFileName) && File.Exists(lsFromFileName))
+                    {
+                        FileInfo loFileInfo = new FileInfo(lsFromFileName);
+                        loData.Set(loDataModel.Content, File.OpenRead(lsFromFileName));
+                        loData.Set(loDataModel.ContentLength, loFileInfo.Length);
+                        loData.Set(loDataModel.ContentName, loFileInfo.Name);
+                        loData.Set(loDataModel.ContentDate, loFileInfo.CreationTimeUtc);
+                        loData.Set(loDataModel.ContentType, MaxStorageReadRepository.GetMimeType(loData, lsFromFileName));
+                        loData.Set(loDataModel.MimeType, MaxStorageReadRepository.GetMimeType(loData, lsFromFileName));
+                    }
+                }
+            }
+
             IMaxDataContextProvider loProvider = MaxDataLibrary.GetContextProvider(this, loData);
             bool lbR = false;
             if (null != loProvider)
