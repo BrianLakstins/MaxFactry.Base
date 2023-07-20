@@ -41,6 +41,7 @@
 // <change date="7/2/2016" author="Brian A. Lakstins" description="Updated to access provider configuration using base provider methods.">
 // <change date="9/9/2019" author="Brian A. Lakstins" description="Add method to get value of a field in a dataquery.">
 // <change date="6/4/2020" author="Brian A. Lakstins" description="Updated for change to base.">
+// <change date="7/20/2023" author="Brian A. Lakstins" description="Use constants instead of strings to access configuration">
 // </changelog>
 #endregion
 
@@ -148,7 +149,7 @@ namespace MaxFactry.Base.DataLayer.Provider
 		public override void Initialize(string lsName, MaxIndex loConfig)
 		{
             base.Initialize(lsName, loConfig);
-            string lsDefaultContextProviderName = this.GetConfigValue(loConfig, "DefaultContextProviderName") as string;
+            string lsDefaultContextProviderName = this.GetConfigValue(loConfig, MaxDataContextDefaultProvider.DefaultContextProviderConfigName) as string;
             if (null != lsDefaultContextProviderName)
             {
                 Type loDefaultContextProviderType = this.GetConfigValue(loConfig, lsDefaultContextProviderName) as Type;
@@ -159,7 +160,7 @@ namespace MaxFactry.Base.DataLayer.Provider
                 }
             }
 
-            string lsContextProviderName = this.GetConfigValue(loConfig, "ContextProviderName") as string;
+            string lsContextProviderName = this.GetConfigValue(loConfig, MaxDataContextDefaultProvider.ContextProviderConfigName) as string;
             if (null != lsContextProviderName)
             {
                 this.ContextProviderName = lsContextProviderName;

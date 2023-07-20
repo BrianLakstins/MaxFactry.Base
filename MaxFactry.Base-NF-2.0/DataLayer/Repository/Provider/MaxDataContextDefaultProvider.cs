@@ -31,6 +31,7 @@
 // <change date="6/4/2020" author="Brian A. Lakstins" description="Updated for change to base.">
 // <change date="6/5/2020" author="Brian A. Lakstins" description="Remove using MaxDataLibrary to ge StorageKey because can cause stack overflow.">
 // <change date="6/2/2021" author="Brian A. Lakstins" description="Update from MaxDataContextDataSetProvider so can remove it and just use this.">
+// <change date="7/20/2023" author="Brian A. Lakstins" description="Replacing strings with constant properties.">
 // </changelog>
 #endregion
 
@@ -71,6 +72,16 @@ namespace MaxFactry.Base.DataLayer.Provider
         /// Folder to use for data set storage
         /// </summary>
         private string _sDataSetFolder = string.Empty;
+
+        /// <summary>
+        /// Configuration name for default context provider 
+        /// </summary>
+        public const string DefaultContextProviderConfigName = "DefaultContextProviderName";
+
+        /// <summary>
+        /// Configuration name for instance context provider
+        /// </summary>
+        public const string ContextProviderConfigName = "ContextProviderName";
 
         /// <summary>
         /// Initializes the provider
