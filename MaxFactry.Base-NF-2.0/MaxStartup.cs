@@ -29,17 +29,20 @@
 // <changelog>
 // <change date="7/6/2015" author="Brian A. Lakstins" description="Initial creation">
 // <change date="6/5/2020" author="Brian A. Lakstins" description="Updated to give a default glboal configuration for all providers so config is not needed to be set for every provider.">
+// <change date="7/24/2023" author="Brian A. Lakstins" description="Change order of startup methods.">
 // </changelog>
 #endregion
 
 namespace MaxFactry.Base
 {
     using MaxFactry.Core;
+    using MaxFactry.Base.DataLayer;
 
-	/// <summary>
-	/// Class used to define initialization tasks for a module.
-	/// </summary>
-	public class MaxStartup
+    /// <summary>
+    /// Class used to define initialization a library.
+    /// Define the any initialization processes using SetProviderConfiguration, RegisterProviders, and ApplicationStartup
+    /// </summary>
+    public class MaxStartup
 	{
         /// <summary>
         /// Internal storage of single object
@@ -80,6 +83,17 @@ namespace MaxFactry.Base
         }
 
         /// <summary>
+        /// Sets the basic configuration for all providers
+        /// </summary>
+        /// <param name="loConfig">The default configuration for all providers used when they are initialized.</param>
+        public virtual void SetProviderConfiguration(MaxIndex loConfig)
+        {
+            //// Anything that is a descendent of MaxProvider will use the specified config.
+            //// Variables in the config need to be prefixed with the typeof(object) that they pertain to so that they are not used on the wrong provider
+            MaxFactry.Core.MaxFactryLibrary.SetValue(typeof(MaxFactry.Core.MaxProvider) + "-Config", loConfig);
+        }
+
+        /// <summary>
         /// To be run after configuration has been set
         /// </summary>
         public virtual void RegisterProviders()
@@ -96,21 +110,11 @@ namespace MaxFactry.Base
             MaxLogLibrary.Instance.ProviderAdd(
                 typeof(MaxFactry.Core.Provider.MaxLogLibraryDefaultProvider));
 
-            MaxFactry.Base.DataLayer.MaxMessageRepository.Instance.ProviderAdd(
+            MaxMessageRepository.Instance.ProviderAdd(
                     typeof(MaxFactry.Base.DataLayer.Provider.MaxMessageRepositoryDefaultProvider));
 
             MaxMetaLibrary.Instance.ProviderAdd(
                 typeof(MaxFactry.Core.Provider.MaxMetaLibraryDefaultProvider));
-        }
-
-        /// <summary>
-        /// Sets the basic configuration for all providers
-        /// </summary>
-        /// <param name="loConfig">The default configuration for all providers used when they are initialized.</param>
-        public virtual void SetProviderConfiguration(MaxIndex loConfig)
-        {
-            //// Anything that is a descendent of MaxProvider will use the specified config.
-            MaxFactry.Core.MaxFactryLibrary.SetValue(typeof(MaxFactry.Core.MaxProvider) + "-Config", loConfig);
         }
 
         /// <summary>
