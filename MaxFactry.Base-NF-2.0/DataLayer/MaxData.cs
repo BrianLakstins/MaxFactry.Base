@@ -55,6 +55,7 @@
 // <change date="1/16/2021" author="Brian A. Lakstins" description="Add a way to convert to and from a string.">
 // <change date="1/18/2021" author="Brian A. Lakstins" description="Fix handling streams when converting to a string.">
 // <change date="5/28/2021" author="Brian A. Lakstins" description="Handle stream path.">
+// <change date="8/2/2023" author="Brian A. Lakstins" description="Fixed a deserialization issue by not having a contstructor without any arguements">
 // </changelog>
 #endregion
 
@@ -93,6 +94,13 @@ namespace MaxFactry.Base.DataLayer
         /// The list of keys.
         /// </summary>
         private string[] _aKeyList = null;
+
+        /// <summary>
+        /// Initializes a new instance of the MaxData class
+        /// </summary>
+        public MaxData()
+        {
+        }
 
         /// <summary>
         /// Initializes a new instance of the MaxData class
