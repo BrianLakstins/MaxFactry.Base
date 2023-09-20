@@ -60,7 +60,7 @@ namespace MaxFactry.Base.DataLayer
             {
                 if (null == Instance.BaseProvider)
                 {
-                    Instance.SetProvider(typeof(MaxFactry.Base.DataLayer.Provider.MaxDataContextDefaultProvider));
+                    Instance.SetProvider(typeof(MaxFactry.Base.DataLayer.Provider.MaxDataContextStreamLibraryDefaultProvider));
                 }
 
                 return (IMaxDataContextStreamLibraryProvider)Instance.BaseProvider;
