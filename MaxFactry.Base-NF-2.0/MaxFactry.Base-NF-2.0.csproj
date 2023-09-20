@@ -78,12 +78,15 @@
     <Compile Include="DataLayer\DataModel\MaxIdStringDataModel.cs" />
     <Compile Include="DataLayer\DataModel\MaxBaseRelationDataModel.cs" />
     <Compile Include="DataLayer\DataModel\MaxRelationDataModel.cs" />
-    <Compile Include="DataLayer\Library\Interface\IMaxDataContextProvider.cs" />
+    <Compile Include="DataLayer\Repository\Interface\IMaxDataContextProvider.cs" />
+    <Compile Include="DataLayer\Library\Interface\IMaxDataContextStreamLibraryProvider.cs" />
     <Compile Include="DataLayer\Library\Interface\IMaxDataLibraryProvider.cs" />
     <Compile Include="DataLayer\Library\Interface\IMaxSqlGenerationLibraryProvider.cs" />
+    <Compile Include="DataLayer\Library\MaxDataContextStreamLibrary.cs" />
     <Compile Include="DataLayer\Library\MaxDataLibrary.cs" />
     <Compile Include="DataLayer\Library\MaxDataStreamFolderLibrary.cs" />
     <Compile Include="DataLayer\Library\MaxSqlGenerationLibrary.cs" />
+    <Compile Include="DataLayer\Library\Provider\MaxDataContextStreamLibraryDefaultProvider.cs" />
     <Compile Include="DataLayer\Repository\Provider\MaxDataContextDefaultProvider.cs" />
     <Compile Include="DataLayer\Library\Provider\MaxDataLibraryDefaultProvider.cs" />
     <Compile Include="DataLayer\Library\Provider\MaxSqlGenerationLibraryDefaultProvider.cs" />

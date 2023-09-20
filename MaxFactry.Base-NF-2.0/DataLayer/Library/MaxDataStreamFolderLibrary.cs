@@ -34,11 +34,7 @@
 namespace MaxFactry.Base.DataLayer.Library
 {
     using System;
-    using System.Collections.Generic;
     using System.IO;
-    using System.IO.Ports;
-    using System.Threading;
-    using MaxFactry.Core;
 
     public class MaxDataStreamFolderLibrary
     {

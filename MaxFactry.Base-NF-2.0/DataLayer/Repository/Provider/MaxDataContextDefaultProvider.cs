@@ -64,11 +64,6 @@ namespace MaxFactry.Base.DataLayer.Provider
         private static object _oLock = new object();
 
         /// <summary>
-        /// Folder to use for stream storage
-        /// </summary>
-        private string _sDataFolder = string.Empty;
-
-        /// <summary>
         /// Folder to use for data set storage
         /// </summary>
         private string _sDataSetFolder = string.Empty;
@@ -91,12 +86,6 @@ namespace MaxFactry.Base.DataLayer.Provider
         public override void Initialize(string lsName, MaxIndex loConfig)
         {
             base.Initialize(lsName, loConfig);
-            string lsDataDirectory = MaxConfigurationLibrary.GetValue(MaxEnumGroup.ScopeApplication, "MaxDataDirectory") as string;
-            if (!string.IsNullOrEmpty(lsDataDirectory))
-            {
-                this._sDataFolder = Path.Combine(lsDataDirectory, "data");
-            }
-
             string lsFolder = this.GetConfigValue(loConfig, "DataSetFolder") as string;
             if (null != lsFolder)
             {
@@ -109,14 +98,6 @@ namespace MaxFactry.Base.DataLayer.Provider
             get
             {
                 return this._sDataSetFolder;
-            }
-        }
-
-        protected string DataFolder
-        {
-            get
-            {
-                return this._sDataFolder;
             }
         }
 
@@ -489,7 +470,7 @@ namespace MaxFactry.Base.DataLayer.Provider
         /// <returns>Number of bytes written to storage.</returns>
         public virtual bool StreamSave(MaxData loData, string lsKey)
         {
-            return MaxDataStreamFolderLibrary.StreamSave(loData, lsKey, this.DataFolder);
+            return MaxDataContextStreamLibrary.StreamSave(loData, lsKey);
         }
 
         /// <summary>
@@ -500,7 +481,7 @@ namespace MaxFactry.Base.DataLayer.Provider
         /// <returns>Stream that was opened.</returns>
         public virtual Stream StreamOpen(MaxData loData, string lsKey)
         {
-            return MaxDataStreamFolderLibrary.StreamOpen(loData, lsKey, this.DataFolder);
+            return MaxDataContextStreamLibrary.StreamOpen(loData, lsKey);
         }
 
         /// <summary>
@@ -511,7 +492,7 @@ namespace MaxFactry.Base.DataLayer.Provider
         /// <returns>Stream that was opened.</returns>
         public virtual bool StreamDelete(MaxData loData, string lsKey)
         {
-            return MaxDataStreamFolderLibrary.StreamDelete(loData, lsKey, this.DataFolder);
+            return MaxDataContextStreamLibrary.StreamDelete(loData, lsKey);
         }
 
         /// <summary>

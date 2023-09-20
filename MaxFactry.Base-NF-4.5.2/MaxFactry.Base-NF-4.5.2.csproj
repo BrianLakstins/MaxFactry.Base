@@ -40,7 +40,7 @@
     <Reference Include="System.Data" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\MaxFactry.Base-NC-2.1\MaxResource.cs">
+    <Compile Include="..\MaxFactry.Base-NF-2.0\MaxResource.cs">
       <Link>MaxResource.cs</Link>
     </Compile>
     <Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxBaseEmailEntity.cs">
@@ -157,14 +157,17 @@
     <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxRelationDataModel.cs">
       <Link>DataLayer\DataModel\MaxRelationDataModel.cs</Link>
     </Compile>
-    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Interface\IMaxDataContextProvider.cs">
-      <Link>DataLayer\Library\Interface\IMaxDataContextProvider.cs</Link>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Interface\IMaxDataContextStreamLibraryProvider.cs">
+      <Link>DataLayer\Library\Interface\IMaxDataContextStreamLibraryProvider.cs</Link>
     </Compile>
     <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Interface\IMaxDataLibraryProvider.cs">
       <Link>DataLayer\Library\Interface\IMaxDataLibraryProvider.cs</Link>
     </Compile>
     <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Interface\IMaxSqlGenerationLibraryProvider.cs">
       <Link>DataLayer\Library\Interface\IMaxSqlGenerationLibraryProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\MaxDataContextStreamLibrary.cs">
+      <Link>DataLayer\Library\MaxDataContextStreamLibrary.cs</Link>
     </Compile>
     <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\MaxDataLibrary.cs">
       <Link>DataLayer\Library\MaxDataLibrary.cs</Link>
@@ -174,6 +177,9 @@
     </Compile>
     <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\MaxSqlGenerationLibrary.cs">
       <Link>DataLayer\Library\MaxSqlGenerationLibrary.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Provider\MaxDataContextStreamLibraryDefaultProvider.cs">
+      <Link>DataLayer\Library\Provider\MaxDataContextStreamLibraryDefaultProvider.cs</Link>
     </Compile>
     <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Provider\MaxDataLibraryDefaultProvider.cs">
       <Link>DataLayer\Library\Provider\MaxDataLibraryDefaultProvider.cs</Link>
@@ -231,6 +237,9 @@
     </Compile>
     <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Interface\IMaxCacheRepositoryProvider.cs">
       <Link>DataLayer\Repository\Interface\IMaxCacheRepositoryProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Interface\IMaxDataContextProvider.cs">
+      <Link>DataLayer\Repository\Interface\IMaxDataContextProvider.cs</Link>
     </Compile>
     <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Interface\IMaxMessageRepositoryProvider.cs">
       <Link>DataLayer\Repository\Interface\IMaxMessageRepositoryProvider.cs</Link>
