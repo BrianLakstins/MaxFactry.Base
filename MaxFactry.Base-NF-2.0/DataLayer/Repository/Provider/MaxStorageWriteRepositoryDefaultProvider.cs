@@ -51,11 +51,13 @@ namespace MaxFactry.Base.DataLayer.Provider
 	/// </summary>
 	public class MaxStorageWriteRepositoryDefaultProvider : MaxStorageReadRepositoryDefaultProvider, IMaxStorageWriteRepositoryProvider
 	{
-		/// <summary>
-		/// Inserts a new data element.
-		/// </summary>
-		/// <param name="loData">The data for the element.</param>
-		/// <returns>true if inserted.</returns>
+        private static object _oLock = new object();
+
+        /// <summary>
+        /// Inserts a new data element.
+        /// </summary>
+        /// <param name="loData">The data for the element.</param>
+        /// <returns>true if inserted.</returns>
         public virtual bool Insert(MaxData loData)
         {
             IMaxDataContextProvider loProvider = MaxDataLibrary.GetContextProvider(this, loData);
@@ -177,5 +179,109 @@ namespace MaxFactry.Base.DataLayer.Provider
 
             return lbR;
         }
-	}
+
+        /// <summary>
+        /// Saves a data to a file
+        /// </summary>
+        /// <param name="lsDirectory"></param>
+        /// <param name="loData"></param>
+        /// <returns></returns>
+        protected virtual bool SaveAsFile(string lsDirectory, MaxData loData)
+        {
+            try
+            {
+                lock (_oLock)
+                {
+                    string lsFile = System.IO.Path.Combine(lsDirectory, loData.DataModel.DataStorageName + ".json");
+                    MaxIndex loIndex = new MaxIndex();
+                    string[] laKey = loData.DataModel.GetKeyList();
+
+                    MaxIndex loDataIndex = new MaxIndex();
+                    foreach (string lsKey in laKey)
+                    {
+                        loDataIndex.Add(lsKey, loData.Get(lsKey));
+                    }
+
+                    loIndex.Add(loDataIndex);
+                    string lsJson = MaxConvertLibrary.SerializeObjectToString(loIndex);
+                    System.IO.File.WriteAllText(lsFile, lsJson);
+                }
+
+                return true;
+            }
+            catch (Exception loE)
+            {
+                MaxLogLibrary.Log(new MaxLogEntryStructure(this.GetType(), "SaveAsFile", MaxEnumGroup.LogEmergency, "Exception saving data to file", loE));
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Loads data from a file
+        /// </summary>
+        /// <param name="lsDirectory"></param>
+        /// <param name="loData"></param>
+        /// <returns></returns>
+        protected virtual MaxDataList LoadFromFile(string lsDirectory, MaxData loData)
+        {
+            MaxDataList loR = new MaxDataList(loData.DataModel);
+            try
+            {
+                lock (_oLock)
+                {
+                    string lsFile = System.IO.Path.Combine(lsDirectory, loData.DataModel.DataStorageName + ".json");
+                    if (System.IO.File.Exists(lsFile))
+                    {
+                        string lsJson = System.IO.File.ReadAllText(lsFile);
+                        MaxIndex loIndex = MaxConvertLibrary.DeserializeObject(lsJson, typeof(MaxIndex)) as MaxIndex;
+                        if (loIndex != null)
+                        {
+                            string[] laIndexKey = loIndex.GetSortedKeyList();
+                            if (laIndexKey.Length > 0)
+                            {
+                                MaxIndex loDataIndex = loIndex[laIndexKey[0]] as MaxIndex;
+                                string[] laKey = loData.DataModel.GetKeyList();
+                                if (loDataIndex != null)
+                                {
+                                    //// Load multiple records
+                                    foreach (string lsIndexKey in laIndexKey)
+                                    {
+                                        loDataIndex = loIndex[lsIndexKey] as MaxIndex;
+                                        if (loDataIndex != null)
+                                        {
+                                            MaxData loDataOut = new MaxData(loData.DataModel);
+                                            foreach (string lsKey in laKey)
+                                            {
+                                                loDataOut.Set(lsKey, loDataIndex[lsKey]);
+                                            }
+
+                                            loR.Add(loDataOut);
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    //// Load 1 record
+                                    MaxData loDataOut = new MaxData(loData.DataModel);
+                                    foreach (string lsKey in laKey)
+                                    {
+                                        loDataOut.Set(lsKey, loIndex[lsKey]);
+                                    }
+
+                                    loR.Add(loDataOut);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception loE)
+            {
+                MaxLogLibrary.Log(new MaxLogEntryStructure(this.GetType(), "LoadFromFile", MaxEnumGroup.LogEmergency, "Exception loading data from a file", loE));
+            }
+
+            return loR;
+        }
+    }
 }
