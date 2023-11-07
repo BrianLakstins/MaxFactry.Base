@@ -79,6 +79,7 @@ namespace MaxFactry.Base.BusinessLayer
 #if net4_52 || netcore1 || netstandard1_2
     using System.Linq.Expressions;
 #endif
+    using System.Globalization;
     using System.IO;
     using System.Reflection;
     using MaxFactry.Core;
@@ -384,7 +385,8 @@ namespace MaxFactry.Base.BusinessLayer
                     {
                         if ((DateTime)loValue > DateTime.MinValue)
                         {
-                            loR.Add(lsPropertyNameIndex, MaxConvertLibrary.ConvertToDateTimeFromUtc(typeof(object), loValue).ToString("g"));
+                            //// Use same format as javascript date .toISOString()
+                            loR.Add(lsPropertyNameIndex, MaxConvertLibrary.ConvertToDateTimeUtc(typeof(object), loValue).ToString("o", CultureInfo.InvariantCulture));
                         }
                         else
                         {
