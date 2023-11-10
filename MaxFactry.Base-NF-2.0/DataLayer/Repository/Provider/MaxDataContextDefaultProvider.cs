@@ -503,7 +503,7 @@ namespace MaxFactry.Base.DataLayer.Provider
         /// <returns>Url of stream if one can be provided.</returns>
         public virtual string GetStreamUrl(MaxData loData, string lsKey)
         {
-            return string.Empty;
+            return MaxDataContextStreamLibrary.GetStreamUrl(loData, lsKey);
         }
 
         /// <summary>
