@@ -61,28 +61,31 @@ namespace MaxFactry.Base.DataLayer.Provider
             if (loData.DataModel is MaxBaseIdDataModel)
             {
                 bool lbHasIsDeleted = false;
-                object[] laQuery = loDataQuery.GetQuery();
-                foreach (object loQuery in laQuery)
+                if (null != loDataQuery)
                 {
-                    if (loQuery is MaxDataFilter)
+                    object[] laQuery = loDataQuery.GetQuery();
+                    foreach (object loQuery in laQuery)
                     {
-                        if (((MaxDataFilter)loQuery).Name == ((MaxBaseIdDataModel)loData.DataModel).IsDeleted)
+                        if (loQuery is MaxDataFilter)
                         {
-                            lbHasIsDeleted = true;
+                            if (((MaxDataFilter)loQuery).Name == ((MaxBaseIdDataModel)loData.DataModel).IsDeleted)
+                            {
+                                lbHasIsDeleted = true;
+                            }
                         }
                     }
-                }
 
-                if (!lbHasIsDeleted && loData.DataModel.HasKey(((MaxBaseIdDataModel)loData.DataModel).IsDeleted))
-                {
-                    if (laQuery.Length > 0)
+                    if (!lbHasIsDeleted && loData.DataModel.HasKey(((MaxBaseIdDataModel)loData.DataModel).IsDeleted))
                     {
-                        loDataQuery.AddCondition("AND");
-                    }
+                        if (laQuery.Length > 0)
+                        {
+                            loDataQuery.AddCondition("AND");
+                        }
 
-                    loDataQuery.StartGroup();
-                    loDataQuery.AddFilter(((MaxBaseIdDataModel)loData.DataModel).IsDeleted, "=", false);
-                    loDataQuery.EndGroup();
+                        loDataQuery.StartGroup();
+                        loDataQuery.AddFilter(((MaxBaseIdDataModel)loData.DataModel).IsDeleted, "=", false);
+                        loDataQuery.EndGroup();
+                    }
                 }
             }
 

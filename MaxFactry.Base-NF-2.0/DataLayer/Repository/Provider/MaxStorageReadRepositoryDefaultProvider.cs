@@ -308,19 +308,22 @@ namespace MaxFactry.Base.DataLayer.Provider
         protected virtual object GetValue(MaxDataQuery loDataQuery, string lsFieldName)
         {
             object loR = null;
-            object[] laDataQuery = loDataQuery.GetQuery();
-            if (laDataQuery.Length > 0)
+            if (null != loDataQuery)
             {
-                string lsDataQuery = string.Empty;
-                for (int lnDQ = 0; lnDQ < laDataQuery.Length; lnDQ++)
+                object[] laDataQuery = loDataQuery.GetQuery();
+                if (laDataQuery.Length > 0)
                 {
-                    object loStatement = laDataQuery[lnDQ];
-                    if (loStatement is MaxDataFilter)
+                    string lsDataQuery = string.Empty;
+                    for (int lnDQ = 0; lnDQ < laDataQuery.Length; lnDQ++)
                     {
-                        MaxDataFilter loDataFilter = (MaxDataFilter)loStatement;
-                        if (loDataFilter.Name == lsFieldName && loDataFilter.Operator == "=")
+                        object loStatement = laDataQuery[lnDQ];
+                        if (loStatement is MaxDataFilter)
                         {
-                            loR = loDataFilter.Value;
+                            MaxDataFilter loDataFilter = (MaxDataFilter)loStatement;
+                            if (loDataFilter.Name == lsFieldName && loDataFilter.Operator == "=")
+                            {
+                                loR = loDataFilter.Value;
+                            }
                         }
                     }
                 }
