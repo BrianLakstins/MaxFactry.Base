@@ -59,9 +59,9 @@ namespace MaxFactry.Base.DataLayer
         /// <param name="loData">Element with data used to determine the provider.</param>
         /// <param name="lsPropertyName">The name of the property used to select.</param>
         /// <param name="loPropertyValue">The value of the property used to select.</param>
-        /// <param name="laFields">list of fields to return from select</param>
+        /// <param name="laDataNameList">list of fields to return from select</param>
         /// <returns>List of data from select</returns>
-        public static MaxDataList SelectAllActiveByProperty(MaxData loData, string lsPropertyName, object loPropertyValue, params string[] laFields)
+        public static MaxDataList SelectAllActiveByProperty(MaxData loData, string lsPropertyName, object loPropertyValue, params string[] laDataNameList)
         {
             MaxBaseIdDataModel loDataModel = loData.DataModel as MaxBaseIdDataModel;
             if (null == loDataModel)
@@ -79,7 +79,7 @@ namespace MaxFactry.Base.DataLayer
             loDataQuery.AddFilter(loDataModel.IsActive, "=", true);
             loDataQuery.EndGroup();
             int lnTotal = 0;
-            MaxDataList loDataList = Select(loDataFilter, loDataQuery, 0, 0, string.Empty, out lnTotal, laFields);
+            MaxDataList loDataList = Select(loDataFilter, loDataQuery, 0, 0, string.Empty, out lnTotal, laDataNameList);
             return loDataList;
         }
 
@@ -89,9 +89,9 @@ namespace MaxFactry.Base.DataLayer
         /// <param name="loData">Data used to determine repository provider.</param>
         /// <param name="ldStart">Start date of range</param>
         /// <param name="ldEnd">End date of range</param>
-        /// <param name="laFields">list of fields to return from select</param>
+        /// <param name="laDataNameList">list of fields to return from select</param>
         /// <returns>List of data from select</returns>
-        public static MaxDataList SelectAllByLastUpdateDateRange(MaxData loData, DateTime ldStart, DateTime ldEnd, params string[] laFields)
+        public static MaxDataList SelectAllByLastUpdateDateRange(MaxData loData, DateTime ldStart, DateTime ldEnd, params string[] laDataNameList)
         {
             MaxBaseIdDataModel loDataModel = loData.DataModel as MaxBaseIdDataModel;
             if (null == loDataModel)
@@ -107,7 +107,7 @@ namespace MaxFactry.Base.DataLayer
             loDataQuery.AddFilter(loDataModel.LastUpdateDate, "<", ldEnd);
             loDataQuery.EndGroup();
             int lnTotal = 0;
-            MaxDataList loDataList = Select(loDataFilter, loDataQuery, 0, 0, string.Empty, out lnTotal, laFields);
+            MaxDataList loDataList = Select(loDataFilter, loDataQuery, 0, 0, string.Empty, out lnTotal, laDataNameList);
             return loDataList;
         }
 	}

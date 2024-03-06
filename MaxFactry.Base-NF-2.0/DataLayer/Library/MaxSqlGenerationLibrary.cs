@@ -337,14 +337,14 @@ namespace MaxFactry.Base.DataLayer.Library
         /// <param name="loType">The Type used to determine the provider</param>
         /// <param name="loData">Element with data used in the filter.</param>
         /// <param name="loDataQuery">Query information to filter results.</param>
-        /// <param name="laFields">list of fields to return from select.</param>
+        /// <param name="laDataNameList">list of fields to return from select.</param>
         /// <returns>List of data from select.</returns>
-        public static string GetSelect(string lsName, Type loType, MaxData loData, MaxDataQuery loDataQuery, params string[] laFields)
+        public static string GetSelect(string lsName, Type loType, MaxData loData, MaxDataQuery loDataQuery, params string[] laDataNameList)
 		{
             IMaxProvider loProvider = Instance.GetProviderByName(lsName, loType);
             if (loProvider is IMaxSqlGenerationLibraryProvider)
             {
-                return ((IMaxSqlGenerationLibraryProvider)loProvider).GetSelect(loData, loDataQuery, laFields);
+                return ((IMaxSqlGenerationLibraryProvider)loProvider).GetSelect(loData, loDataQuery, laDataNameList);
             }
 
             MaxByMethodFactory.HandleInterfaceNotImplemented(loType, loProvider, "MaxSqlGenerationLibrary", "IMaxSqlGenerationLibraryProvider");
@@ -357,14 +357,14 @@ namespace MaxFactry.Base.DataLayer.Library
         /// <param name="lsName">The Name used to determine the provider</param>
         /// <param name="loType">The Type used to determine the provider</param>
         /// <param name="lsDataStorageName">Data storage to get results from.</param>
-        /// <param name="laFields">list of fields to return from select.</param>
+        /// <param name="laDataNameList">list of fields to return from select.</param>
         /// <returns>List of data from select.</returns>
-        public static string GetSelect(string lsName, Type loType, string lsDataStorageName, params string[] laFields)
+        public static string GetSelect(string lsName, Type loType, string lsDataStorageName, params string[] laDataNameList)
         {
             IMaxProvider loProvider = Instance.GetProviderByName(lsName, loType);
             if (loProvider is IMaxSqlGenerationLibraryProvider)
             {
-                return ((IMaxSqlGenerationLibraryProvider)loProvider).GetSelect(lsDataStorageName, laFields);
+                return ((IMaxSqlGenerationLibraryProvider)loProvider).GetSelect(lsDataStorageName, laDataNameList);
             }
 
             MaxByMethodFactory.HandleInterfaceNotImplemented(loType, loProvider, "MaxSqlGenerationLibrary", "IMaxSqlGenerationLibraryProvider");

@@ -51,9 +51,9 @@ namespace MaxFactry.Base.DataLayer
 		/// </summary>
         /// <param name="loData">Data used to determine repository provider.</param>
         /// <param name="lnId">Unique Identifier of the entity</param>
-        /// <param name="laFields">list of fields to return from select</param>
+        /// <param name="laDataNameList">list of fields to return from select</param>
         /// <returns>Single entity that matches the Unique Id</returns>
-        public static MaxData SelectById(MaxData loData, int lnId, params string[] laFields)
+        public static MaxData SelectById(MaxData loData, int lnId, params string[] laDataNameList)
 		{
             MaxIdIntegerDataModel loDataModel = loData.DataModel as MaxIdIntegerDataModel;
             if (null == loDataModel)
@@ -61,7 +61,7 @@ namespace MaxFactry.Base.DataLayer
                 throw new MaxException("Error casting [" + loData.DataModel.GetType() + "] for DataModel");
             }
 
-            MaxDataList loList = SelectAllByProperty(loData, loDataModel.Id, lnId, laFields);
+            MaxDataList loList = SelectAllByProperty(loData, loDataModel.Id, lnId, laDataNameList);
             if (loList.Count.Equals(1))
             {
                 return loList[0];
@@ -80,9 +80,9 @@ namespace MaxFactry.Base.DataLayer
         /// <param name="loData">Data used to determine repository provider.</param>
         /// <param name="ldStart">Start date of range</param>
         /// <param name="ldEnd">End date of range</param>
-        /// <param name="laFields">list of fields to return from select</param>
+        /// <param name="laDataNameList">list of fields to return from select</param>
         /// <returns>List of data from select</returns>
-        public static MaxDataList SelectAllByCreatedDateRange(MaxData loData, DateTime ldStart, DateTime ldEnd, params string[] laFields)
+        public static MaxDataList SelectAllByCreatedDateRange(MaxData loData, DateTime ldStart, DateTime ldEnd, params string[] laDataNameList)
         {
             MaxIdIntegerDataModel loDataModel = loData.DataModel as MaxIdIntegerDataModel;
             if (null == loDataModel)
@@ -98,7 +98,7 @@ namespace MaxFactry.Base.DataLayer
             loDataQuery.AddFilter(loDataModel.CreatedDate, "<", ldEnd);
             loDataQuery.EndGroup();
             int lnTotal = 0;
-            MaxDataList loDataList = Select(loDataFilter, loDataQuery, 0, 0, string.Empty, out lnTotal, laFields);
+            MaxDataList loDataList = Select(loDataFilter, loDataQuery, 0, 0, string.Empty, out lnTotal, laDataNameList);
             return loDataList;
         }
 	}

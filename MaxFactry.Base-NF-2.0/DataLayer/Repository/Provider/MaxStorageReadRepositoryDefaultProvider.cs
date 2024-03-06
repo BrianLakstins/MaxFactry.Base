@@ -171,9 +171,9 @@ namespace MaxFactry.Base.DataLayer.Provider
         /// Selects all data from the data storage name for the specified type.
         /// </summary>
         /// <param name="lsDataStorageName">Name of the data storage (table name).</param>
-        /// <param name="laFields">list of fields to return from select</param>
+        /// <param name="laDataNameList">list of fields to return from select</param>
         /// <returns>List of data elements with a base data model.</returns>
-        public virtual MaxDataList SelectAll(string lsDataStorageName, params string[] laFields)
+        public virtual MaxDataList SelectAll(string lsDataStorageName, params string[] laDataNameList)
         {
             IMaxDataContextProvider loDataContextProvider = MaxDataLibrary.GetContextProvider(this, null);
             if (null == loDataContextProvider)
@@ -182,7 +182,7 @@ namespace MaxFactry.Base.DataLayer.Provider
                 //throw new MaxException("DataContextProvider was not found for [" + this.GetType().ToString() + "].  Check configuration for DataContextProvider.");
             }
 
-            return loDataContextProvider.SelectAll(lsDataStorageName, laFields);
+            return loDataContextProvider.SelectAll(lsDataStorageName, laDataNameList);
         }
 
         /// <summary>
@@ -191,12 +191,12 @@ namespace MaxFactry.Base.DataLayer.Provider
         /// <param name="loData">Element with data used in the filter.</param>
         /// <param name="loDataQuery">Query information to filter results.</param>
         /// <param name="lnPageIndex">Page to return.</param>
-        /// <param name="lsSort">Sorting information.</param>
+        /// <param name="lsOrderBy">Sorting information.</param>
         /// <param name="lnPageSize">Items per page.</param>
         /// <param name="lnTotal">Total items found.</param>
-        /// <param name="laFields">list of fields to return from select.</param>
+        /// <param name="laDataNameList">list of fields to return from select.</param>
         /// <returns>List of data from select.</returns>
-        public virtual MaxDataList Select(MaxData loData, MaxDataQuery loDataQuery, int lnPageIndex, int lnPageSize, string lsSort, out int lnTotal, params string[] laFields)
+        public virtual MaxDataList Select(MaxData loData, MaxDataQuery loDataQuery, int lnPageIndex, int lnPageSize, string lsOrderBy, out int lnTotal, params string[] laDataNameList)
         {
             IMaxDataContextProvider loDataContextProvider = MaxDataLibrary.GetContextProvider(this, loData);
             lnTotal = 0;
@@ -206,7 +206,7 @@ namespace MaxFactry.Base.DataLayer.Provider
                //throw new MaxException("DataContextProvider was not found for [" + this.GetType().ToString() + "].  Check configuration for DataContextProvider.");
             }
 
-            return loDataContextProvider.Select(loData, loDataQuery, lnPageIndex, lnPageSize, lsSort, out lnTotal, laFields);
+            return loDataContextProvider.Select(loData, loDataQuery, lnPageIndex, lnPageSize, lsOrderBy, out lnTotal, laDataNameList);
         }
 
         /// <summary>

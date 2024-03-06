@@ -211,6 +211,61 @@ namespace MaxFactry.Base.DataLayer
 		}
 
         /// <summary>
+        /// Checks to see if this data key has a type that is stored
+        /// </summary>
+        /// <param name="lsKey">The key to check to see if it is stored.</param>
+        /// <returns>True if it should be stored.  False otherwise.</returns>
+        public virtual bool IsStored(string lsKey)
+        {
+            Type loValueType = this.GetValueType(lsKey);
+            if (null != loValueType)
+            {
+                if (loValueType.Equals(typeof(MaxShortString)))
+                {
+                    return true;
+                }
+                else if (loValueType.Equals(typeof(string)))
+                {
+                    return true;
+                }
+                else if (loValueType.Equals(typeof(Guid)))
+                {
+                    return true;
+                }
+                else if (loValueType.Equals(typeof(int)))
+                {
+                    return true;
+                }
+                else if (loValueType.Equals(typeof(long)))
+                {
+                    return true;
+                }
+                else if (loValueType.Equals(typeof(double)))
+                {
+                    return true;
+                }
+                else if (loValueType.Equals(typeof(byte[])))
+                {
+                    return true;
+                }
+                else if (loValueType.Equals(typeof(bool)))
+                {
+                    return true;
+                }
+                else if (loValueType.Equals(typeof(DateTime)))
+                {
+                    return true;
+                }
+                else if (loValueType.Equals(typeof(MaxLongString)))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// Gets a suffix for the primary key based on the data to speed up future queries
         /// </summary>
         /// <param name="loData">Data to use to create the suffix</param>

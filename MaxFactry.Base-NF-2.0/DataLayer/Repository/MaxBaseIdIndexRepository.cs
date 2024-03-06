@@ -52,9 +52,9 @@ namespace MaxFactry.Base.DataLayer
         /// </summary>
         /// <param name="loData">Data information used for select</param>
         /// <param name="lsName">The name for the value</param>
-        /// <param name="laFields">list of fields to return from select</param>
+        /// <param name="laDataNameList">list of fields to return from select</param>
         /// <returns>List of information matching the application name</returns>
-        public static MaxDataList SelectAllByName(MaxData loData, string lsName, params string[] laFields)
+        public static MaxDataList SelectAllByName(MaxData loData, string lsName, params string[] laDataNameList)
         {
             MaxBaseIdIndexDataModel loDataModel = loData.DataModel as MaxBaseIdIndexDataModel;
             if (null == loDataModel)
@@ -67,7 +67,7 @@ namespace MaxFactry.Base.DataLayer
             loDataFilter.Set(loDataModel.Name, lsName);
             MaxDataQuery loDataQuery = new MaxDataQuery();
             int lnTotal = 0;
-            MaxDataList loDataList = Select(loDataFilter, loDataQuery, 0, 0, string.Empty, out lnTotal, laFields);
+            MaxDataList loDataList = Select(loDataFilter, loDataQuery, 0, 0, string.Empty, out lnTotal, laDataNameList);
             return loDataList;
         }
 
@@ -76,9 +76,9 @@ namespace MaxFactry.Base.DataLayer
         /// </summary>
         /// <param name="loData">Data information used for select</param>
         /// <param name="loIndexId">Id of the Index.</param>
-        /// <param name="laFields">list of fields to return from select</param>
+        /// <param name="laDataNameList">list of fields to return from select</param>
         /// <returns>List of information matching the application name</returns>
-        public static MaxDataList SelectAllByIndexId(MaxData loData, Guid loIndexId, params string[] laFields)
+        public static MaxDataList SelectAllByIndexId(MaxData loData, Guid loIndexId, params string[] laDataNameList)
         {
             MaxBaseIdIndexDataModel loDataModel = loData.DataModel as MaxBaseIdIndexDataModel;
             if (null == loDataModel)
@@ -91,7 +91,7 @@ namespace MaxFactry.Base.DataLayer
             loDataFilter.Set(loDataModel.IndexId, loIndexId);
             MaxDataQuery loDataQuery = new MaxDataQuery();
             int lnTotal = 0;
-            MaxDataList loDataList = Select(loDataFilter, loDataQuery, 0, 0, string.Empty, out lnTotal, laFields);
+            MaxDataList loDataList = Select(loDataFilter, loDataQuery, 0, 0, string.Empty, out lnTotal, laDataNameList);
             return loDataList;
         }
 
@@ -101,9 +101,9 @@ namespace MaxFactry.Base.DataLayer
         /// <param name="loData">Data information used for select</param>
         /// <param name="lsName">The name for the value</param>
         /// <param name="loIndexId">Id of the Index.</param>
-        /// <param name="laFields">list of fields to return from select</param>
+        /// <param name="laDataNameList">list of fields to return from select</param>
         /// <returns>List of information matching the application name</returns>
-        public static MaxDataList SelectAllByNameIndexId(MaxData loData, string lsName, Guid loIndexId, params string[] laFields)
+        public static MaxDataList SelectAllByNameIndexId(MaxData loData, string lsName, Guid loIndexId, params string[] laDataNameList)
         {
             MaxBaseIdIndexDataModel loDataModel = loData.DataModel as MaxBaseIdIndexDataModel;
             if (null == loDataModel)
@@ -118,7 +118,7 @@ namespace MaxFactry.Base.DataLayer
             loDataFilter.Set(loDataModel.Name, lsName);
             MaxDataQuery loDataQuery = new MaxDataQuery();
             int lnTotal = 0;
-            MaxDataList loDataList = Select(loDataFilter, loDataQuery, 0, 0, string.Empty, out lnTotal, laFields);
+            MaxDataList loDataList = Select(loDataFilter, loDataQuery, 0, 0, string.Empty, out lnTotal, laDataNameList);
             return loDataList;
         }
 	}

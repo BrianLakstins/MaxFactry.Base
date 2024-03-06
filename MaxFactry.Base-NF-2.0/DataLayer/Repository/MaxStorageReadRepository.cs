@@ -97,15 +97,15 @@ namespace MaxFactry.Base.DataLayer
         /// <param name="loDataQuery">Query information to filter results.</param>
         /// <param name="lnPageIndex">Page to return</param>
         /// <param name="lnPageSize">Items per page</param>
-        /// <param name="lsSort">Sort information</param>
+        /// <param name="lsOrderBy">Sort information</param>
         /// <param name="lnTotal">Total items found</param>
-        /// <param name="laFields">list of fields to return from select</param>
+        /// <param name="laDataNameList">list of fields to return from select</param>
         /// <returns>List of data from select</returns>
-        public static MaxDataList Select(MaxData loData, MaxDataQuery loDataQuery, int lnPageIndex, int lnPageSize, string lsSort, out int lnTotal, params string[] laFields)
+        public static MaxDataList Select(MaxData loData, MaxDataQuery loDataQuery, int lnPageIndex, int lnPageSize, string lsOrderBy, out int lnTotal, params string[] laDataNameList)
         {
             MaxData loDataFilter = loData.Clone();
             IMaxStorageReadRepositoryProvider loProvider = Instance.GetStorageReadRepositoryProvider(loDataFilter);
-            MaxDataList loDataList = loProvider.Select(loDataFilter, loDataQuery, lnPageIndex, lnPageSize, lsSort, out lnTotal, laFields);
+            MaxDataList loDataList = loProvider.Select(loDataFilter, loDataQuery, lnPageIndex, lnPageSize, lsOrderBy, out lnTotal, laDataNameList);
             return loDataList;
         }
 
@@ -115,15 +115,15 @@ namespace MaxFactry.Base.DataLayer
         /// <param name="loData">Element with data used to determine the provider.</param>
         /// <param name="lnPageIndex">Page to return</param>
         /// <param name="lnPageSize">Items per page</param>
-        /// <param name="lsSort">Sort information</param>
+        /// <param name="lsOrderBy">Sort information</param>
         /// <param name="lnTotal">Total items found</param>
-        /// <param name="laFields">list of fields to return from select</param>
+        /// <param name="laDataNameList">list of fields to return from select</param>
         /// <returns>List of data from select</returns>
-        public static MaxDataList SelectAll(MaxData loData, int lnPageIndex, int lnPageSize, string lsSort, out int lnTotal, params string[] laFields)
+        public static MaxDataList SelectAll(MaxData loData, int lnPageIndex, int lnPageSize, string lsOrderBy, out int lnTotal, params string[] laDataNameList)
         {
             MaxData loDataFilter = new MaxData(loData);
             MaxDataQuery loDataQuery = new MaxDataQuery();
-            MaxDataList loDataList = Select(loDataFilter, loDataQuery, lnPageIndex, lnPageSize, lsSort, out lnTotal, laFields);
+            MaxDataList loDataList = Select(loDataFilter, loDataQuery, lnPageIndex, lnPageSize, lsOrderBy, out lnTotal, laDataNameList);
             return loDataList;
         }
         
@@ -172,9 +172,9 @@ namespace MaxFactry.Base.DataLayer
         /// <param name="lsPropertyName">The name of the property used to select.</param>
         /// <param name="loPropertyValue">The value of the property used to select.</param>
         /// <param name="lsPropertyComparer">Indicator on how to compare the property to the value.</param>
-        /// <param name="laFields">list of fields to return from select</param>
+        /// <param name="laDataNameList">list of fields to return from select</param>
         /// <returns>List of data from select</returns>
-        public static MaxDataList SelectAllByPropertyCompare(MaxData loData, string lsPropertyName, object loPropertyValue, string lsPropertyComparer, params string[] laFields)
+        public static MaxDataList SelectAllByPropertyCompare(MaxData loData, string lsPropertyName, object loPropertyValue, string lsPropertyComparer, params string[] laDataNameList)
         {
             MaxData loDataFilter = new MaxData(loData);
             MaxDataQuery loDataQuery = new MaxDataQuery();
@@ -182,7 +182,7 @@ namespace MaxFactry.Base.DataLayer
             loDataQuery.AddFilter(lsPropertyName, lsPropertyComparer, loPropertyValue);
             loDataQuery.EndGroup();
             int lnTotal = 0;
-            MaxDataList loDataList = Select(loDataFilter, loDataQuery, 0, 0, string.Empty, out lnTotal, laFields);
+            MaxDataList loDataList = Select(loDataFilter, loDataQuery, 0, 0, string.Empty, out lnTotal, laDataNameList);
             return loDataList;
         }
 
@@ -191,9 +191,9 @@ namespace MaxFactry.Base.DataLayer
         /// </summary>
         /// <param name="loType">Type to use to determine the provider.</param>
         /// <param name="lsDataStorageName">Name of the data storage (table name).</param>
-        /// <param name="laFields">list of fields to return from select</param>
+        /// <param name="laDataNameList">list of fields to return from select</param>
         /// <returns>List of data elements with a base data model.</returns>
-        public static MaxDataList SelectAll(Type loType, string lsDataStorageName, params string[] laFields)
+        public static MaxDataList SelectAll(Type loType, string lsDataStorageName, params string[] laDataNameList)
         {
             IMaxStorageReadRepositoryProvider loProvider = Instance.GetProvider(loType) as IMaxStorageReadRepositoryProvider;
             if (null == loProvider)
@@ -201,7 +201,7 @@ namespace MaxFactry.Base.DataLayer
                 throw new MaxException("Error casting [" + loProvider.GetType() + "] for Provider");
             }
 
-            MaxDataList loDataList = loProvider.SelectAll(lsDataStorageName, laFields);
+            MaxDataList loDataList = loProvider.SelectAll(lsDataStorageName, laDataNameList);
             return loDataList;
         }
 

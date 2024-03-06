@@ -50,9 +50,9 @@ namespace MaxFactry.Base.DataLayer
         /// </summary>
         /// <param name="loData">Data information used for select</param>
         /// <param name="lsName">The key used for the versioned data</param>
-        /// <param name="laFields">list of fields to return from select</param>
+        /// <param name="laDataNameList">list of fields to return from select</param>
         /// <returns>List of information matching the name</returns>
-        public static MaxDataList SelectAllByName(MaxData loData, string lsName, params string[] laFields)
+        public static MaxDataList SelectAllByName(MaxData loData, string lsName, params string[] laDataNameList)
         {
             MaxBaseIdVersionedDataModel loDataModel = loData.DataModel as MaxBaseIdVersionedDataModel;
             if (null == loDataModel)
@@ -60,7 +60,7 @@ namespace MaxFactry.Base.DataLayer
                 throw new MaxException("Error casting [" + loData.DataModel.GetType() + "] for DataModel");
             }
 
-            MaxDataList loDataList = SelectAllByProperty(loData, loDataModel.Name, lsName, laFields);
+            MaxDataList loDataList = SelectAllByProperty(loData, loDataModel.Name, lsName, laDataNameList);
             return loDataList;
         }
 
@@ -69,9 +69,9 @@ namespace MaxFactry.Base.DataLayer
         /// </summary>
         /// <param name="loData">Data information used for select.</param>
         /// <param name="lsName">The key used for the versioned data</param>
-        /// <param name="laFields">list of fields to return from select</param>
+        /// <param name="laDataNameList">list of fields to return from select</param>
         /// <returns>List of information matching the name</returns>
-        public static MaxDataList SelectAllActiveByName(MaxData loData, string lsName, params string[] laFields)
+        public static MaxDataList SelectAllActiveByName(MaxData loData, string lsName, params string[] laDataNameList)
         {
             MaxBaseIdVersionedDataModel loDataModel = loData.DataModel as MaxBaseIdVersionedDataModel;
             if (null == loDataModel)
@@ -79,7 +79,7 @@ namespace MaxFactry.Base.DataLayer
                 throw new MaxException("Error casting [" + loData.DataModel.GetType() + "] for DataModel");
             }
 
-            MaxDataList loDataList = SelectAllActiveByProperty(loData, loDataModel.Name, lsName, laFields);
+            MaxDataList loDataList = SelectAllActiveByProperty(loData, loDataModel.Name, lsName, laDataNameList);
             return loDataList;
         }
 	}

@@ -208,20 +208,20 @@ namespace MaxFactry.Base.BusinessLayer
             return MaxConvertLibrary.ConvertToSortString(typeof(object), this.CreatedDate) + base.GetDefaultSortString();
         }
 
-        public override MaxEntityList LoadAllCache(params string[] laFields)
+        public override MaxEntityList LoadAllCache(params string[] laPropertyNameList)
         {
-            MaxEntityList loR = base.LoadAllCache(laFields);
+            MaxEntityList loR = base.LoadAllCache(laPropertyNameList);
             if (this.CheckDefaults(loR))
             {
-                loR = base.LoadAllCache(laFields);
+                loR = base.LoadAllCache(laPropertyNameList);
             }
 
             return loR;
         }
 
-        public virtual MaxEntityList LoadAllActiveCache(params string[] laFields)
+        public virtual MaxEntityList LoadAllActiveCache(params string[] laPropertyNameList)
         {
-            MaxEntityList loR = base.LoadAllByPropertyCache(this.MaxBaseIdDataModel.IsActive, true, laFields);
+            MaxEntityList loR = base.LoadAllByPropertyCache(this.MaxBaseIdDataModel.IsActive, true, laPropertyNameList);
             return loR;
         }
 
@@ -437,7 +437,7 @@ namespace MaxFactry.Base.BusinessLayer
         /// Loads all entities of this type that have not been marked as deleted and updated since the date passed
         /// <param name="ldLastUpdate">Date to use to look up</param>
         /// <returns>List of entities</returns>
-        public virtual MaxEntityList LoadAllSinceLastUpdateDate(DateTime ldLastUpdate, params string[] laFields)
+        public virtual MaxEntityList LoadAllSinceLastUpdateDate(DateTime ldLastUpdate, params string[] laPropertyNameList)
         {
             //// Add a Query 
             MaxDataQuery loDataQuery = new MaxDataQuery();
@@ -445,7 +445,9 @@ namespace MaxFactry.Base.BusinessLayer
             loDataQuery.AddFilter(this.MaxBaseIdDataModel.LastUpdateDate, ">", ldLastUpdate);
             loDataQuery.EndGroup();
             int lnTotal = 0;
-            MaxDataList loDataList = MaxBaseIdRepository.Select(this.GetData(), loDataQuery, 0, 0, string.Empty, out lnTotal, laFields);
+
+            string[] laDataNameList = this.GetDataNameList(this.Data.DataModel, laPropertyNameList);
+            MaxDataList loDataList = MaxBaseIdRepository.Select(this.GetData(), loDataQuery, 0, 0, string.Empty, out lnTotal, laDataNameList);
             MaxEntityList loEntityList = MaxEntityList.Create(this.GetType(), loDataList);
             loEntityList.Total = lnTotal;
             return loEntityList;

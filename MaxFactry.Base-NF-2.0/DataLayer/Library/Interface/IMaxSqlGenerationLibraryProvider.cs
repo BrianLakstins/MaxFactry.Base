@@ -138,17 +138,17 @@ namespace MaxFactry.Base.DataLayer.Library
 		/// </summary>
         /// <param name="loData">Element with data used in the filter.</param>
         /// <param name="loDataQuery">Query information to filter results.</param>
-        /// <param name="laFields">list of fields to return from select.</param>
+        /// <param name="laDataNameList">list of fields to return from select.</param>
 		/// <returns>Sql to perform query</returns>
-		string GetSelect(MaxData loData, MaxDataQuery loDataQuery, params string[] laFields);
+		string GetSelect(MaxData loData, MaxDataQuery loDataQuery, params string[] laDataNameList);
 
         /// <summary>
         /// Get Sql used to query the database
         /// </summary>
         /// <param name="lsDataStorageName">Data storage to get results from.</param>
-        /// <param name="laFields">list of fields to return from select.</param>
+        /// <param name="laDataNameList">list of fields to return from select.</param>
         /// <returns>Sql to perform query</returns>
-        string GetSelect(string lsDataStorageName, params string[] laFields);
+        string GetSelect(string lsDataStorageName, params string[] laDataNameList);
 
 		/// <summary>
 		/// Get Sql used to query the database to get a count of matching records

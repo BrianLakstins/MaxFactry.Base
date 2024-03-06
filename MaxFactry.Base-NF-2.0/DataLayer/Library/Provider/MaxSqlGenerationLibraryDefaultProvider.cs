@@ -166,7 +166,7 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
 			for (int lnK = 0; lnK < laKeyList.Length; lnK++)
 			{
                 string lsKey = laKeyList[lnK];
-                if (this.IsStored(loDataModel, lsKey))
+                if (loDataModel.IsStored(lsKey))
                 {
                     if (lnAdded != 0)
                     {
@@ -212,7 +212,7 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
             for (int lnK = 0; lnK < laKeyList.Length; lnK++)
             {
                 string lsKey = laKeyList[lnK];
-                if (this.IsStored(loDataModel, lsKey))
+                if (loDataModel.IsStored(lsKey))
                 {
                     bool lbExists = false;
                     for (int lnD = 0; lnD < loDataList.Count; lnD++)
@@ -296,7 +296,7 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
                     Type loDataType = loData.DataModel.GetValueType(lsKey);
                     bool lbIsServerId = loDataList.DataModel.GetPropertyAttributeSetting(lsKey, "IsServerId");
 
-                    if (this.IsStored(loData.DataModel, lsKey) && (null != loValue || typeof(bool).Equals(loDataType)) && !lbIsServerId)
+                    if (loData.DataModel.IsStored( lsKey) && (null != loValue || typeof(bool).Equals(loDataType)) && !lbIsServerId)
                     {
                         if (0 == loSqlValueClause.Length)
                         {
@@ -384,7 +384,7 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
 				for (int lnK = 0; lnK < laKeyList.Length; lnK++)
 				{
 					string lsKey = laKeyList[lnK];
-                    if (this.IsStored(loData.DataModel, lsKey))
+                    if (loData.DataModel.IsStored(lsKey))
                     {
                         bool lbIsPrimaryKey = loDataList.DataModel.GetPropertyAttributeSetting(lsKey, "IsPrimaryKey");
                         if (loData.GetIsChanged(lsKey) || (lbIsPrimaryKey && null != loData.Get(lsKey)))
@@ -455,7 +455,7 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
 				for (int lnK = 0; lnK < laKeyList.Length; lnK++)
 				{
 					string lsKey = laKeyList[lnK];
-					if (this.IsStored(loData.DataModel, lsKey) && null != loData.Get(lsKey))
+					if (loData.DataModel.IsStored(lsKey) && null != loData.Get(lsKey))
 					{
 						bool lbIsPrimaryKey = loDataList.DataModel.GetPropertyAttributeSetting(lsKey, "IsPrimaryKey");
 						if (lbIsPrimaryKey)
@@ -483,9 +483,9 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
 		/// </summary>
 		/// <param name="loData">Data used to create Sql</param>
         /// <param name="loDataQuery">Query information to filter results.</param>
-		/// <param name="laFields">List of fields to pull from database</param>
+		/// <param name="laDataNameList">List of fields to pull from database</param>
 		/// <returns>Sql to perform query</returns>
-        public virtual string GetSelect(MaxData loData, MaxDataQuery loDataQuery, params string[] laFields)
+        public virtual string GetSelect(MaxData loData, MaxDataQuery loDataQuery, params string[] laDataNameList)
         {
             if (!this.IsGoodIndex(loData))
             {
@@ -495,9 +495,9 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
             string lsR = string.Empty;
             string lsSqlWhere = this.GetWhere(loData, loDataQuery);
             MaxIndex loFieldsList = new MaxIndex();
-            if (null != laFields)
+            if (null != laDataNameList)
             {
-                foreach (string lsField in laFields)
+                foreach (string lsField in laDataNameList)
                 {
                     if (lsField.Length > 0)
                     {
@@ -519,7 +519,7 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
             for (int lnK = 0; lnK < laTableFieldNameList.Length; lnK++)
             {
                 string lsFieldName = laTableFieldNameList[lnK];
-                if (this.IsStored(loData.DataModel, lsFieldName))
+                if (loData.DataModel.IsStored(lsFieldName))
                 {
                     if (loFieldsList.Count == 0 || loFieldRequestedList.Contains(lsFieldName))
                     {
@@ -588,15 +588,15 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
         /// Get Sql used to query the database
         /// </summary>
         /// <param name="lsDataStorageName">Data storage to get results from.</param>
-        /// <param name="laFields">List of fields to pull from database</param>
+        /// <param name="laDataNameList">List of fields to pull from database</param>
         /// <returns>Sql to perform query</returns>
-        public virtual string GetSelect(string lsDataStorageName, params string[] laFields)
+        public virtual string GetSelect(string lsDataStorageName, params string[] laDataNameList)
         {
             string lsR = string.Empty;
             MaxIndex loFieldsList = new MaxIndex();
-            if (null != laFields)
+            if (null != laDataNameList)
             {
-                foreach (string lsField in laFields)
+                foreach (string lsField in laDataNameList)
                 {
                     if (lsField.Length > 0)
                     {
@@ -675,7 +675,7 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
 			for (int lnK = 0; lnK < laKeyList.Length; lnK++)
 			{
 				string lsKey = laKeyList[lnK];
-				if (this.IsStored(loData.DataModel, lsKey) && null != loData.Get(lsKey))
+				if (loData.DataModel.IsStored(lsKey) && null != loData.Get(lsKey))
 				{
 					bool lbIsPrimaryKey = loData.DataModel.GetPropertyAttributeSetting(lsKey, "IsPrimaryKey");
 					if (lbIsPrimaryKey)
@@ -756,58 +756,6 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
 			this._oReplacementIndex.Add(lsName, lsReplacement);
 			this._oReplacementOrderIndex.Add(lsName);
 		}
-
-        /// <summary>
-        /// Checks to see if this data key is stored by this provider.
-        /// </summary>
-        /// <param name="loDataModel">Data model used to get the type of the key.</param>
-        /// <param name="lsKey">The key to check to see if it is stored.</param>
-        /// <returns>True if it should be stored.  False otherwise.</returns>
-        protected bool IsStored(MaxDataModel loDataModel, string lsKey)
-        {
-            if (loDataModel.GetValueType(lsKey).Equals(typeof(MaxShortString)))
-            {
-                return true;
-            }
-            else if (loDataModel.GetValueType(lsKey).Equals(typeof(string)))
-            {
-                return true;
-            }
-            else if (loDataModel.GetValueType(lsKey).Equals(typeof(Guid)))
-            {
-                return true;
-            }
-            else if (loDataModel.GetValueType(lsKey).Equals(typeof(int)))
-            {
-                return true;
-            }
-            else if (loDataModel.GetValueType(lsKey).Equals(typeof(long)))
-            {
-                return true;
-            }
-            else if (loDataModel.GetValueType(lsKey).Equals(typeof(double)))
-            {
-                return true;
-            }
-            else if (loDataModel.GetValueType(lsKey).Equals(typeof(byte[])))
-            {
-                return true;
-            }
-            else if (loDataModel.GetValueType(lsKey).Equals(typeof(bool)))
-            {
-                return true;
-            }
-            else if (loDataModel.GetValueType(lsKey).Equals(typeof(DateTime)))
-            {
-                return true;
-            }
-            else if (loDataModel.GetValueType(lsKey).Equals(typeof(MaxLongString)))
-            {
-                return true;
-            }
-
-            return false;
-        }
 
 		/// <summary>
 		/// Gets a field and operator in a filter format

@@ -52,10 +52,11 @@ namespace MaxFactry.Base.DataLayer.Provider
         /// <param name="loDataQuery">Query information to filter results.</param>
         /// <param name="lnPageIndex">Page to return.</param>
         /// <param name="lnPageSize">Items per page.</param>
+        /// <param name="lsOrderBy">Sorting information</param>
         /// <param name="lnTotal">Total items found.</param>
-        /// <param name="laFields">list of fields to return from select.</param>
+        /// <param name="laDataNameList">list of fields to return from select.</param>
         /// <returns>List of data from select.</returns>
-        public override MaxDataList Select(MaxData loData, MaxDataQuery loDataQuery, int lnPageIndex, int lnPageSize, string lsSort, out int lnTotal, params string[] laFields)
+        public override MaxDataList Select(MaxData loData, MaxDataQuery loDataQuery, int lnPageIndex, int lnPageSize, string lsOrderBy, out int lnTotal, params string[] laDataNameList)
         {
             ////Update DataQuery to include filter by IsDeleted if one is not already there.
             if (loData.DataModel is MaxBaseIdDataModel)
@@ -89,7 +90,7 @@ namespace MaxFactry.Base.DataLayer.Provider
                 }
             }
 
-            return base.Select(loData, loDataQuery, lnPageIndex, lnPageSize, lsSort, out lnTotal, laFields);
+            return base.Select(loData, loDataQuery, lnPageIndex, lnPageSize, lsOrderBy, out lnTotal, laDataNameList);
         }
 	}
 }

@@ -230,14 +230,16 @@ namespace MaxFactry.Base.BusinessLayer
         /// <returns>Lowercase version of Name padded to 100 characters.</returns>
         public override string GetDefaultSortString()
         {
-            string lsSort = this.Name.ToLower();
-            int lnSpaceLength = 100 - lsSort.Length;
+            string lsR = this.Name.ToLower();
+            int lnSpaceLength = 100 - lsR.Length;
             if (lnSpaceLength > 0)
             {
-                lsSort = _sSpace.Substring(0, lnSpaceLength) + lsSort;
+                lsR = _sSpace.Substring(0, lnSpaceLength) + lsR;
             }
+            
+            lsR = base.GetDefaultSortString();
 
-            return lsSort + base.GetDefaultSortString();
+            return lsR;
         }
 
         /// <summary>
