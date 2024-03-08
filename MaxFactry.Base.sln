@@ -29,6 +29,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MaxFactry.Base-NF-4.7.2", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MaxFactry.Base-NF-4.8", "MaxFactry.Base-NF-4.8\MaxFactry.Base-NF-4.8.csproj", "{ED9B9301-E330-4F9E-B199-39B1C8ABB5B0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MaxFactry.Base-NC-8.0", "MaxFactry.Base-NC-8.0\MaxFactry.Base-NC-8.0.csproj", "{8EF0076C-AB3A-4D4A-9286-73E5ED5A52F2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -63,6 +65,10 @@ Global
 		{ED9B9301-E330-4F9E-B199-39B1C8ABB5B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ED9B9301-E330-4F9E-B199-39B1C8ABB5B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ED9B9301-E330-4F9E-B199-39B1C8ABB5B0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8EF0076C-AB3A-4D4A-9286-73E5ED5A52F2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8EF0076C-AB3A-4D4A-9286-73E5ED5A52F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8EF0076C-AB3A-4D4A-9286-73E5ED5A52F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8EF0076C-AB3A-4D4A-9286-73E5ED5A52F2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
