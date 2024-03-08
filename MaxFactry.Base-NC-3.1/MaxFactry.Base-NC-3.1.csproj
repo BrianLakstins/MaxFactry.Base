@@ -134,7 +134,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="MaxFactry.Core" Version="1.0.22.1" />
+	  <PackageReference Include="MaxFactry.Core" Version="1.0.24.1" />
 	</ItemGroup>
 
 	<ItemGroup>

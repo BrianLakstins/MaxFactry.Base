@@ -814,7 +814,7 @@ namespace MaxFactry.Base.BusinessLayer
                         PropertyInfo loPropertyInfo = loList[lnE].GetType().GetProperty(laProperty[0].Trim());
                         if (null != loPropertyInfo)
                         {
-                            object loValue = loPropertyInfo.GetValue(loList[lnE]);
+                            object loValue = loPropertyInfo.GetValue(loList[lnE], null);
                             lsSort += MaxConvertLibrary.ConvertToSortString(typeof(object), loValue);
                         }
                     }
