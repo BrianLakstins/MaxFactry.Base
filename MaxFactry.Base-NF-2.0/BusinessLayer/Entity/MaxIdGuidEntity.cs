@@ -116,6 +116,19 @@ namespace MaxFactry.Base.BusinessLayer
         }
 
         /// <summary>
+        /// Denotes the property key to use to load only one record
+        /// </summary>
+        public override MaxIndex EntityPropertyKeyIndex
+        {
+            get
+            {
+                MaxIndex loR = new MaxIndex();
+                loR.Add(this.GetPropertyName(() => this.Id), this.Id);
+                return loR;
+            }
+        }
+
+        /// <summary>
         /// Gets the Data Model for this entity
         /// </summary>
         protected MaxIdGuidDataModel MaxIdDataModel
