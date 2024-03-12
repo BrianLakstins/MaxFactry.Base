@@ -28,6 +28,7 @@
 #region Change Log
 // <changelog>
 // <change date="10/28/2022" author="Brian A. Lakstins" description="Initial creation.">
+// <change date="3/12/2024" author="Brian A. Lakstins" description="Make the end date nullable.">
 // </changelog>
 #endregion
 
@@ -57,7 +58,7 @@ namespace MaxFactry.Base.DataLayer
 			: base()
 		{
             this.AddKey(this.StartDate, typeof(DateTime));
-            this.AddKey(this.EndDate, typeof(DateTime));
+            this.AddNullable(this.EndDate, typeof(DateTime));
         }
 	}
 }

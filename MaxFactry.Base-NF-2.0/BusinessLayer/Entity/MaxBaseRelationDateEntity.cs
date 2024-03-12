@@ -36,10 +36,11 @@ namespace MaxFactry.Base.BusinessLayer
 	using System;
     using MaxFactry.Core;
     using MaxFactry.Base.DataLayer;
+    using System.Globalization;
 
-	/// <summary>
-	/// Base Business Layer Entity
-	/// </summary>
+    /// <summary>
+    /// Base Business Layer Entity
+    /// </summary>
     public abstract class MaxBaseRelationDateEntity : MaxBaseRelationEntity
 	{
 		/// <summary>
@@ -98,6 +99,18 @@ namespace MaxFactry.Base.BusinessLayer
             }
         }
 
+        public override MaxIndex EntityPropertyKeyIndex
+        {
+            get
+            {
+                MaxIndex loR = new MaxIndex();
+                loR.Add(this.GetPropertyName(() => this.ParentId), this.ParentId);
+                loR.Add(this.GetPropertyName(() => this.ChildId), this.ChildId);
+                loR.Add(this.GetPropertyName(() => this.StartDate), this.StartDate.ToString("o", CultureInfo.InvariantCulture));
+                return loR;
+            }
+        }
+
         /// <summary>
         /// Gets the Data Model for this entity
         /// </summary>
@@ -109,7 +122,12 @@ namespace MaxFactry.Base.BusinessLayer
             }
         }
 
-
+        /// <summary>
+        /// Load all entities based on the parent Id and including start dates and end dates surrounding the date
+        /// </summary>
+        /// <param name="loParentId">The Id of the parent entity</param>
+        /// <param name="ldDate">The date that is betweent the start and end dates</param>
+        /// <returns></returns>
         public MaxEntityList LoadAllByParentIdDateCache(Guid loParentId, DateTime ldDate)
         {
             MaxEntityList loR = MaxEntityList.Create(this.GetType());
@@ -136,6 +154,13 @@ namespace MaxFactry.Base.BusinessLayer
             return loR;
         }
 
+        /// <summary>
+        /// Load all entities based on the parent Id and and child Id and including start dates and end dates surrounding the date
+        /// </summary>
+        /// <param name="loParentId">The Id of the parent entity</param>
+        /// <param name="loChildId">The Id of the child entity</param>
+        /// <param name="ldDate">The date that is betweent the start and end dates</param>
+        /// <returns></returns>
         public MaxEntityList LoadAllByParentIdChildIdDateCache(Guid loParentId, Guid loChildId, DateTime ldDate)
         {
             MaxEntityList loR = MaxEntityList.Create(this.GetType());
@@ -164,14 +189,21 @@ namespace MaxFactry.Base.BusinessLayer
             return loR;
         }
 
-        public bool LoadByKeyCache(Guid loParentId, Guid loChildId, DateTime ldStartDate)
+        /// <summary>
+        /// Loads all records matching the parent Id, the child Id, and the date part of the start date
+        /// </summary>
+        /// <param name="loParentId">The Id of the parent entity</param>
+        /// <param name="loChildId">The Id of the child entity</param>
+        /// <param name="ldDate">The data that is used to match the date part of the StartDate</param>
+        /// <returns></returns>
+        public bool LoadByKeyCache(Guid loParentId, Guid loChildId, DateTime ldDate)
         {
             bool lbR = false;
             MaxEntityList loList = this.LoadAllByParentIdChildIdCache(loParentId, loChildId);
             for (int lnE = 0; lnE < loList.Count && !lbR; lnE++)
             {
                 MaxBaseRelationDateEntity loEntity = loList[lnE] as MaxBaseRelationDateEntity;
-                if (loEntity.StartDate.Date == ldStartDate.Date)
+                if (loEntity.StartDate.Date == ldDate.Date)
                 {
                     MaxData loData = loEntity.GetData();
                     loData.ClearChanged();
