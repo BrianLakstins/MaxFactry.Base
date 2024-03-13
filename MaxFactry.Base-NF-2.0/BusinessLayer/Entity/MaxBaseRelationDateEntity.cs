@@ -104,9 +104,15 @@ namespace MaxFactry.Base.BusinessLayer
             get
             {
                 MaxIndex loR = new MaxIndex();
+#if net4_52 || netcore1 || netstandard1_2
                 loR.Add(this.GetPropertyName(() => this.ParentId), this.ParentId);
                 loR.Add(this.GetPropertyName(() => this.ChildId), this.ChildId);
                 loR.Add(this.GetPropertyName(() => this.StartDate), this.StartDate.ToString("o", CultureInfo.InvariantCulture));
+#else
+                loR.Add("ParentId", this.ParentId);
+                loR.Add("ChildId", this.ChildId);
+                loR.Add("StartDate", this.StartDate.ToString("o", CultureInfo.InvariantCulture));
+#endif
                 return loR;
             }
         }

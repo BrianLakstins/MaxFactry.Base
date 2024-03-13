@@ -123,7 +123,11 @@ namespace MaxFactry.Base.BusinessLayer
             get
             {
                 MaxIndex loR = new MaxIndex();
+#if net4_52 || netcore1 || netstandard1_2
                 loR.Add(this.GetPropertyName(() => this.Id), this.Id);
+#else
+                loR.Add("Id", this.Id);
+#endif 
                 return loR;
             }
         }
