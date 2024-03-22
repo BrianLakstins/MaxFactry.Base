@@ -33,6 +33,9 @@
 // <change date="3/26/2015" author="Brian A. Lakstins" description="Moved to MaxFactry.Base">
 // <change date="6/1/2015" author="Brian A. Lakstins" description="Updated to not need provider.">
 // <change date="12/21/2016" author="Brian A. Lakstins" description="Updated to work with meta copy of MaxData">
+// <change date="12/21/2016" author="Brian A. Lakstins" description="Updated to work with meta copy of MaxData">
+// <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
+// <change date="3/22/2024" author="Brian A. Lakstins" description="Added SelectAllByProperty because no longer available in parent class.">
 // </changelog>
 #endregion
 
@@ -44,11 +47,33 @@ namespace MaxFactry.Base.DataLayer
 	/// <summary>
     /// Provides static methods to manipulate storage of data using the MaxIdGuidDataModel
 	/// </summary>
-    public abstract class MaxIdGuidRepository : MaxStorageWriteRepository
+    public abstract class MaxIdGuidRepository : MaxBaseWriteRepository
 	{
-		/// <summary>
-		/// Selects entity matching the unique identifier
-		/// </summary>
+        /// <summary>
+        /// Selects all based on a single property
+        /// </summary>
+        /// <param name="loData">Element with data used to determine the provider.</param>
+        /// <param name="lsPropertyName">The name of the property used to select.</param>
+        /// <param name="loPropertyValue">The value of the property used to select.</param>
+        /// <param name="laDataNameList">list of fields to return from select</param>
+        /// <returns>List of data from select</returns>
+        protected static MaxDataList SelectAllByProperty(MaxData loData, string lsPropertyName, object loPropertyValue, params string[] laDataNameList)
+        {
+            //// Set the property in case it is used on a PrimaryKey suffix
+            loData.Set(lsPropertyName, loPropertyValue);
+            MaxData loDataFilter = new MaxData(loData);
+            //// Add a Query 
+            MaxDataQuery loDataQuery = new MaxDataQuery();
+            loDataQuery.StartGroup();
+            loDataQuery.AddFilter(lsPropertyName, "=", loPropertyValue);
+            loDataQuery.EndGroup();
+            MaxDataList loDataList = Select(loDataFilter, loDataQuery, 0, 0, string.Empty, laDataNameList);
+            return loDataList;
+        }
+
+        /// <summary>
+        /// Selects entity matching the unique identifier
+        /// </summary>
         /// <param name="loData">Data used to determine repository provider.</param>
         /// <param name="loId">Unique Identifier of the entity</param>
         /// <param name="laDataNameList">list of fields to return from select</param>
@@ -97,8 +122,7 @@ namespace MaxFactry.Base.DataLayer
             loDataQuery.AddCondition("AND");
             loDataQuery.AddFilter(loDataModel.CreatedDate, "<", ldEnd);
             loDataQuery.EndGroup();
-            int lnTotal = 0;
-            MaxDataList loDataList = Select(loDataFilter, loDataQuery, 0, 0, string.Empty, out lnTotal, laDataNameList);
+            MaxDataList loDataList = Select(loDataFilter, loDataQuery, 0, 0, string.Empty, laDataNameList);
             return loDataList;
         }
 	}

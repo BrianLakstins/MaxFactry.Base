@@ -43,6 +43,8 @@
 // <change date="9/3/2020" author="Brian A. Lakstins" description="Add Default check process.">
 // <change date="9/4/2020" author="Brian A. Lakstins" description="Remove Default check process - moved to MaxBaseIdEntity">
 // <change date="1/16/2021" author="Brian A. Lakstins" description="Update definition of cache keys.">
+// <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
+// <change date="3/22/2024" author="Brian A. Lakstins" description="Remove EntityPropertyKeyIndex because it will no longer be used.">
 // </changelog>
 #endregion
 
@@ -116,23 +118,6 @@ namespace MaxFactry.Base.BusinessLayer
         }
 
         /// <summary>
-        /// Denotes the property key to use to load only one record
-        /// </summary>
-        public override MaxIndex EntityPropertyKeyIndex
-        {
-            get
-            {
-                MaxIndex loR = new MaxIndex();
-#if net4_52 || netcore1 || netstandard1_2
-                loR.Add(this.GetPropertyName(() => this.Id), this.Id);
-#else
-                loR.Add("Id", this.Id);
-#endif 
-                return loR;
-            }
-        }
-
-        /// <summary>
         /// Gets the Data Model for this entity
         /// </summary>
         protected MaxIdGuidDataModel MaxIdDataModel
@@ -163,7 +148,7 @@ namespace MaxFactry.Base.BusinessLayer
                         MaxDataModel loDataModel = MaxFactry.Core.MaxFactryLibrary.Create(this.Data.DataModel.GetType(), this.Data.DataModel.DataStorageName + "MaxArchive") as MaxDataModel;
                         if (null != loDataModel)
                         {
-                            MaxData loDataArchive = this.Data.Clone(loDataModel);
+                            MaxData loDataArchive = this.Data.Clone();
                             loData = MaxIdGuidRepository.SelectById(loDataArchive, loId);
                             if (null != loData)
                             {
@@ -205,8 +190,7 @@ namespace MaxFactry.Base.BusinessLayer
             loDataQuery.StartGroup();
             loDataQuery.AddFilter(this.MaxIdDataModel.CreatedDate, ">", ldCreatedDate);
             loDataQuery.EndGroup();
-            int lnTotal = 0;
-            MaxDataList loDataList = MaxBaseIdRepository.Select(this.GetData(), loDataQuery, 0, 0, string.Empty, out lnTotal);
+            MaxDataList loDataList = MaxBaseIdRepository.Select(this.GetData(), loDataQuery, 0, 0, string.Empty);
             MaxEntityList loEntityList = MaxEntityList.Create(this.GetType(), loDataList);
             return loEntityList;
         }
