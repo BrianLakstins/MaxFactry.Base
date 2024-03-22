@@ -34,6 +34,8 @@
 // <change date="10/17/2014" author="Brian A. Lakstins" description="Updated to store MaxData in an Index instead of breaking it down into arrays.">
 // <change date="5/25/2017" author="Brian A. Lakstins" description="Updated use string as key without padding to lower memory usage and speed up data access.">
 // <change date="1/16/2021" author="Brian A. Lakstins" description="Use integer array get methods of Index.">
+// <change date="3/19/2024" author="Brian A. Lakstins" description="Rename TotalCount to just Total">
+// <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // </changelog>
 #endregion
 
@@ -60,7 +62,7 @@ namespace MaxFactry.Base.DataLayer
 		/// <summary>
 		/// Total count of records if more than current list
 		/// </summary>
-		private int _nTotalCount = 0;
+		private int _nTotal = 0;
 
 		/// <summary>
 		/// Initializes a new instance of the MaxDataList class
@@ -81,16 +83,16 @@ namespace MaxFactry.Base.DataLayer
 		/// <summary>
 		/// Gets or sets the Total Count of records if more than the current list
 		/// </summary>
-		public int TotalCount
+		public int Total
 		{
 			get
 			{
-				return this._nTotalCount;
+				return this._nTotal;
 			}
 
             set
             {
-				this._nTotalCount = value;
+				this._nTotal = value;
             }
 		}
 

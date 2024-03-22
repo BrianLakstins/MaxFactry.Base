@@ -31,6 +31,8 @@
 // <change date="10/24/2017" author="Brian A. Lakstins" description="Update to allow exporting to a string and loading from a string">
 // <change date="1/23/2018" author="Brian A. Lakstins" description="Use method on MaxEntity so that it could be overridden on other classes.">
 // <change date="5/31/2020" author="Brian A. Lakstins" description="Make sure data is not null before loading it.">
+// <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
+// <change date="3/22/2024" author="Brian A. Lakstins" description="Set Total from DataList when created from DataList.  Remove unused string conversion methods.">
 // </changelog>
 #endregion
 
@@ -151,6 +153,7 @@ namespace MaxFactry.Base.BusinessLayer
 
             if (null != loDataList)
             {
+                loEntityList.Total = loDataList.Total;
                 for (int lnD = 0; lnD < loDataList.Count; lnD++)
                 {
                     MaxData loData = loDataList[lnD];
@@ -174,55 +177,5 @@ namespace MaxFactry.Base.BusinessLayer
             this._oEntityIndex.Add(loEntity);
             loEntity.SetList(this);
         }
-
-        /// <summary>
-        /// Exports to Serialized MaxIndex
-        /// </summary>
-        /// <returns>Text representing a MaxIndex</returns>
-        public virtual string ExportToString()
-        {
-            string lsR = string.Empty;
-            MaxIndex loIndex = new MaxIndex();
-            for (int lnE = 0; lnE < this.Count; lnE++)
-            {
-                MaxEntity loEntity = this[lnE] as MaxEntity;
-                if (null != loEntity)
-                {
-                    MaxIndex loDataIndex = loEntity.GetDataIndex();
-                    loIndex.Add(loDataIndex);
-                }
-            }
-
-            lsR = MaxConvertLibrary.SerializeObjectToString(this.GetType(), loIndex);
-            return lsR;
-        }
-
-        public virtual void LoadFromString(string lsData)
-        {
-            MaxIndex loIndex = MaxConvertLibrary.DeserializeObject(lsData, typeof(MaxIndex)) as MaxIndex;
-            string[] laKey = loIndex.GetSortedKeyList();
-            foreach (string lsKey in laKey)
-            {
-                MaxIndex loDataIndex = loIndex[lsKey] as MaxIndex;
-                if (null != loDataIndex)
-                {
-                    Type loDataModelType = Type.GetType(loDataIndex["DataModelType"].ToString());
-                    MaxDataModel loDataModel = MaxFactry.Core.MaxFactryLibrary.Create(loDataModelType) as MaxDataModel;
-                    MaxData loData = new MaxData(loDataModel);
-                    string[] laDataKey = loDataIndex.GetSortedKeyList();
-                    foreach (string lsDataKey in laDataKey)
-                    {
-                        if (lsDataKey != "DataModelType")
-                        {
-                            loData.Set(lsDataKey, loDataIndex[lsDataKey]);
-                        }
-                    }
-
-                    MaxEntity loEntity = MaxBusinessLibrary.GetEntity(this.EntityType, loData);
-                    this.Add(loEntity);
-                }
-            }
-        }
-
     }
 }

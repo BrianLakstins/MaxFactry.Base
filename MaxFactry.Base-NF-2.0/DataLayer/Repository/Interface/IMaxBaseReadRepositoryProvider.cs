@@ -1,4 +1,4 @@
-﻿// <copyright file="IMaxStorageReadRepositoryProvider.cs" company="Lakstins Family, LLC">
+﻿// <copyright file="IMaxBaseReadRepositoryProvider.cs" company="Lakstins Family, LLC">
 // Copyright (c) Brian A. Lakstins (http://www.lakstins.com/brian/)
 // </copyright>
 
@@ -27,30 +27,27 @@
 
 #region Change Log
 // <changelog>
-// <change date="6/25/2014" author="Brian A. Lakstins" description="Based on IMaxAppRepositoryProvider">
-// <change date="8/21/2014" author="Brian A. Lakstins" description="Add stream management.">
-// <change date="11/11/2014" author="Brian A. Lakstins" description="Added general Selecting by a single property that does not include records marked as deleted.">
-// <change date="12/2/2014" author="Brian A. Lakstins" description="Add laFields.">
+// <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
+// <change date="3/22/2024" author="Brian A. Lakstins" description="Initial creation.  Based on IMaxStorageReadRepositoryProvider.">
 // </changelog>
 #endregion
 
 namespace MaxFactry.Base.DataLayer
 {
-	using System;
     using System.IO;
 
     /// <summary>
     /// Provides methods to manipulate storage of data
     /// </summary>
-    public interface IMaxStorageReadRepositoryProvider : IMaxRepositoryProvider
+    public interface IMaxBaseReadRepositoryProvider : IMaxRepositoryProvider
     {
         /// <summary>
         /// Selects all data from the data storage name for the specified type.
         /// </summary>
-        /// <param name="lsDataStorageName">Name of the data storage (table name).</param>
-        /// <param name="laFields">list of fields to return from select</param>
+        /// <param name="loData">Data with a Data Model</param>
+        /// <param name="laDataNameList">list of fields to return from select</param>
         /// <returns>List of data elements with a base data model.</returns>
-        MaxDataList SelectAll(string lsDataStorageName, params string[] laFields);
+        MaxDataList SelectAll(MaxData loData, params string[] laDataNameList);
 
         /// <summary>
         /// Selects data from the database
@@ -64,6 +61,14 @@ namespace MaxFactry.Base.DataLayer
         /// <param name="laDataNameList">list of fields to return from select</param>
         /// <returns>List of data from select</returns>
         MaxDataList Select(MaxData loData, MaxDataQuery loDataQuery, int lnPageIndex, int lnPageSize, string lsOrderBy, out int lnTotal, params string[] laDataNameList);
+
+        /// <summary>
+        /// Selects data from the database.
+        /// </summary>
+        /// <param name="loData">Element with data used in the filter.</param>
+        /// <param name="loDataQuery">Query information to filter results.</param>
+        /// <returns>List of data from select.</returns>
+        int SelectCount(MaxData loData, MaxDataQuery loDataQuery);
 
         /// <summary>
         /// Opens stream data in storage

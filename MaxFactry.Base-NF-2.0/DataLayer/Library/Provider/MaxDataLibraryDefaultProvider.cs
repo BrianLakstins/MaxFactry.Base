@@ -52,6 +52,8 @@
 // <change date="5/20/2020" author="Brian A. Lakstins" description="Update logging.">
 // <change date="5/22/2020" author="Brian A. Lakstins" description="Refactor GetStorageKey into multiple methods so they can be prioritized in sub classes">
 // <change date="8/3/2020" author="Brian A. Lakstins" description="Add conditional method for netstandard1_2 for not having StopWatch">
+// <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
+// <change date="3/22/2024" author="Brian A. Lakstins" description="Add some methods that were in Repository proviers.  Remove some unused methods.">
 // </changelog>
 #endregion
 
@@ -66,6 +68,8 @@ namespace MaxFactry.Base.DataLayer.Provider
     /// </summary>
     public class MaxDataLibraryDefaultProvider : MaxProvider, IMaxDataLibraryProvider
     {
+        private static object _oLock = new object();
+
         /// <summary>
         /// Maps classes that use a provider to the class that is the provider
         /// </summary>
@@ -139,34 +143,7 @@ namespace MaxFactry.Base.DataLayer.Provider
             }
 
             object loDataModel = MaxFactryLibrary.CreateSingleton(loDataModelType);
-            return (MaxDataModel)loDataModel;
-        }
-
-        /// <summary>
-        /// Gets a data list for the data model based on the type
-        /// </summary>
-        /// <param name="loType">Type of data list to get</param>
-        /// <returns>DataList for the data model specified by the type</returns>
-        public virtual MaxDataList GetDataList(Type loType)
-        {
-            MaxDataModel loDataModel = this.GetDataModel(loType);
-            return this.GetDataList(loDataModel);
-        }
-
-        /// <summary>
-        /// Gets a data list for the data model based on the type
-        /// </summary>
-        /// <param name="loDataModel">Data model to be used in the list</param>
-        /// <returns>DataList for the data model specified by the type</returns>
-        public virtual MaxDataList GetDataList(MaxDataModel loDataModel)
-        {
-            object loObject = MaxFactryLibrary.Create(typeof(MaxDataList), loDataModel);
-            if (loObject is MaxDataList)
-            {
-                return (MaxDataList)loObject;
-            }
-
-            return null;
+            return loDataModel as MaxDataModel;
         }
 
         /// <summary>
@@ -196,15 +173,15 @@ namespace MaxFactry.Base.DataLayer.Provider
         /// <returns>string used for the storage key</returns>
         public virtual string GetStorageKey(MaxData loData)
         {
-            string lsR = this.GetStorageKeyFromData(loData);
-            //// Only check the configuration for the central storage key if one was not found in the data
-            if (null == lsR || lsR.Length.Equals(0))
+            string lsR = this.GetStorageKeyFromProcess();
+            MaxBaseDataModel loBaseDataModel = loData.DataModel as MaxBaseDataModel;
+            if (null != loBaseDataModel && null != loData.Get(loBaseDataModel.StorageKey))
             {
-                lsR = this.GetStorageKeyFromProcess();
-                if (null == lsR || lsR.Length.Equals(0))
-                {
-                    lsR = this.GetStorageKeyFromConfiguration();
-                }
+                lsR = MaxConvertLibrary.ConvertToString(typeof(object), loData.Get(loBaseDataModel.StorageKey));   
+            }
+            else if (null == lsR || lsR.Length.Equals(0))
+            {
+                lsR = this.GetStorageKeyFromConfiguration();
             }
 
             if (lsR.Length == 0)
@@ -215,19 +192,154 @@ namespace MaxFactry.Base.DataLayer.Provider
             return lsR;
         }
 
-        protected virtual string GetStorageKeyFromData(MaxData loData)
+        /// <summary>
+        /// Gets the extension of a file name.
+        /// </summary>
+        /// <param name="lsName">Name of a file.</param>
+        /// <returns>Extension of the file.</returns>
+        public virtual string GetFileNameExtension(string lsName)
         {
             string lsR = string.Empty;
-            if (null != loData && null != loData.DataModel)
+            if (lsName.IndexOf(".") > 0 && lsName.LastIndexOf('.') != lsName.Length - 1)
             {
-                //// Get the value of the StorageKey property if it's defined
-                if (loData.DataModel.HasKey(loData.DataModel.StorageKey))
-                {
-                    lsR = loData.Get(loData.DataModel.StorageKey) as string;
-                }
+                lsR = lsName.Substring(lsName.LastIndexOf('.') + 1);
             }
 
             return lsR;
+        }
+
+        /// <summary>
+        /// Saves a data to a file
+        /// </summary>
+        /// <param name="lsDirectory"></param>
+        /// <param name="loData"></param>
+        /// <returns></returns>
+        public virtual bool SaveAsFile(string lsDirectory, MaxData loData)
+        {
+            try
+            {
+                lock (_oLock)
+                {
+                    string lsFile = System.IO.Path.Combine(lsDirectory, loData.DataModel.DataStorageName + ".json");
+                    MaxIndex loIndex = new MaxIndex();
+                    MaxIndex loDataIndex = new MaxIndex();
+                    foreach (string lsDataName in loData.DataModel.DataNameList)
+                    {
+                        loDataIndex.Add(lsDataName, loData.Get(lsDataName));
+                    }
+
+                    loIndex.Add(loDataIndex);
+                    string lsJson = MaxConvertLibrary.SerializeObjectToString(loIndex);
+                    System.IO.File.WriteAllText(lsFile, lsJson);
+                }
+
+                return true;
+            }
+            catch (Exception loE)
+            {
+                MaxLogLibrary.Log(new MaxLogEntryStructure(this.GetType(), "SaveAsFile", MaxEnumGroup.LogEmergency, "Exception saving data to file", loE));
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Loads data from a file
+        /// </summary>
+        /// <param name="lsDirectory"></param>
+        /// <param name="loData"></param>
+        /// <returns></returns>
+        public virtual MaxDataList LoadFromFile(string lsDirectory, MaxData loData)
+        {
+            MaxDataList loR = new MaxDataList(loData.DataModel);
+            try
+            {
+                lock (_oLock)
+                {
+                    string lsFile = System.IO.Path.Combine(lsDirectory, loData.DataModel.DataStorageName + ".json");
+                    if (System.IO.File.Exists(lsFile))
+                    {
+                        string lsJson = System.IO.File.ReadAllText(lsFile);
+                        MaxIndex loIndex = MaxConvertLibrary.DeserializeObject(lsJson, typeof(MaxIndex)) as MaxIndex;
+                        if (loIndex != null)
+                        {
+                            string[] laIndexKey = loIndex.GetSortedKeyList();
+                            if (laIndexKey.Length > 0)
+                            {
+                                MaxIndex loDataIndex = loIndex[laIndexKey[0]] as MaxIndex;
+                                if (loDataIndex != null)
+                                {
+                                    //// Load multiple records
+                                    foreach (string lsIndexKey in laIndexKey)
+                                    {
+                                        loDataIndex = loIndex[lsIndexKey] as MaxIndex;
+                                        if (loDataIndex != null)
+                                        {
+                                            MaxData loDataOut = new MaxData(loData.DataModel);
+                                            foreach (string lsDataName in loData.DataModel.DataNameList)
+                                            {
+                                                loDataOut.Set(lsDataName, loDataIndex[lsDataName]);
+                                            }
+
+                                            loR.Add(loDataOut);
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    //// Load 1 record
+                                    MaxData loDataOut = new MaxData(loData.DataModel);
+                                    foreach (string lsDataName in loData.DataModel.DataNameList)
+                                    {
+                                        loDataOut.Set(lsDataName, loIndex[lsDataName]);
+                                    }
+
+                                    loR.Add(loDataOut);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception loE)
+            {
+                MaxLogLibrary.Log(new MaxLogEntryStructure(this.GetType(), "LoadFromFile", MaxEnumGroup.LogEmergency, "Exception loading data from a file", loE));
+            }
+
+            return loR;
+        }
+
+        /// <summary>
+        /// Gets the value of a field used in a DataQuery
+        /// </summary>
+        /// <param name="loDataQuery">DataQuery to use</param>
+        /// <param name="lsDataName">Field name to get value</param>
+        /// <returns>The current value in the query that matches the field.  Null if no match.</returns>
+        public virtual object GetValue(MaxDataQuery loDataQuery, string lsDataName)
+        {
+            object loR = null;
+            if (null != loDataQuery)
+            {
+                object[] laDataQuery = loDataQuery.GetQuery();
+                if (laDataQuery.Length > 0)
+                {
+                    string lsDataQuery = string.Empty;
+                    for (int lnDQ = 0; lnDQ < laDataQuery.Length; lnDQ++)
+                    {
+                        object loStatement = laDataQuery[lnDQ];
+                        if (loStatement is MaxDataFilter)
+                        {
+                            MaxDataFilter loDataFilter = (MaxDataFilter)loStatement;
+                            if (loDataFilter.Name == lsDataName && loDataFilter.Operator == "=")
+                            {
+                                loR = loDataFilter.Value;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return loR;
         }
 
         protected virtual string GetStorageKeyFromProcess()

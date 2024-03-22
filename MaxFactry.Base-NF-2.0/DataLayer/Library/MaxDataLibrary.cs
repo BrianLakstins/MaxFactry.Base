@@ -44,6 +44,8 @@
 // <change date="5/20/2020" author="Brian A. Lakstins" description="Update logging.">
 // <change date="5/22/2020" author="Brian A. Lakstins" description="Update logging.">
 // <change date="8/3/2020" author="Brian A. Lakstins" description="Add conditional method for netstandard1_2 for not having StopWatch">
+// <change date="3/19/2024" author="Brian A. Lakstins" description="Remove SerializeData method.  Remove need for Stopwatch.  Add methods that were in repository providers.">
+// <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // </changelog>
 #endregion
 
@@ -127,12 +129,12 @@ namespace MaxFactry.Base.DataLayer
             return Provider.GetDataModel(loType);
 		}
 
-		/// <summary>
-		/// Maps a class that uses a specific provider to that provider
-		/// </summary>
-		/// <param name="loType">Class that uses a provider</param>
-		/// <param name="loProviderType">The provider to use</param>
-		public static void RegisterContextProvider(Type loType, Type loProviderType)
+        /// <summary>
+        /// Maps a class that uses a specific provider to that provider
+        /// </summary>
+        /// <param name="loType">Class that uses a provider</param>
+        /// <param name="loProviderType">The provider to use</param>
+        public static void RegisterContextProvider(Type loType, Type loProviderType)
 		{
             Provider.RegisterContextProvider(loType, loProviderType);
 		}
@@ -147,37 +149,6 @@ namespace MaxFactry.Base.DataLayer
             Provider.RegisterDataModelProvider(loType, loDataModelType);
 		}
 
-#if netstandard1_2
-        /// <summary>
-        /// Gets the storage key used to separate the storage of data
-        /// </summary>
-        /// <param name="loData">The data to be stored using the storage key.</param>
-        /// <returns>string used for the storage key</returns>
-        public static string GetStorageKeyConditional(MaxData loData)
-        {
-            string lsR = Provider.GetStorageKey(loData);
-            return lsR;
-        }
-
-#else
-        /// <summary>
-        /// Gets the storage key used to separate the storage of data
-        /// </summary>
-        /// <param name="loData">The data to be stored using the storage key.</param>
-        /// <returns>string used for the storage key</returns>
-        public static string GetStorageKeyConditional(MaxData loData)
-        {
-            Stopwatch loWatch = Stopwatch.StartNew();
-            string lsR = Provider.GetStorageKey(loData);
-            long lnDuration = loWatch.ElapsedMilliseconds;
-            if (lnDuration > 500)
-            {
-                MaxFactry.Core.MaxLogLibrary.Log(new MaxLogEntryStructure("GetStorageKey", MaxEnumGroup.LogWarning, "GetStorageKey(MaxData loData) took {Duration} ms for storage key {StorageKey} using {Provider}.", lnDuration, lsR, Provider.GetType()));
-            }
-
-            return lsR;
-        }
-#endif
         /// <summary>
         /// Gets the storage key used to separate the storage of data
         /// </summary>
@@ -185,7 +156,50 @@ namespace MaxFactry.Base.DataLayer
         /// <returns>string used for the storage key</returns>
         public static string GetStorageKey(MaxData loData)
         {
-            return GetStorageKeyConditional(loData);
+            DateTime ldStart = DateTime.UtcNow;
+            string lsR = Provider.GetStorageKey(loData);
+            TimeSpan loDuration = DateTime.UtcNow - ldStart;
+            if (loDuration.TotalMilliseconds > 500)
+            {
+                MaxFactry.Core.MaxLogLibrary.Log(new MaxLogEntryStructure("GetStorageKey", MaxEnumGroup.LogWarning, "GetStorageKey(MaxData loData) took {Duration} ms for storage key {StorageKey} using {Provider}.", loDuration.TotalMilliseconds, lsR, Provider.GetType()));
+            }
+
+            return lsR;
+        }
+
+        /// <summary>
+        /// Gets the extension of a file name.
+        /// </summary>
+        /// <param name="lsName">Name of a file.</param>
+        /// <returns>Extension of the file.</returns>
+        public static string GetFileNameExtension(string lsName)
+        {
+            string lsR = Provider.GetFileNameExtension(lsName);
+            return lsR;
+        }
+
+        public static bool SaveAsFile(string lsDirectory, MaxData loData)
+        {
+            bool lbR = Provider.SaveAsFile(lsDirectory, loData);
+            return lbR;
+        }
+
+        public static MaxDataList LoadFromFile(string lsDirectory, MaxData loData)
+        {
+            MaxDataList loR = Provider.LoadFromFile(lsDirectory, loData);
+            return loR;
+        }
+
+        /// <summary>
+        /// Gets the value of a field used in a DataQuery
+        /// </summary>
+        /// <param name="loDataQuery">DataQuery to use</param>
+        /// <param name="lsDataName">Field name to get value</param>
+        /// <returns>The current value in the query that matches the field.  Null if no match.</returns>
+        public static object GetValue(MaxDataQuery loDataQuery, string lsDataName)
+        {
+            object loR = Provider.GetValue(loDataQuery, lsDataName);
+            return loR;
         }
 
         /// <summary>
@@ -199,22 +213,6 @@ namespace MaxFactry.Base.DataLayer
             {
                 throw new MaxException("Provider for MaxDataLibrary does not implement IMaxDataLibraryProvider.");
             }
-        }
-
-        public static string SerializeData(MaxData loData)
-        {
-            string[] laKey = loData.DataModel.GetKeyList();
-            MaxIndex loIndex = new MaxIndex();
-            foreach (string lsKey in laKey)
-            {
-                if (lsKey != loData.DataModel.StorageKey)
-                {
-                    loIndex.Add(lsKey, loData.Get(lsKey));
-                }
-            }
-
-            string lsR = MaxConvertLibrary.SerializeObjectToString(typeof(object), loIndex);
-            return lsR;
         }
     }
 }

@@ -70,6 +70,8 @@
 // <change date="5/18/2021" author="Brian A. Lakstins" description="Pull records from archive if there are archived records.">
 // <change date="5/28/2021" author="Brian A. Lakstins" description="Make a method work in all supported frameworks">
 // <change date="6/9/2021" author="Brian A. Lakstins" description="Only get property values if they are going to be returned.  Cache strings stored in streams.">
+// <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
+// <change date="3/22/2024" author="Brian A. Lakstins" description="Remove StorageKey.  Add dynamic KeyPropertyList and Key.  Change Repositories to Base versions.  Remove archiving.  Replace Key with DataName.  Add retries to data changing methods.  Update load methods to reuse other load methods when possible.">
 // </changelog>
 #endregion
 
@@ -90,7 +92,7 @@ namespace MaxFactry.Base.BusinessLayer
     /// </summary>
     public abstract class MaxEntity
     {
-        private static object _oLock = new object();
+        private string[] _aPropertyNameKeyList = null;
 
         /// <summary>
         /// Index of objects that have been un serialized.
@@ -182,70 +184,58 @@ namespace MaxFactry.Base.BusinessLayer
         }
 
         /// <summary>
-        /// Gets or sets the Storage Key for this entity
-        /// </summary>
-        public string StorageKey
-        {
-            get
-            {
-                return this.GetString(this.MaxCoreDataModel.StorageKey);
-            }
-
-            set
-            {
-                this.Set(this.MaxCoreDataModel.StorageKey, value);
-            }
-        }
-
-        /// <summary>
         /// Gets an index of property names and current values to use as a key for each record
         /// </summary>
-        public virtual MaxIndex EntityPropertyKeyIndex
+        public virtual string[] PropertyNameKeyList
         {
             get
             {
-                return new MaxIndex();
+                if (null == this._aPropertyNameKeyList)
+                {
+                    MaxIndex loPropertyNameIndex = new MaxIndex();
+                    PropertyInfo[] laPropertyInfo = this.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public);
+                    foreach (string lsDataName in this.Data.DataModel.DataNameKeyList)
+                    {
+                        foreach (PropertyInfo loPropertyInfo in laPropertyInfo)
+                        {
+                            //// The property name has to match the DataName for it to be considered part of the key.  
+                            //// This property can be overridden if that is not the case.
+                            if (lsDataName == this.GetDataName(this.Data.DataModel, loPropertyInfo.Name))
+                            {
+                                loPropertyNameIndex.Add(loPropertyInfo.Name, true);
+                            }
+                        }
+                    }
+
+                    this._aPropertyNameKeyList = loPropertyNameIndex.GetSortedKeyList();
+                }
+
+                return this._aPropertyNameKeyList;
             }
         }
 
         /// <summary>
-        /// Gets a string of just the values that match the property names (in alphabetical order) in the EntityPropertyKeyIndex
+        /// Gets a key for the entity
         /// </summary>
-        public string EntityPropertyKey
+        public virtual string Key
         {
             get
             {
-                string lsR = string.Empty;
-                string[] laKey = this.EntityPropertyKeyIndex.GetSortedKeyList();
-                foreach (string lsKey in laKey)
-                {
-                    if (lsR.Length > 0)
-                    {
-                        lsR += '\t';
-                    }
-
-                    lsR += this.EntityPropertyKeyIndex.GetValueString(lsKey);
-                }
-
+                string lsR = this.Data.GetKey();
                 return lsR;
             }
         }
 
-
         /// <summary>
         /// Gets or sets the object holding the data
         /// </summary>
-        protected MaxData Data
+        protected virtual MaxData Data
         {
             get
             {
                 if (null == this._oData)
                 {
                     this._oData = new MaxData(MaxDataLibrary.GetDataModel(this.DataModelType));
-                    if (this._oData.DataModel.HasKey(this._oData.DataModel.StorageKey))
-                    {
-                        this._oData.Set(this._oData.DataModel.StorageKey, MaxDataLibrary.GetStorageKey(this._oData));
-                    }
                 }
 
                 return this._oData;
@@ -275,60 +265,24 @@ namespace MaxFactry.Base.BusinessLayer
         }
 
         /// <summary>
-        /// Gets a value indicating whether the data associated with this object has changed.
+        /// Property indicating if any data in this entity has been changed
         /// </summary>
-        protected bool IsDataChanged
+        protected virtual bool IsDataChanged
         {
             get
             {
-                return this.Data.GetIsChanged();
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the last date this entity was archived
-        /// </summary>
-        protected DateTime ArchiveDate
-        {
-            get
-            {
-                DateTime ldR = DateTime.MinValue;
-                string lsCacheKey = this.GetCacheKey() + "Archive";
-                object ldArchive = MaxCacheRepository.Get(typeof(object), lsCacheKey, typeof(DateTime));
-                if (null != ldArchive && ldArchive is DateTime)
+                foreach (string lsDataName in this.Data.DataModel.DataNameList)
                 {
-                    ldR = (DateTime)ldArchive;
-                }
-                else
-                {
-                    ldArchive = MaxConfigurationLibrary.GetValue(MaxEnumGroup.ScopePersistent, lsCacheKey);
-                    if (null != ldArchive)
+                    if (this.Data.GetIsChanged(lsDataName))
                     {
-                        ldR = MaxConvertLibrary.ConvertToDateTimeUtc(typeof(object), ldArchive);
+                        return true;
                     }
                 }
 
-                return ldR;
-            }
-
-            set
-            {
-                string lsCacheKey = this.GetCacheKey() + "Archive";
-                MaxCacheRepository.Set(typeof(object), lsCacheKey, value);
-                MaxConfigurationLibrary.SetValue(MaxEnumGroup.ScopePersistent, lsCacheKey, value);
+                return false;
             }
         }
 
-        /// <summary>
-        /// Gets the Data Model for this entity
-        /// </summary>
-        protected MaxDataModel MaxCoreDataModel
-        {
-            get
-            {
-                return (MaxDataModel)MaxDataLibrary.GetDataModel(this.DataModelType);
-            }
-        }
 
         /// <summary>
         /// Resets the data associated with the entity to it's blank state
@@ -346,31 +300,221 @@ namespace MaxFactry.Base.BusinessLayer
         {
             OnInsertBefore();
             this.SetProperties();
-            if (MaxStorageWriteRepository.Insert(this.Data))
+            int lnLimit = 5;
+            int lnTry = 0;
+            bool lbR = MaxBaseWriteRepository.Insert(this.Data);
+            while (!lbR && lnTry < lnLimit)
             {
-                string lsCacheKey = this.GetCacheKey() + "LoadAll*";
-                MaxCacheRepository.Remove(this.GetType(), lsCacheKey);
-                OnInsertAfter();
-                return true;
+                System.Threading.Thread.Sleep(100);
+                lbR = MaxBaseWriteRepository.Insert(this.Data);
+                lnTry++;
             }
 
-            OnInsertFail();
-            return false;
+            if (lbR)
+            {
+                string lsCacheKey = this.GetCacheKey() + "LoadByKey/" + this.Key;
+                MaxCacheRepository.Set(this.GetType(), lsCacheKey, this.Data);
+                lsCacheKey = this.GetCacheKey() + "LoadAll*";
+                MaxCacheRepository.Remove(this.GetType(), lsCacheKey);
+                OnInsertAfter();
+            } 
+            else
+            {
+                OnInsertFail();
+            }
+
+            return lbR;
+        }
+
+        /// <summary>
+        /// Runs the hanlders for the InsertBefore event
+        /// </summary>
+        protected virtual void OnInsertBefore()
+        {
+            EventHandler loHandler = InsertBefore;
+            if (loHandler != null)
+            {
+                loHandler(this, new MaxEntityEventArgs(this));
+            }
+        }
+
+        /// <summary>
+        /// Runs the hanlders for the InsertAfter event
+        /// </summary>
+        protected virtual void OnInsertAfter()
+        {
+            EventHandler loHandler = InsertAfter;
+            if (loHandler != null)
+            {
+                loHandler(this, new MaxEntityEventArgs(this));
+            }
+        }
+
+        /// <summary>
+        /// Runs the hanlders for the InsertFail event
+        /// </summary>
+        protected virtual void OnInsertFail()
+        {
+            EventHandler loHandler = InsertFail;
+            if (loHandler != null)
+            {
+                loHandler(this, new MaxEntityEventArgs(this));
+            }
+        }
+
+        /// <summary>
+        /// Updates an existing record and removes any lists from Cache.
+        /// </summary>
+        /// <returns>true if updated.  False if cannot be updated.</returns>
+        public virtual bool Update()
+        {
+            bool lbR = false;
+            OnUpdateBefore();
+            this.SetProperties();
+            if (this.IsDataChanged && !string.IsNullOrEmpty(this.Key))
+            {
+                int lnLimit = 5;
+                int lnTry = 0;
+                lbR = MaxBaseWriteRepository.Update(this.Data);
+                while (!lbR && lnTry < lnLimit)
+                {
+                    System.Threading.Thread.Sleep(100);
+                    lbR = MaxBaseWriteRepository.Update(this.Data);
+                    lnTry++;
+                }
+
+                if (lbR)
+                {
+                    string lsCacheKey = this.GetCacheKey() + "LoadByKey/" + this.Key;
+                    MaxCacheRepository.Set(this.GetType(), lsCacheKey, this.Data);
+                    lsCacheKey = this.GetCacheKey() + "LoadAll*";
+                    MaxCacheRepository.Remove(this.GetType(), lsCacheKey);
+                    OnUpdateAfter();
+                    return lbR;
+                }
+            }
+
+            OnUpdateFail();
+            return lbR;
+        }
+
+        /// <summary>
+        /// Runs the hanlders for the UpdateBefore event
+        /// </summary>
+        protected virtual void OnUpdateBefore()
+        {
+            EventHandler loHandler = UpdateBefore;
+            if (loHandler != null)
+            {
+                loHandler(this, new MaxEntityEventArgs(this));
+            }
+        }
+
+        /// <summary>
+        /// Runs the hanlders for the UpdateAfter event
+        /// </summary>
+        protected virtual void OnUpdateAfter()
+        {
+            EventHandler loHandler = UpdateAfter;
+            if (loHandler != null)
+            {
+                loHandler(this, new MaxEntityEventArgs(this));
+            }
+        }
+
+        /// <summary>
+        /// Runs the hanlders for the UpdateFail event
+        /// </summary>
+        protected virtual void OnUpdateFail()
+        {
+            EventHandler loHandler = UpdateFail;
+            if (loHandler != null)
+            {
+                loHandler(this, new MaxEntityEventArgs(this));
+            }
+        }
+
+        /// <summary>
+        /// Marks a record as deleted  and removes any lists from Cache.
+        /// </summary>
+        /// <returns>true if marked as deleted.  False if it cannot be deleted.</returns>
+        public virtual bool Delete()
+        {
+            bool lbR = false;
+            OnDeleteBefore();
+            if (!string.IsNullOrEmpty(this.Key))
+            {
+                lbR = MaxBaseWriteRepository.Delete(this.Data);
+                if (lbR)
+                {
+                    foreach (string lsDataName in this.Data.DataModel.DataNameList)
+                    {
+                        if (this.Data.DataModel.GetValueType(lsDataName).Equals(typeof(Stream)))
+                        {
+                            MaxBaseWriteRepository.StreamDelete(this.Data, lsDataName);
+                        }
+                    }
+
+                    string lsCacheKey = this.GetCacheKey() + "LoadAll*";
+                    MaxCacheRepository.Remove(this.GetType(), lsCacheKey);
+                    OnDeleteAfter();
+                    return lbR;
+                }
+            }
+
+            OnDeleteFail();
+            return lbR;
+        }
+
+        /// <summary>
+        /// Runs the hanlders for the DeleteBefore event
+        /// </summary>
+        protected virtual void OnDeleteBefore()
+        {
+            EventHandler loHandler = DeleteBefore;
+            if (loHandler != null)
+            {
+                loHandler(this, new MaxEntityEventArgs(this));
+            }
+        }
+
+        /// <summary>
+        /// Runs the hanlders for the DeleteAfter event
+        /// </summary>
+        protected virtual void OnDeleteAfter()
+        {
+            EventHandler loHandler = DeleteAfter;
+            if (loHandler != null)
+            {
+                loHandler(this, new MaxEntityEventArgs(this));
+            }
+        }
+
+        /// <summary>
+        /// Runs the hanlders for the DeleteFail event
+        /// </summary>
+        protected virtual void OnDeleteFail()
+        {
+            EventHandler loHandler = DeleteFail;
+            if (loHandler != null)
+            {
+                loHandler(this, new MaxEntityEventArgs(this));
+            }
         }
 
         /// <summary>
         /// Creates and index of property information that can be easily serialized
         /// </summary>
-        /// <param name="laPropertyNames"></param>
+        /// <param name="laPropertyNameList"></param>
         /// <returns></returns>
-        public virtual MaxIndex MapIndex(params string[] laPropertyNames)
+        public virtual MaxIndex MapIndex(params string[] laPropertyNameList)
         {
             MaxIndex loR = new MaxIndex();
             MaxIndex loPropertyIndex = MaxFactry.Core.MaxFactryLibrary.GetPropertyList(this);
             string[] laPropertyNameIndex = loPropertyIndex.GetSortedKeyList();
             foreach (string lsPropertyNameIndex in laPropertyNameIndex)
             {
-                if (this.HasIndexPropertyName(laPropertyNames, lsPropertyNameIndex))
+                if (this.HasIndexPropertyName(laPropertyNameList, lsPropertyNameIndex))
                 {
                     object loValue = null;
                     object loProperty = loPropertyIndex[lsPropertyNameIndex];
@@ -381,7 +525,7 @@ namespace MaxFactry.Base.BusinessLayer
 
                     if (loValue is MaxEntity)
                     {
-                        loR.Add(lsPropertyNameIndex, ((MaxEntity)loValue).MapIndex(laPropertyNames));
+                        loR.Add(lsPropertyNameIndex, ((MaxEntity)loValue).MapIndex(laPropertyNameList));
                     }
                     else if (loValue is double)
                     {
@@ -438,265 +582,24 @@ namespace MaxFactry.Base.BusinessLayer
             return loR;
         }
 
-        protected virtual bool HasIndexPropertyName(string[] laPropertyNames, string lsPropertyName)
+        /// <summary>
+        /// Checks to see if the property name is in the list
+        /// </summary>
+        /// <param name="laPropertyNameList"></param>
+        /// <param name="lsPropertyName"></param>
+        /// <returns></returns>
+        protected virtual bool HasIndexPropertyName(string[] laPropertyNameList, string lsPropertyName)
         {
             bool lbR = false;
             //// Force naming of properties for mapping to prevent stack overflow
-            if (null != laPropertyNames && laPropertyNames.Length > 0)
+            if (null != laPropertyNameList && laPropertyNameList.Length > 0)
             {
-                foreach (string lsPropertyNameCheck in laPropertyNames)
+                foreach (string lsPropertyNameCheck in laPropertyNameList)
                 {
                     if (lsPropertyNameCheck == this.GetType().ToString() + "." + lsPropertyName ||
                         lsPropertyNameCheck == lsPropertyName)
                     {
                         lbR = true;
-                    }
-                }
-            }
-
-            return lbR;
-        }
-
-
-        /// <summary>
-        /// Runs the hanlders for the InsertBefore event
-        /// </summary>
-        protected virtual void OnInsertBefore()
-        {
-            EventHandler loHandler = InsertBefore;
-            if (loHandler != null)
-            {
-                loHandler(this, new MaxEntityEventArgs(this));
-            }
-        }
-
-        /// <summary>
-        /// Runs the hanlders for the InsertAfter event
-        /// </summary>
-        protected virtual void OnInsertAfter()
-        {
-            EventHandler loHandler = InsertAfter;
-            if (loHandler != null)
-            {
-                loHandler(this, new MaxEntityEventArgs(this));
-            }
-        }
-
-        /// <summary>
-        /// Runs the hanlders for the InsertFail event
-        /// </summary>
-        protected virtual void OnInsertFail()
-        {
-            EventHandler loHandler = InsertFail;
-            if (loHandler != null)
-            {
-                loHandler(this, new MaxEntityEventArgs(this));
-            }
-        }
-
-        /// <summary>
-        /// Updates an existing record and removes any lists from Cache.
-        /// </summary>
-        /// <returns>true if updated.  False if cannot be updated.</returns>
-        public virtual bool Update()
-        {
-            OnUpdateBefore();
-            this.SetProperties();
-            if (this.IsDataChanged)
-            {
-                if (MaxStorageWriteRepository.Update(this.Data))
-                {
-                    string lsCacheKey = this.GetCacheKey() + "LoadAllBy*";
-                    MaxCacheRepository.Remove(this.GetType(), lsCacheKey);
-                    OnUpdateAfter();
-                    return true;
-                }
-            }
-
-            OnUpdateFail();
-            return false;
-        }
-
-        /// <summary>
-        /// Runs the hanlders for the UpdateBefore event
-        /// </summary>
-        protected virtual void OnUpdateBefore()
-        {
-            EventHandler loHandler = UpdateBefore;
-            if (loHandler != null)
-            {
-                loHandler(this, new MaxEntityEventArgs(this));
-            }
-        }
-
-        /// <summary>
-        /// Runs the hanlders for the UpdateAfter event
-        /// </summary>
-        protected virtual void OnUpdateAfter()
-        {
-            EventHandler loHandler = UpdateAfter;
-            if (loHandler != null)
-            {
-                loHandler(this, new MaxEntityEventArgs(this));
-            }
-        }
-
-        /// <summary>
-        /// Runs the hanlders for the UpdateFail event
-        /// </summary>
-        protected virtual void OnUpdateFail()
-        {
-            EventHandler loHandler = UpdateFail;
-            if (loHandler != null)
-            {
-                loHandler(this, new MaxEntityEventArgs(this));
-            }
-        }
-
-        /// <summary>
-        /// Marks a record as deleted  and removes any lists from Cache.
-        /// </summary>
-        /// <returns>true if marked as deleted.  False if it cannot be deleted.</returns>
-        public virtual bool Delete()
-        {
-            OnDeleteBefore();
-            bool lbR = MaxStorageWriteRepository.Delete(this.Data);
-            if (lbR)
-            {
-                string lsCacheKey = this.GetCacheKey() + "LoadAll*";
-                MaxCacheRepository.Remove(this.GetType(), lsCacheKey);
-                string[] laKeyList = this.Data.DataModel.GetKeyList();
-                foreach (string lsKey in laKeyList)
-                {
-                    if (this.Data.DataModel.GetValueType(lsKey).Equals(typeof(Stream)))
-                    {
-                        MaxStorageWriteRepository.StreamDelete(this.Data, lsKey);
-                    }
-                }
-            }
-
-            if (lbR)
-            {
-                OnDeleteAfter();
-            }
-            else
-            {
-                OnDeleteFail();
-            }
-
-            return lbR;
-        }
-
-        /// <summary>
-        /// Runs the hanlders for the DeleteBefore event
-        /// </summary>
-        protected virtual void OnDeleteBefore()
-        {
-            EventHandler loHandler = DeleteBefore;
-            if (loHandler != null)
-            {
-                loHandler(this, new MaxEntityEventArgs(this));
-            }
-        }
-
-        /// <summary>
-        /// Runs the hanlders for the DeleteAfter event
-        /// </summary>
-        protected virtual void OnDeleteAfter()
-        {
-            EventHandler loHandler = DeleteAfter;
-            if (loHandler != null)
-            {
-                loHandler(this, new MaxEntityEventArgs(this));
-            }
-        }
-
-        /// <summary>
-        /// Runs the hanlders for the DeleteFail event
-        /// </summary>
-        protected virtual void OnDeleteFail()
-        {
-            EventHandler loHandler = DeleteFail;
-            if (loHandler != null)
-            {
-                loHandler(this, new MaxEntityEventArgs(this));
-            }
-        }
-
-        /// <summary>
-        /// Checks to see if the entity was archived recently
-        /// </summary>
-        /// <param name="loArchiveFrequency"></param>
-        /// <returns></returns>
-        protected virtual bool CanProcessArchive(TimeSpan loArchiveFrequency)
-        {
-            bool lbR = false;
-            DateTime ldNow = DateTime.UtcNow;
-            if (this.ArchiveDate < ldNow - loArchiveFrequency)
-            {
-                lock (_oLock)
-                {
-                    if (this.ArchiveDate < ldNow - loArchiveFrequency)
-                    {
-                        this.ArchiveDate = ldNow;
-                        lbR = true;
-                    }
-                }
-            }
-
-            return lbR;
-        }
-
-        /// <summary>
-        /// Creates a record in another data storage location and deletes this one from storage.
-        /// </summary>
-        /// <returns>true if archive process ran</returns>
-        public virtual bool Archive()
-        {
-            bool lbR = false;
-            string lsDataStorageName = this.Data.DataModel.DataStorageName;
-            if (!lsDataStorageName.EndsWith("MaxArchive"))
-            {
-                this.SetProperties();
-                //// Not all data models support archiving.  They need a creation method that takes a new storage name that can be used as the Archive name.
-                MaxDataModel loDataModel = MaxFactry.Core.MaxFactryLibrary.Create(this.Data.DataModel.GetType(), lsDataStorageName + "MaxArchive") as MaxDataModel;
-                if (null != loDataModel)
-                {
-                    lock (_oLock)
-                    {
-                        MaxData loDataArchive = this.Data.Clone(loDataModel);
-                        try
-                        {
-                            bool lbDelete = false;
-                            if (MaxStorageWriteRepository.Insert(loDataArchive))
-                            {
-                                lbDelete = true;
-                            }
-                            else
-                            {
-                                if (MaxStorageWriteRepository.Delete(loDataArchive))
-                                {
-                                    if (MaxStorageWriteRepository.Insert(loDataArchive))
-                                    {
-                                        lbDelete = true;
-                                    }
-                                }
-                            }
-
-                            if (lbDelete)
-                            {
-                                if (MaxStorageWriteRepository.Delete(this.Data))
-                                {
-                                    string lsCacheKey = this.GetCacheKey() + "Load*";
-                                    MaxCacheRepository.Remove(this.GetType(), lsCacheKey);
-                                    lbR = true;
-                                }
-                            }
-                        }
-                        catch (Exception loE)
-                        {
-                            MaxLogLibrary.Log(new MaxLogEntryStructure("EntityArchive", MaxEnumGroup.LogError, "Error archiving {Type}", loE, this.GetType()));
-                        }
                     }
                 }
             }
@@ -729,11 +632,11 @@ namespace MaxFactry.Base.BusinessLayer
 #endif
 
         /// <summary>
-        /// Gets the storage key name (column name for tables) that matches the property name
+        /// Gets the data name (column name for tables) that matches the property name
         /// </summary>
         /// <param name="loDataModel">Data model to use for mapping</param>
         /// <param name="lsPropertyName">Name of the property</param>
-        /// <returns>Name of the storage key name.  If there are more than one, the names are separated by a tab character</returns>
+        /// <returns>Name of the data name.  If there are more than one, the names are separated by a tab character</returns>
         protected virtual string GetDataName(MaxDataModel loDataModel, string lsPropertyName)
         {
             string lsR = string.Empty;
@@ -755,7 +658,6 @@ namespace MaxFactry.Base.BusinessLayer
 
             return lsR;
         }
-
 
         /// <summary>
         /// Maps the data names based on the property names
@@ -785,12 +687,17 @@ namespace MaxFactry.Base.BusinessLayer
             return loDataNameIndex.GetSortedKeyList();
         }
 
+        /// <summary>
+        /// Gets sorting info for the data layer
+        /// </summary>
+        /// <param name="loDataModel"></param>
+        /// <param name="lsPropertySort"></param>
+        /// <returns></returns>
         protected virtual string GetOrderBy(MaxDataModel loDataModel, string lsPropertySort)
         {
             string lsR = string.Empty;
             if (!string.IsNullOrEmpty(lsPropertySort))
             {
-
                 string[] laPropertySort = lsPropertySort.Split(',');
                 foreach (string lsProperty in laPropertySort)
                 {
@@ -827,9 +734,16 @@ namespace MaxFactry.Base.BusinessLayer
             return lsR;
         }
 
-        protected virtual MaxEntityList GetSorted(MaxEntityList loList, string lsPropertySort, string lsOrderBy)
+        /// <summary>
+        /// Sorts a list based on a property
+        /// </summary>
+        /// <param name="loList">List of entities to be stored</param>
+        /// <param name="lsPropertySort">Property information used to sort</param>
+        /// <param name="lsOrderBy">Order by query used to to get the list of entities</param>
+        /// <returns></returns>
+        protected virtual MaxEntityList GetSorted(MaxEntityList loList, string lsPropertySort)
         {
-            if (string.IsNullOrEmpty(lsPropertySort) || !string.IsNullOrEmpty(lsOrderBy))
+            if (string.IsNullOrEmpty(lsPropertySort))
             {
                 return loList;
             }
@@ -872,11 +786,10 @@ namespace MaxFactry.Base.BusinessLayer
         /// <returns>List of entities</returns>
         public virtual MaxEntityList LoadAll(params string[] laPropertyNameList)
         {
-            int lnTotal = 0;
             string[] laDataNameList = this.GetDataNameList(this.Data.DataModel, laPropertyNameList);
-            MaxDataList loDataList = MaxStorageReadRepository.SelectAll(this.Data, 0, 0, string.Empty, out lnTotal, laDataNameList);
+            MaxData loData = new MaxData(this.Data);
+            MaxDataList loDataList = MaxBaseReadRepository.SelectAll(loData, laDataNameList);
             MaxEntityList loEntityList = MaxEntityList.Create(this.GetType(), loDataList);
-            loEntityList.Total = lnTotal;
             return loEntityList;
         }
 
@@ -889,26 +802,87 @@ namespace MaxFactry.Base.BusinessLayer
             string lsCacheDataKey = this.GetCacheKey() + "LoadAll";
             if (null != laPropertyNameList && laPropertyNameList.Length > 0)
             {
-                lsCacheDataKey += "/FieldList=";
-                foreach (string lsField in laPropertyNameList)
-                {
-                    lsCacheDataKey += lsField;
-                }
+                lsCacheDataKey += "/PropertyNameHash=" + MaxEncryptionLibrary.GetHash(typeof(object), MaxEncryptionLibrary.MD5Hash, string.Concat(laPropertyNameList));
             }
 
             MaxDataList loDataList = MaxCacheRepository.Get(this.GetType(), lsCacheDataKey, typeof(MaxDataList)) as MaxDataList;
             if (null == loDataList)
             {
-                int lnTotal = 0;
                 string[] laDataNameList = this.GetDataNameList(this.Data.DataModel, laPropertyNameList);
-                loDataList = MaxStorageReadRepository.SelectAll(this.Data, 0, 0, string.Empty, out lnTotal, laDataNameList);
-                loDataList.TotalCount = lnTotal;
+                loDataList = MaxBaseReadRepository.SelectAll(this.Data, laDataNameList);
                 MaxCacheRepository.Set(this.GetType(), lsCacheDataKey, loDataList);
             }
 
             MaxEntityList loEntityList = MaxEntityList.Create(this.GetType(), loDataList);
-            loEntityList.Total = loDataList.TotalCount;
             return loEntityList;
+        }
+
+        /// <summary>
+        /// Loads all entities for a particular page using a data query
+        /// </summary>
+        /// <param name="lnPageIndex"></param>
+        /// <param name="lnPageSize"></param>
+        /// <param name="lsPropertySort"></param>
+        /// <param name="loDataQuery"></param>
+        /// <param name="laPropertyNameList"></param>
+        /// <returns></returns>
+        protected virtual MaxEntityList LoadAllByPage(MaxData loData, int lnPageIndex, int lnPageSize, string lsPropertySort, MaxDataQuery loDataQuery, params string[] laPropertyNameList)
+        {
+            string[] laDataNameList = this.GetDataNameList(loData.DataModel, laPropertyNameList);
+            string lsOrderBy = this.GetOrderBy(loData.DataModel, lsPropertySort);
+            MaxDataList loDataList = MaxBaseReadRepository.Select(loData, loDataQuery, lnPageIndex, lnPageSize, lsOrderBy, laDataNameList);
+            MaxEntityList loR = MaxEntityList.Create(this.GetType(), loDataList);
+            if (string.IsNullOrEmpty(lsOrderBy))
+            {
+                loR = this.GetSorted(loR, lsPropertySort);
+            }
+
+            return loR;
+        }
+
+        /// <summary>
+        /// Loads all entities for a particular page using a data query
+        /// </summary>
+        /// <param name="lnPageIndex"></param>
+        /// <param name="lnPageSize"></param>
+        /// <param name="lsPropertySort"></param>
+        /// <param name="loDataQuery"></param>
+        /// <param name="laPropertyNameList"></param>
+        /// <returns></returns>
+        protected virtual MaxEntityList LoadAllByPageCache(MaxData loData, int lnPageIndex, int lnPageSize, string lsPropertySort, MaxDataQuery loDataQuery, params string[] laPropertyNameList)
+        {
+            string lsCacheDataKey = this.GetCacheKey() + "LoadAllByPage/" + lnPageIndex.ToString() + "/" + lnPageSize + "/" + lsPropertySort;
+            if (null != loData)
+            {
+                lsCacheDataKey += "/DataHash=" + MaxEncryptionLibrary.GetHash(typeof(object), MaxEncryptionLibrary.MD5Hash, loData.ToString());
+            }
+
+            if (null != loDataQuery)
+            {
+                lsCacheDataKey += "/DataQueryHash=" + MaxEncryptionLibrary.GetHash(typeof(object), MaxEncryptionLibrary.MD5Hash, loDataQuery.ToString());
+            }
+
+            if (null != laPropertyNameList && laPropertyNameList.Length > 0)
+            {
+                lsCacheDataKey += "/PropertyNameHash=" + MaxEncryptionLibrary.GetHash(typeof(object), MaxEncryptionLibrary.MD5Hash, string.Concat(laPropertyNameList));
+            }
+
+            MaxDataList loDataList = MaxCacheRepository.Get(this.GetType(), lsCacheDataKey, typeof(MaxDataList)) as MaxDataList;
+            string lsOrderBy = this.GetOrderBy(loData.DataModel, lsPropertySort);
+            if (null == loDataList)
+            {
+                string[] laDataNameList = this.GetDataNameList(loData.DataModel, laPropertyNameList);
+                loDataList = MaxBaseReadRepository.Select(loData, loDataQuery, lnPageIndex, lnPageSize, lsOrderBy, laDataNameList);
+                MaxCacheRepository.Set(this.GetType(), lsCacheDataKey, loDataList);
+            }
+
+            MaxEntityList loR = MaxEntityList.Create(this.GetType(), loDataList);
+            if (string.IsNullOrEmpty(lsOrderBy))
+            {
+                loR = this.GetSorted(loR, lsPropertySort);
+            }
+
+            return loR;
         }
 
         /// <summary>
@@ -919,10 +893,41 @@ namespace MaxFactry.Base.BusinessLayer
         /// <returns>List of matching entities</returns>
         public virtual MaxEntityList LoadAllByProperty(string lsPropertyName, object loPropertyValue, params string[] laPropertyNameList)
         {
-            MaxEntityList loR = MaxEntityList.Create(this.GetType());
-            string[] laDataNameList = this.GetDataNameList(this.Data.DataModel, laPropertyNameList);
-            MaxDataList loDataList = MaxBaseIdRepository.SelectAllByProperty(this.Data, lsPropertyName, loPropertyValue, laDataNameList);
-            loR = MaxEntityList.Create(this.GetType(), loDataList);
+            MaxEntityList loR = new MaxEntityList(this.GetType());
+            string lsDataName = this.GetDataName(this.Data.DataModel, lsPropertyName);
+            if (!string.IsNullOrEmpty(lsDataName))
+            {
+                MaxData loData = new MaxData(this.Data);
+                MaxDataQuery loDataQuery = new MaxDataQuery();
+                loDataQuery.StartGroup();
+                loDataQuery.AddFilter(lsDataName, "=", loPropertyValue);
+                loDataQuery.EndGroup();
+                loR = this.LoadAllByPage(loData, 0, 0, string.Empty, loDataQuery, laPropertyNameList);
+            }
+
+            return loR;
+        }
+
+        /// <summary>
+        /// Loads all entities matching the property and caches them
+        /// </summary>
+        /// <param name="lsPropertyName">Name of the property</param>
+        /// <param name="loPropertyValue">Value to match</param>
+        /// <returns>List of matching entities</returns>
+        public virtual MaxEntityList LoadAllByPropertyCache(string lsPropertyName, object loPropertyValue, params string[] laPropertyNameList)
+        {
+            MaxEntityList loR = new MaxEntityList(this.GetType());
+            string lsDataName = this.GetDataName(this.Data.DataModel, lsPropertyName);
+            if (!string.IsNullOrEmpty(lsDataName))
+            {
+                MaxData loData = new MaxData(this.Data);
+                MaxDataQuery loDataQuery = new MaxDataQuery();
+                loDataQuery.StartGroup();
+                loDataQuery.AddFilter(lsDataName, "=", loPropertyValue);
+                loDataQuery.EndGroup();
+                loR = this.LoadAllByPageCache(loData, 0, 0, string.Empty, loDataQuery, laPropertyNameList);
+            }
+
             return loR;
         }
 
@@ -936,7 +941,8 @@ namespace MaxFactry.Base.BusinessLayer
         /// <returns>List of matching entities</returns>
         public virtual MaxEntityList LoadAllByPage(int lnPageIndex, int lnPageSize, string lsPropertySort, params string[] laPropertyNameList)
         {
-            MaxEntityList loR = this.LoadAllByPageFilter(lnPageIndex, lnPageSize, lsPropertySort, new MaxIndex(), laPropertyNameList);
+            MaxData loData = new MaxData(this.Data);
+            MaxEntityList loR = this.LoadAllByPage(loData, lnPageIndex, lnPageSize, lsPropertySort, null, laPropertyNameList);
             return loR;
         }
 
@@ -951,125 +957,9 @@ namespace MaxFactry.Base.BusinessLayer
         /// <returns></returns>
         public virtual MaxEntityList LoadAllByPageFilter(int lnPageIndex, int lnPageSize, string lsPropertySort, MaxIndex loFilter, params string[] laPropertyNameList)
         {
-            MaxEntityList loR = MaxEntityList.Create(this.GetType());
-            int lnTotal = int.MinValue;
             MaxDataQuery loDataQuery = new MaxDataQuery();
-            string[] laKey = loFilter.GetSortedKeyList();
-            if (laKey.Length > 0)
+            if (loFilter.Count > 0)
             {
-                loDataQuery.StartGroup();
-                foreach (string lsKey in laKey)
-                {
-                    MaxIndex loDetail = loFilter[lsKey] as MaxIndex;
-                    if (loDetail.Contains("StartGroup"))
-                    {
-                        loDataQuery.StartGroup();
-                    }
-
-                    string lsPropertyName = loDetail.GetValueString("Name");
-                    string lsDataName = this.GetDataName(this.Data.DataModel, lsPropertyName);
-                    if (!string.IsNullOrEmpty(lsDataName))
-                    {
-                        loDataQuery.AddFilter(lsDataName, loDetail.GetValueString("Operator"), loDetail.GetValueString("Value"));
-                    }
-
-                    if (loDetail.Contains("EndGroup"))
-                    {
-                        loDataQuery.EndGroup();
-                    }
-
-                    if (loDetail.Contains("Condition") && !string.IsNullOrEmpty(loDetail.GetValueString("Condition")))
-                    {
-                        loDataQuery.AddCondition(loDetail.GetValueString("Condition"));
-                    }
-                }
-
-                loDataQuery.EndGroup();
-            }
-
-            string[] laDataNameList = this.GetDataNameList(this.Data.DataModel, laPropertyNameList);
-            string lsOrderBy = this.GetOrderBy(this.Data.DataModel, lsPropertySort);
-            MaxDataList loDataList = MaxBaseIdRepository.Select(this.Data, loDataQuery, lnPageIndex, lnPageSize, lsOrderBy, out lnTotal, laDataNameList);
-            loR = MaxEntityList.Create(this.GetType(), loDataList);
-            loR = this.GetSorted(loR, lsPropertySort, lsOrderBy);
-            loR.Total = lnTotal;
-            return loR;
-        }
-
-        /// <summary>
-        /// Loads all entities matching the property and caches them
-        /// </summary>
-        /// <param name="lsPropertyName">Name of the property</param>
-        /// <param name="loPropertyValue">Value to match</param>
-        /// <returns>List of matching entities</returns>
-        public virtual MaxEntityList LoadAllByPropertyCache(string lsPropertyName, object loPropertyValue, params string[] laPropertyNameList)
-        {
-            MaxEntityList loR = MaxEntityList.Create(this.GetType());
-            string lsCacheDataKey = this.GetCacheKey() + "LoadAllByPropertyCache/" + lsPropertyName + "/" + MaxConvertLibrary.ConvertToString(typeof(object), loPropertyValue);
-            if (null != laPropertyNameList && laPropertyNameList.Length > 0)
-            {
-                lsCacheDataKey += "/FieldList=";
-                foreach (string lsField in laPropertyNameList)
-                {
-                    lsCacheDataKey += lsField;
-                }
-            }
-
-            MaxDataList loDataList = MaxCacheRepository.Get(this.GetType(), lsCacheDataKey, typeof(MaxDataList)) as MaxDataList;
-            if (null == loDataList)
-            {
-                string[] laDataNameList = this.GetDataNameList(this.Data.DataModel, laPropertyNameList);
-                loDataList = MaxBaseIdRepository.SelectAllByProperty(this.Data, lsPropertyName, loPropertyValue, laDataNameList);
-                if (this.ArchiveDate != DateTime.MinValue)
-                {
-                    //// Try loading from archive
-                    if (!this.Data.DataModel.DataStorageName.EndsWith("MaxArchive"))
-                    {
-                        MaxDataModel loDataModel = MaxFactry.Core.MaxFactryLibrary.Create(this.Data.DataModel.GetType(), this.Data.DataModel.DataStorageName + "MaxArchive") as MaxDataModel;
-                        if (null != loDataModel)
-                        {
-                            MaxData loDataArchive = this.Data.Clone(loDataModel);
-                            MaxDataList loArchiveDataList = MaxBaseIdRepository.SelectAllByProperty(loDataArchive, lsPropertyName, loPropertyValue, laDataNameList);
-                            for (int lnD = 0; lnD < loArchiveDataList.Count; lnD++)
-                            {
-                                loDataList.Add(loArchiveDataList[lnD]);
-                            }
-                        }
-                    }
-                }
-
-                MaxCacheRepository.Set(this.GetType(), lsCacheDataKey, loDataList);
-            }
-
-            loR = MaxEntityList.Create(this.GetType(), loDataList);
-            return loR;
-        }
-
-        /// <summary>
-        /// Loads all entities for a particular page using a filter
-        /// </summary>
-        /// <param name="loFilter"></param>
-        /// <param name="laPropertyNameList"></param>
-        /// <returns></returns>
-        public virtual MaxEntityList LoadAllByFilterCache(MaxIndex loFilter, params string[] laPropertyNameList)
-        {
-            MaxEntityList loR = MaxEntityList.Create(this.GetType());
-            int lnTotal = int.MinValue;
-            string lsFilterHash = MaxEncryptionLibrary.GetHash(typeof(object), MaxEncryptionLibrary.MD5Hash, MaxConvertLibrary.SerializeObjectToBinary(typeof(object), loFilter));
-            string lsCacheDataKey = this.GetCacheKey() + "LoadAllByFilterCache/" + lsFilterHash;
-            if (null != laPropertyNameList && laPropertyNameList.Length > 0)
-            {
-                lsCacheDataKey += "/FieldList=";
-                foreach (string lsField in laPropertyNameList)
-                {
-                    lsCacheDataKey += lsField;
-                }
-            }
-
-            MaxDataList loDataList = MaxCacheRepository.Get(this.GetType(), lsCacheDataKey, typeof(MaxDataList)) as MaxDataList;
-            if (null == loDataList)
-            {
-                MaxDataQuery loDataQuery = new MaxDataQuery();
                 string[] laKey = loFilter.GetSortedKeyList();
                 if (laKey.Length > 0)
                 {
@@ -1102,89 +992,95 @@ namespace MaxFactry.Base.BusinessLayer
 
                     loDataQuery.EndGroup();
                 }
-
-                string[] laDataNameList = this.GetDataNameList(this.Data.DataModel, laPropertyNameList);
-                loDataList = MaxBaseIdRepository.Select(this.Data, loDataQuery, 0, 0, string.Empty, out lnTotal, laDataNameList);
-                if (this.ArchiveDate != DateTime.MinValue)
-                {
-                    //// Try loading from archive
-                    if (!this.Data.DataModel.DataStorageName.EndsWith("MaxArchive"))
-                    {
-                        MaxDataModel loDataModel = MaxFactry.Core.MaxFactryLibrary.Create(this.Data.DataModel.GetType(), this.Data.DataModel.DataStorageName + "MaxArchive") as MaxDataModel;
-                        if (null != loDataModel)
-                        {
-                            MaxData loDataArchive = this.Data.Clone(loDataModel);
-                            MaxDataList loArchiveDataList = MaxBaseIdRepository.Select(loDataArchive, loDataQuery, 0, 0, string.Empty, out lnTotal, laDataNameList);
-                            for (int lnD = 0; lnD < loArchiveDataList.Count; lnD++)
-                            {
-                                loDataList.Add(loArchiveDataList[lnD]);
-                            }
-                        }
-                    }
-                }
-
-                MaxCacheRepository.Set(this.GetType(), lsCacheDataKey, loDataList);
             }
 
-            loR = MaxEntityList.Create(this.GetType(), loDataList);
-            loR.Total = lnTotal;
+            MaxData loData = new MaxData(this.Data);
+            MaxEntityList loR = this.LoadAllByPage(loData, lnPageIndex, lnPageSize, lsPropertySort, loDataQuery, laPropertyNameList);
+            return loR;
+        }
+
+        /// <summary>
+        /// Loads all entities for a particular page using a filter
+        /// </summary>
+        /// <param name="loFilter"></param>
+        /// <param name="laPropertyNameList"></param>
+        /// <returns></returns>
+        public virtual MaxEntityList LoadAllByFilterCache(MaxIndex loFilter, params string[] laPropertyNameList)
+        {
+            MaxDataQuery loDataQuery = new MaxDataQuery();
+            if (loFilter.Count > 0)
+            {
+                string[] laKey = loFilter.GetSortedKeyList();
+                if (laKey.Length > 0)
+                {
+                    loDataQuery.StartGroup();
+                    foreach (string lsKey in laKey)
+                    {
+                        MaxIndex loDetail = loFilter[lsKey] as MaxIndex;
+                        if (loDetail.Contains("StartGroup"))
+                        {
+                            loDataQuery.StartGroup();
+                        }
+
+                        string lsPropertyName = loDetail.GetValueString("Name");
+                        string lsDataName = this.GetDataName(this.Data.DataModel, lsPropertyName);
+                        if (!string.IsNullOrEmpty(lsDataName))
+                        {
+                            loDataQuery.AddFilter(lsDataName, loDetail.GetValueString("Operator"), loDetail.GetValueString("Value"));
+                        }
+
+                        if (loDetail.Contains("EndGroup"))
+                        {
+                            loDataQuery.EndGroup();
+                        }
+
+                        if (loDetail.Contains("Condition") && !string.IsNullOrEmpty(loDetail.GetValueString("Condition")))
+                        {
+                            loDataQuery.AddCondition(loDetail.GetValueString("Condition"));
+                        }
+                    }
+
+                    loDataQuery.EndGroup();
+                }
+            }
+
+            MaxData loData = new MaxData(this.Data);
+            MaxEntityList loR = this.LoadAllByPageCache(loData, 0, 0, string.Empty, loDataQuery, laPropertyNameList);
             return loR;
         }
 
         /// <summary>
         /// Loads the entity that matches the key
         /// </summary>
-        /// <param name="lsEntityPropertyKey"></param>
+        /// <param name="lsKey"></param>
         /// <param name="laPropertyNameList"></param>
         /// <returns></returns>
-        public bool LoadByEntityPropertyKeyCache(string lsEntityPropertyKey, params string[] laPropertyNameList)
+        public bool LoadByKeyCache(string lsKey, params string[] laPropertyNameList)
         {
             bool lbR = false;
-            MaxIndex loFilter = new MaxIndex();
-            string[] laKey = this.EntityPropertyKeyIndex.GetSortedKeyList();
-            string[] laEntityPropertyKey = lsEntityPropertyKey.Split('\t');
-            if (laKey.Length == laEntityPropertyKey.Length)
+            string[] laKey = lsKey.Split('\t');
+            MaxDataQuery loDataQuery = new MaxDataQuery();
+            if (laKey.Length == this.PropertyNameKeyList.Length)
             {
-                for (int lnK = 0; lnK < laKey.Length; lnK++)
+                loDataQuery.StartGroup();
+                for (int lnK = 0; lnK < this.PropertyNameKeyList.Length; lnK++)
                 {
-                    PropertyInfo loProperty = this.GetType().GetProperty(laKey[lnK], BindingFlags.Public | BindingFlags.Instance);
-                    string lsValue = laEntityPropertyKey[lnK];
-                    object loValue = lsValue;
-                    if (loProperty.PropertyType == typeof(DateTime))
+                    string lsDataName = this.GetDataName(this.Data.DataModel, this.PropertyNameKeyList[lnK]);
+                    loDataQuery.AddFilter(lsDataName, "=", this.Data.Get(lsDataName));
+                    if (lnK < this.PropertyNameKeyList.Length - 1)
                     {
-                        loValue = MaxConvertLibrary.ConvertToDateTimeUtc(typeof(object), loValue);
+                        loDataQuery.AddAnd();
                     }
-                    else if (loProperty.PropertyType == typeof(int))
-                    {
-                        loValue = MaxConvertLibrary.ConvertToInt(typeof(object), loValue);
-                    }
-                    else if (loProperty.PropertyType == typeof(Guid))
-                    {
-                        loValue = MaxConvertLibrary.ConvertToGuid(typeof(object), loValue);
-                    }
-                    else if (loProperty.PropertyType == typeof(double))
-                    {
-                        loValue = MaxConvertLibrary.ConvertToDouble(typeof(object), loValue);
-                    }
-
-                    string lsDataName = this.GetDataName(this.Data.DataModel, loProperty.Name);
-                    MaxIndex loFilterPart = new MaxIndex();
-                    loFilterPart.Add("Name", lsDataName);
-                    loFilterPart.Add("Operator", "=");
-                    loFilterPart.Add("Value", loValue);
-                    if (lnK < laKey.Length - 1)
-                    {
-                        loFilterPart.Add("Condition", "AND");
-                    }
-
-                    loFilter.Add(loFilterPart);
                 }
 
-                MaxEntityList loList = this.LoadAllByFilterCache(loFilter, laPropertyNameList);
-                if (loList.Count == 1)
-                {
-                    lbR = this.Load(loList[0].GetData());
-                }
+                loDataQuery.EndGroup();
+            }
+
+            MaxData loData = new MaxData(this.Data);
+            MaxEntityList loList = this.LoadAllByPageCache(loData, 0, 0, string.Empty, loDataQuery, laPropertyNameList);
+            if (loList.Count == 1)
+            {
+                lbR = this.Load(loList[0].GetData());
             }
 
             return lbR;
@@ -1196,30 +1092,7 @@ namespace MaxFactry.Base.BusinessLayer
         /// <returns>Copy of data for this entity.</returns>
         public virtual MaxData GetData()
         {
-            return this.Data.Clone() as MaxData;
-        }
-
-        /// <summary>
-        /// Gets an index of all data for this entity
-        /// </summary>
-        /// <returns></returns>
-        public virtual MaxIndex GetDataIndex()
-        {
-            MaxIndex loR = new MaxIndex();
-            loR.Add("DataModelType", this.Data.DataModel.GetType().AssemblyQualifiedName);
-            string[] laKey = this.Data.DataModel.GetKeyList();
-            foreach (string lsKey in laKey)
-            {
-                loR.Add(lsKey, this.Data.Get(lsKey));
-            }
-
-            laKey = this.Data.GetExtendedKeyList();
-            foreach (string lsKey in laKey)
-            {
-                loR.Add(lsKey, this.Data.Get(lsKey));
-            }
-
-            return loR;
+            return this.Data.Clone();
         }
 
         /// <summary>
@@ -1257,7 +1130,7 @@ namespace MaxFactry.Base.BusinessLayer
         {
             if (null == this._sCacheKey)
             {
-                this._sCacheKey = this.StorageKey + "/" + this.GetType().ToString() + "/";
+                this._sCacheKey = this.GetType().ToString() + "/";
             }
 
             return this._sCacheKey;
@@ -1276,9 +1149,9 @@ namespace MaxFactry.Base.BusinessLayer
         /// Sets the name of the repository provider
         /// </summary>
         /// <param name="lsName">Name of the repository provider</param>
-        public virtual void SetStorageRepositoryProviderName(string lsName)
+        public virtual void SetRepositoryProviderName(string lsName)
         {
-            this.Data.Set("MaxStorageRepositoryName", lsName);
+            this.Data.Set("MaxRepositoryName", lsName);
         }
 
         /// <summary>
@@ -1287,14 +1160,10 @@ namespace MaxFactry.Base.BusinessLayer
         /// <returns>JavaScript Object Notation string representing data for entity</returns>
         public virtual string ExportToString()
         {
-            string[] laKey = this.Data.DataModel.GetKeyList();
             MaxIndex loIndex = new MaxIndex();
-            foreach (string lsKey in laKey)
+            foreach (string lsDataName in this.Data.DataModel.DataNameList)
             {
-                if (lsKey != this.Data.DataModel.StorageKey)
-                {
-                    loIndex.Add(lsKey, this.Get(lsKey));
-                }
+                loIndex.Add(lsDataName, this.Get(lsDataName));
             }
 
             string lsR = MaxConvertLibrary.SerializeObjectToString(this.GetType(), loIndex);
@@ -1312,9 +1181,9 @@ namespace MaxFactry.Base.BusinessLayer
             if (null != loIndex)
             {
                 string[] laKey = loIndex.GetSortedKeyList();
-                foreach (string lsKey in laKey)
+                foreach (string lsDataName in laKey)
                 {
-                    this.Set(lsKey, loIndex[lsKey]);
+                    this.Set(lsDataName, loIndex[lsDataName]);
                 }
 
                 return true;
@@ -1329,15 +1198,14 @@ namespace MaxFactry.Base.BusinessLayer
         protected virtual void SetProperties()
         {
             string[] laKey = this._oUnSerializedObjectIndex.GetSortedKeyList();
-            foreach (string lsKey in laKey)
+            foreach (string lsDataName in laKey)
             {
-                this.SetObject(lsKey, this._oUnSerializedObjectIndex[lsKey]);
+                this.SetObject(lsDataName, this._oUnSerializedObjectIndex[lsDataName]);
             }
 
-            string[] laKeyList = this.Data.DataModel.GetKeyList();
-            foreach (string lsKey in laKeyList)
+            foreach (string lsDataName in this.Data.DataModel.DataNameList)
             {
-                if (MaxStorageWriteRepository.StreamSave(this.Data, lsKey))
+                if (MaxBaseWriteRepository.StreamSave(this.Data, lsDataName))
                 {
                     //// Clear Cache
                     string[] laStreamPath = this.Data.GetStreamPath();
@@ -1347,7 +1215,7 @@ namespace MaxFactry.Base.BusinessLayer
                         lsStreamPath += "/" + laStreamPath[lnP];
                     }
 
-                    lsStreamPath += "/" + lsKey;
+                    lsStreamPath += "/" + lsDataName;
                     string lsCacheDataKey = this.GetCacheKey() + "GetString/" + lsStreamPath;
                     MaxCacheRepository.Remove(this.GetType(), lsCacheDataKey);
                 }
@@ -1357,11 +1225,11 @@ namespace MaxFactry.Base.BusinessLayer
         /// <summary>
 		/// Sets a value
 		/// </summary>
-		/// <param name="lsKey">Key to track the value</param>
+		/// <param name="lsDataName">Key to track the value</param>
 		/// <param name="loValue">The value to set</param>
-        protected virtual void Set(string lsKey, object loValue)
+        protected virtual void Set(string lsDataName, object loValue)
         {
-            if (this.Data.DataModel.GetPropertyAttributeSetting(lsKey, "IsEncrypted") &&
+            if (this.Data.DataModel.GetAttributeSetting(lsDataName, MaxDataModel.AttributeIsEncrypted) &&
                 null != loValue && (loValue is string || loValue is byte[]))
             {
                 // Convert to byte array so it can be encrypted
@@ -1374,50 +1242,50 @@ namespace MaxFactry.Base.BusinessLayer
                 loValue = MaxEncryptionLibrary.Encrypt(this.GetType(), (byte[])loValue);
 
                 //// Encode byte[] to string if this encrypted value is being stored as a string.
-                if (this.Data.DataModel.GetValueType(lsKey) == typeof(string) ||
-                    this.Data.DataModel.GetValueType(lsKey) == typeof(MaxShortString) ||
-                    this.Data.DataModel.GetValueType(lsKey) == typeof(MaxLongString))
+                if (this.Data.DataModel.GetValueType(lsDataName) == typeof(string) ||
+                    this.Data.DataModel.GetValueType(lsDataName) == typeof(MaxShortString) ||
+                    this.Data.DataModel.GetValueType(lsDataName) == typeof(MaxLongString))
                 {
                     loValue = Convert.ToBase64String((byte[])loValue);
                 }
             }
             else if (null == loValue)
             {
-                if (this.Data.DataModel.GetValueType(lsKey) == typeof(string) ||
-                    this.Data.DataModel.GetValueType(lsKey) == typeof(MaxShortString) ||
-                    this.Data.DataModel.GetValueType(lsKey) == typeof(MaxLongString))
+                if (this.Data.DataModel.GetValueType(lsDataName) == typeof(string) ||
+                    this.Data.DataModel.GetValueType(lsDataName) == typeof(MaxShortString) ||
+                    this.Data.DataModel.GetValueType(lsDataName) == typeof(MaxLongString))
                 {
                     loValue = string.Empty;
                 }
             }
-            else if (this.Data.DataModel.GetValueType(lsKey) == typeof(MaxLongString))
+            else if (this.Data.DataModel.GetValueType(lsDataName) == typeof(MaxLongString))
             {
                 //// Run the GetString method to update the current data if it comes from a stream so that if needing to save it to a stream it can be compared and not marked as changed.
-                this.GetString(lsKey);
+                this.GetString(lsDataName);
             }
 
-            this.Data.Set(lsKey, loValue);
+            this.Data.Set(lsDataName, loValue);
         }
 
         /// <summary>
         /// Gets the value based on the data in the datamodel
         /// </summary>
-        /// <param name="lsKey">Key to track the value</param>
+        /// <param name="lsDataName">Key to track the value</param>
         /// <returns>Value for the data</returns>
-        protected virtual object Get(string lsKey)
+        protected virtual object Get(string lsDataName)
         {
-            return this.Data.Get(lsKey);
+            return this.Data.Get(lsDataName);
         }
 
         /// <summary>
         /// Sets a bit flag to true or false.
         /// </summary>
-        /// <param name="lsKey">Key used to track the value.</param>
+        /// <param name="lsDataName">Key used to track the value.</param>
         /// <param name="lnFlag">The flag to set.  Flag 0 to Flag 64.</param>
         /// <param name="lbSetting">Setting for the flag.</param>
-        protected void SetBit(string lsKey, short lnFlag, bool lbSetting)
+        protected void SetBit(string lsDataName, short lnFlag, bool lbSetting)
         {
-            long lnValue = this.GetLong(lsKey);
+            long lnValue = this.GetLong(lsDataName);
             if (lnValue == long.MinValue)
             {
                 lnValue = 0;
@@ -1433,18 +1301,18 @@ namespace MaxFactry.Base.BusinessLayer
                 lnValue &= ~lnBit;
             }
 
-            this.Set(lsKey, lnValue);
+            this.Set(lsDataName, lnValue);
         }
 
         /// <summary>
         /// Gets the value for a key as a date time
         /// Initialized to DateTime.MinValue if null.
         /// </summary>
-        /// <param name="lsKey">Key for the index</param>
+        /// <param name="lsDataName">Key for the index</param>
         /// <returns>Value matching the key as a date and time</returns>
-        protected DateTime GetDateTime(string lsKey)
+        protected DateTime GetDateTime(string lsDataName)
         {
-            object loValue = this.Get(lsKey);
+            object loValue = this.Get(lsDataName);
             return MaxConvertLibrary.ConvertToDateTime(this.DataModelType, loValue);
         }
 
@@ -1452,11 +1320,11 @@ namespace MaxFactry.Base.BusinessLayer
         /// Gets the value for a key as a Unique Identifier.
         /// Initialized to Empty if null.
         /// </summary>
-        /// <param name="lsKey">Key for the index</param>
+        /// <param name="lsDataName">Key for the index</param>
         /// <returns>Value matching the key as a Unique Identifier.</returns>
-        protected Guid GetGuid(string lsKey)
+        protected Guid GetGuid(string lsDataName)
         {
-            object loValue = this.Get(lsKey);
+            object loValue = this.Get(lsDataName);
             return MaxConvertLibrary.ConvertToGuid(this.DataModelType, loValue);
         }
 
@@ -1465,11 +1333,11 @@ namespace MaxFactry.Base.BusinessLayer
         /// Initialized to String.Empty if null.
         /// Initialized to String.Empty if null.
         /// </summary>
-        /// <param name="lsKey">Key for the index</param>
+        /// <param name="lsDataName">Key for the index</param>
         /// <returns>Value matching the key cast as a string.</returns>
-        protected string GetString(string lsKey)
+        protected string GetString(string lsDataName)
         {
-            object loValue = this.Get(lsKey);
+            object loValue = this.Get(lsDataName);
             string lsR = string.Empty;
             if (loValue is string)
             {
@@ -1490,12 +1358,12 @@ namespace MaxFactry.Base.BusinessLayer
                     lsStreamPath += "/" + laStreamPath[lnP];
                 }
 
-                lsStreamPath += "/" + lsKey;
+                lsStreamPath += "/" + lsDataName;
                 string lsCacheDataKey = this.GetCacheKey() + "GetString/" + lsStreamPath;
                 loValue = MaxCacheRepository.Get(this.GetType(), lsCacheDataKey, typeof(string)) as string;
                 if (null == loValue)
                 {
-                    Stream loStream = MaxStorageReadRepository.StreamOpen(this.Data, lsKey);
+                    Stream loStream = MaxBaseReadRepository.StreamOpen(this.Data, lsDataName);
                     try
                     {
                         if (null != loStream)
@@ -1523,14 +1391,14 @@ namespace MaxFactry.Base.BusinessLayer
 
                 if (null != loValue)
                 {
-                    this.Data.Set(lsKey, loValue);
-                    this.Data.ClearChanged(lsKey);
+                    this.Data.Set(lsDataName, loValue);
+                    this.Data.ClearChanged(lsDataName);
                     lbIsStream = true;
                 }
             }
 
             bool lbIsEncrypted = false;
-            if (this.Data.DataModel.GetPropertyAttributeSetting(lsKey, "IsEncrypted"))
+            if (this.Data.DataModel.GetAttributeSetting(lsDataName, MaxDataModel.AttributeIsEncrypted))
             {
                 //// Decode string to byte[] if this encrypted value is being stored as a string.
                 if (loValue is string)
@@ -1555,11 +1423,11 @@ namespace MaxFactry.Base.BusinessLayer
         /// Gets the value for a key as a boolean.
         /// Initialized to false if null.
         /// </summary>
-        /// <param name="lsKey">Key for the index</param>
+        /// <param name="lsDataName">Key for the index</param>
         /// <returns>Value matching the key cast as a boolean.</returns>
-        protected bool GetBoolean(string lsKey)
+        protected bool GetBoolean(string lsDataName)
         {
-            object loValue = this.Get(lsKey);
+            object loValue = this.Get(lsDataName);
             return MaxConvertLibrary.ConvertToBoolean(this.DataModelType, loValue);
         }
 
@@ -1567,11 +1435,11 @@ namespace MaxFactry.Base.BusinessLayer
         /// Gets the value for a key as an integer
         /// Initialized to false if null.
         /// </summary>
-        /// <param name="lsKey">Key for the index</param>
+        /// <param name="lsDataName">Key for the index</param>
         /// <returns>Value matching the key cast as an integer</returns>
-        protected int GetInt(string lsKey)
+        protected int GetInt(string lsDataName)
         {
-            object loValue = this.Get(lsKey);
+            object loValue = this.Get(lsDataName);
             return MaxConvertLibrary.ConvertToInt(this.DataModelType, loValue);
         }
 
@@ -1579,11 +1447,11 @@ namespace MaxFactry.Base.BusinessLayer
         /// Gets the value for a key as an integer
         /// Initialized to false if null.
         /// </summary>
-        /// <param name="lsKey">Key for the index</param>
+        /// <param name="lsDataName">Key for the index</param>
         /// <returns>Value matching the key cast as an integer</returns>
-        protected double GetDouble(string lsKey)
+        protected double GetDouble(string lsDataName)
         {
-            object loValue = this.Get(lsKey);
+            object loValue = this.Get(lsDataName);
             return MaxConvertLibrary.ConvertToDouble(this.DataModelType, loValue);
         }
 
@@ -1591,23 +1459,23 @@ namespace MaxFactry.Base.BusinessLayer
         /// Gets the value for a key as an integer
         /// Initialized to false if null.
         /// </summary>
-        /// <param name="lsKey">Key for the index</param>
+        /// <param name="lsDataName">Key for the index</param>
         /// <returns>Value matching the key cast as an integer</returns>
-        protected long GetLong(string lsKey)
+        protected long GetLong(string lsDataName)
         {
-            object loValue = this.Get(lsKey);
+            object loValue = this.Get(lsDataName);
             return MaxConvertLibrary.ConvertToLong(this.DataModelType, loValue);
         }
 
         /// <summary>
         /// Gets a value indicating whether the bit is set to true or false
         /// </summary>
-        /// <param name="lsKey">Key to track the value</param>
+        /// <param name="lsDataName">Key to track the value</param>
         /// <param name="lnFlag">The flag to set.  Flag 0 to Flag 64.</param>
         /// <returns>The value of the bit.</returns>
-        protected bool GetBit(string lsKey, short lnFlag)
+        protected bool GetBit(string lsDataName, short lnFlag)
         {
-            long lnValue = this.GetLong(lsKey);
+            long lnValue = this.GetLong(lsDataName);
             if (lnValue == long.MinValue)
             {
                 lnValue = 0;
@@ -1620,12 +1488,12 @@ namespace MaxFactry.Base.BusinessLayer
         /// <summary>
         /// Gets a stream of binary data
         /// </summary>
-        /// <param name="lsKey">Key to track the value</param>
+        /// <param name="lsDataName">Key to track the value</param>
         /// <returns>The stream of binary data.</returns>
-        protected Stream GetStream(string lsKey)
+        protected Stream GetStream(string lsDataName)
         {
             Stream loR = null;
-            object loValue = this.Get(lsKey);
+            object loValue = this.Get(lsDataName);
             if (loValue is Stream && ((Stream)loValue).CanRead)
             {
                 loR = (Stream)loValue;
@@ -1651,11 +1519,11 @@ namespace MaxFactry.Base.BusinessLayer
 
             if (null == loR || !loR.CanRead)
             {
-                loR = MaxStorageReadRepository.StreamOpen(this.Data, lsKey);
+                loR = MaxBaseReadRepository.StreamOpen(this.Data, lsDataName);
                 if (null != loR)
                 {
-                    this.Data.Set(lsKey, loR);
-                    this.Data.ClearChanged(lsKey);
+                    this.Data.Set(lsDataName, loR);
+                    this.Data.ClearChanged(lsDataName);
                 }
             }
 
@@ -1665,11 +1533,11 @@ namespace MaxFactry.Base.BusinessLayer
         /// <summary>
         /// Gets a byte array of binary data
         /// </summary>
-        /// <param name="lsKey">Key to track the value</param>
+        /// <param name="lsDataName">Key to track the value</param>
         /// <returns>The stream of binary data.</returns>
-        protected byte[] GetByte(string lsKey)
+        protected byte[] GetByte(string lsDataName)
         {
-            object loValue = this.Get(lsKey);
+            object loValue = this.Get(lsDataName);
             if (loValue is byte[] && ((byte[])loValue).Length == MaxDataModel.StreamByteIndicator.Length)
             {
                 bool lbIsMatch = true;
@@ -1683,7 +1551,7 @@ namespace MaxFactry.Base.BusinessLayer
 
                 if (lbIsMatch)
                 {
-                    loValue = MaxStorageReadRepository.StreamOpen(this.Data, lsKey);
+                    loValue = MaxBaseReadRepository.StreamOpen(this.Data, lsDataName);
                 }
             }
 
@@ -1699,8 +1567,8 @@ namespace MaxFactry.Base.BusinessLayer
                         int lnLength = (int)((Stream)loValue).Length;
                         laR = new byte[lnLength];
                         ((Stream)loValue).Read(laR, 0, lnLength);
-                        this.Data.Set(lsKey, laR);
-                        this.Data.ClearChanged(lsKey);
+                        this.Data.Set(lsDataName, laR);
+                        this.Data.ClearChanged(lsDataName);
                     }
                     finally
                     {
@@ -1716,7 +1584,7 @@ namespace MaxFactry.Base.BusinessLayer
                 laR = (byte[])loValue;
             }
 
-            if (this.Data.DataModel.GetPropertyAttributeSetting(lsKey, "IsEncrypted"))
+            if (this.Data.DataModel.GetAttributeSetting(lsDataName, MaxDataModel.AttributeIsEncrypted))
             {
                 //// Decrypt the value 
                 laR = MaxEncryptionLibrary.Decrypt(this.GetType(), laR);
@@ -1746,40 +1614,40 @@ namespace MaxFactry.Base.BusinessLayer
         /// <summary>
         /// Gets an object that may be stored serialized.
         /// </summary>
-        /// <param name="lsKey">Key to use to look up the data.</param>
+        /// <param name="lsDataName">Key to use to look up the data.</param>
         /// <param name="loType">Type of object to get.</param>
         /// <returns>object related to key.</returns>
-        protected virtual object GetObject(string lsKey, Type loType)
+        protected virtual object GetObject(string lsDataName, Type loType)
         {
-            if (this._oUnSerializedObjectIndex.Contains(lsKey))
+            if (this._oUnSerializedObjectIndex.Contains(lsDataName))
             {
-                return this._oUnSerializedObjectIndex[lsKey];
+                return this._oUnSerializedObjectIndex[lsDataName];
             }
 
-            object loValue = this.Get(lsKey);
-            object loValueType = this.Data.DataModel.GetValueType(lsKey);
+            object loValue = this.Get(lsDataName);
+            object loValueType = this.Data.DataModel.GetValueType(lsDataName);
             if (null != loValueType)
             {
                 if (loValueType.Equals(typeof(byte[])) &&
                     loValue is byte[])
                 {
-                    loValue = this.GetByte(lsKey);
+                    loValue = this.GetByte(lsDataName);
                     loValue = MaxConvertLibrary.DeserializeObject(this.Data.DataModel.GetType(), (byte[])loValue, loType);
                 }
                 else if ((loValueType.Equals(typeof(string)) ||
                     loValueType.Equals(typeof(MaxLongString))) &&
                     loValue is string)
                 {
-                    loValue = this.GetString(lsKey);
+                    loValue = this.GetString(lsDataName);
                     loValue = MaxConvertLibrary.DeserializeObject(this.Data.DataModel.GetType(), (string)loValue, loType);
                 }
             }
 
-            this._oUnSerializedObjectIndex.Add(lsKey, loValue);
+            this._oUnSerializedObjectIndex.Add(lsDataName, loValue);
             if (null != loValue)
             {
-                this.SetObject(lsKey, loValue);
-                this.Data.ClearChanged(lsKey);
+                this.SetObject(lsDataName, loValue);
+                this.Data.ClearChanged(lsDataName);
             }           
 
             return loValue;
@@ -1788,24 +1656,24 @@ namespace MaxFactry.Base.BusinessLayer
         /// <summary>
         /// Serializes an object and saves the value.
         /// </summary>
-        /// <param name="lsKey">Key to use to save the data.</param>
+        /// <param name="lsDataName">Key to use to save the data.</param>
         /// <param name="loValue">Value of the object.</param>
-        protected virtual void SetObject(string lsKey, object loValue)
+        protected virtual void SetObject(string lsDataName, object loValue)
         {
-            this._oUnSerializedObjectIndex.Add(lsKey, loValue);
-            object loValueType = this.Data.DataModel.GetValueType(lsKey);
+            this._oUnSerializedObjectIndex.Add(lsDataName, loValue);
+            object loValueType = this.Data.DataModel.GetValueType(lsDataName);
             if (null != loValueType && loValueType.Equals(typeof(byte[])))
             {
-                this.Set(lsKey, MaxConvertLibrary.SerializeObjectToBinary(this.Data.DataModel.GetType(), loValue));
+                this.Set(lsDataName, MaxConvertLibrary.SerializeObjectToBinary(this.Data.DataModel.GetType(), loValue));
             }
             else if (null != loValueType && (loValueType.Equals(typeof(string)) ||
                 loValueType.Equals(typeof(MaxLongString))))
             {
-                this.Set(lsKey, MaxConvertLibrary.SerializeObjectToString(this.Data.DataModel.GetType(), loValue));
+                this.Set(lsDataName, MaxConvertLibrary.SerializeObjectToString(this.Data.DataModel.GetType(), loValue));
             }
             else
             {
-                this.Set(lsKey, loValue);
+                this.Set(lsDataName, loValue);
             }
         }
     }

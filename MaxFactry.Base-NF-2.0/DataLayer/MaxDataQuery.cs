@@ -28,12 +28,14 @@
 #region Change Log
 // <changelog>
 // <change date="2/25/2014" author="Brian A. Lakstins" description="Initial Release">
+// <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
+// <change date="3/22/2024" author="Brian A. Lakstins" description="Add some methods so no need to remember strings.  Add a ToString method for caching data based on this query.">
 // </changelog>
 #endregion
 
 namespace MaxFactry.Base.DataLayer
 {
-	using System;
+    using System.IO;
     using MaxFactry.Core;
 
     /// <summary>
@@ -100,6 +102,22 @@ namespace MaxFactry.Base.DataLayer
         }
 
         /// <summary>
+        /// Adds and AND condition
+        /// </summary>
+        public void AddAnd()
+        {
+            this.AddCondition("AND");
+        }
+
+        /// <summary>
+        /// Adds an OR condition
+        /// </summary>
+        public void AddOr()
+        {
+            this.AddCondition("OR");
+        }
+
+        /// <summary>
         /// Gets the objects that were added to the query.
         /// </summary>
         /// <returns>Array of objects representing the query.</returns>
@@ -113,5 +131,11 @@ namespace MaxFactry.Base.DataLayer
 
             return laR;
         }
-	}
+
+        public override string ToString()
+        {
+            string lsR = MaxConvertLibrary.SerializeObjectToString(this.GetType(), this._oIndex);
+            return lsR;
+        }
+    }
 }

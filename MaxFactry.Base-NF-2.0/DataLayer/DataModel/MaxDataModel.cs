@@ -39,12 +39,15 @@
 // <change date="5/25/2017" author="Brian A. Lakstins" description="Updated to use new FindValue method of MaxIndex to reduce memory usage.">
 // <change date="11/29/2018" author="Brian A. Lakstins" description="Updated methods to make it clearer that AttributeIndex is for each property so could add an AttributeIndex property.">
 // <change date="7/30/2019" author="Brian A. Lakstins" description="Add method to check to key, especially StorageKey.">
+// <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
+// <change date="3/22/2024" author="Brian A. Lakstins" description="Remove storagekey.  Rename Key and Property to DataName so not confused with Primary Key or Entity property.  Remove unused field _oKeyIndex. Add properies for Data Names.  Remove PrimaryKey suffix. Create some constants for reused strings.    ">
 // </changelog>
 #endregion
 
 namespace MaxFactry.Base.DataLayer
 {
     using System;
+    using System.Reflection;
     using MaxFactry.Core;
 
     /// <summary>
@@ -52,6 +55,11 @@ namespace MaxFactry.Base.DataLayer
     /// </summary>
     public class MaxDataModel
     {
+        public const string AttributeIsPrimaryKey = "IsPrimaryKey";
+
+        public const string AttributeIsAllowDBNull = "IsAllowDBNull";
+        public const string AttributeIsEncrypted = "IsEncrypted";
+
         /// <summary>
         /// Indicates that the data for the string is stored as a stream
         /// </summary>
@@ -63,19 +71,15 @@ namespace MaxFactry.Base.DataLayer
         public static readonly byte[] StreamByteIndicator = System.Text.UTF8Encoding.UTF8.GetBytes("{SBI}");
 
         /// <summary>
-        /// Storage Key for use by a Repository provider to break records up in some manner.
+        /// Index of data names and types
         /// </summary>
-        public readonly string StorageKey = "StorageKey";
-
-        /// <summary>
-        /// Index of column names and types
-        /// </summary>
-        private MaxIndex _oKeyIndex = new MaxIndex();
+        private MaxIndex _oDataNameIndex = new MaxIndex();
 
 		/// <summary>
-		/// Index of attributes related to each property
+		/// Index of attributes related to each data name
+		/// Index of attributes related to each data name
 		/// </summary>
-		private MaxIndex _oPropertyAttributeIndex = new MaxIndex();
+		private MaxIndex _oDataNameAttributeIndex = new MaxIndex();
 
 		/// <summary>
 		/// Name to use to reference the storage of this data
@@ -102,12 +106,15 @@ namespace MaxFactry.Base.DataLayer
         /// </summary>
         private Type _oRepositoryMessageProviderType = null;
 
+        private string[] _aDataNameList = null;
+
+        private string[] _aDataNameKeyList = null;
+
 		/// <summary>
 		/// Initializes a new instance of the MaxDataModel class
 		/// </summary>
 		public MaxDataModel()
         {
-            this.AddKey(this.StorageKey, typeof(MaxShortString));
         }
 
         /// <summary>
@@ -194,30 +201,81 @@ namespace MaxFactry.Base.DataLayer
             }
         }
 
-		/// <summary>
-		/// Gets the type of the value matching the key
-		/// </summary>
-		/// <param name="lsKey">Key to check</param>
-		/// <returns>The defined type of the value matching the key</returns>
-		public Type GetValueType(string lsKey)
+        /// <summary>
+        /// Gets a list of the data names
+        /// </summary>
+        public virtual string[] DataNameList
+        {
+            get
+            {
+                if (this._aDataNameList == null)
+                {
+                    string[] laDataNameList = this._oDataNameIndex.GetSortedKeyList();
+                    MaxIndex loR = new MaxIndex();
+                    foreach (string lsDataName in laDataNameList)
+                    {
+                        if (this.IsStored(lsDataName))
+                        {
+                            loR.Add(lsDataName, true);
+                        }
+                    }
+
+                    this._aDataNameList = loR.GetSortedKeyList();
+                }
+
+                return this._aDataNameList;
+            }
+        }
+
+        /// <summary>
+        /// Gets a list of primary keys
+        /// </summary>
+        public virtual string[] DataNameKeyList
+        {
+            get
+            {
+                if (null == this._aDataNameKeyList)
+                {
+                    MaxIndex loR = new MaxIndex();
+                    foreach (string lsDataName in this.DataNameList)
+                    {
+                        if (this.IsPrimaryKey(lsDataName))
+                        {
+                            loR.Add(lsDataName, true);
+                        }
+                    }
+
+                    this._aDataNameKeyList = loR.GetSortedKeyList();
+                }
+
+                return this._aDataNameKeyList;
+            }
+        }
+
+        /// <summary>
+        /// Gets the type of the value matching the data name
+        /// </summary>
+        /// <param name="lsDataName">Name to check</param>
+        /// <returns>The defined type of the value matching the data name</returns>
+        public Type GetValueType(string lsDataName)
 		{
 			Type loR = null;
-			if (this._oKeyIndex.Contains(lsKey) && this._oKeyIndex[lsKey] is Type)
+			if (this._oDataNameIndex.Contains(lsDataName) && this._oDataNameIndex[lsDataName] is Type)
 			{
-				loR = (Type)this._oKeyIndex[lsKey];
+				loR = (Type)this._oDataNameIndex[lsDataName];
 			}
 
 			return loR;
 		}
 
         /// <summary>
-        /// Checks to see if this data key has a type that is stored
+        /// Checks to see if this data name has a type that is stored
         /// </summary>
-        /// <param name="lsKey">The key to check to see if it is stored.</param>
+        /// <param name="lsDataName">The data name to check to see if it is stored.</param>
         /// <returns>True if it should be stored.  False otherwise.</returns>
-        public virtual bool IsStored(string lsKey)
+        public virtual bool IsStored(string lsDataName)
         {
-            Type loValueType = this.GetValueType(lsKey);
+            Type loValueType = this.GetValueType(lsDataName);
             if (null != loValueType)
             {
                 if (loValueType.Equals(typeof(MaxShortString)))
@@ -266,31 +324,15 @@ namespace MaxFactry.Base.DataLayer
         }
 
         /// <summary>
-        /// Gets a suffix for the primary key based on the data to speed up future queries
+        /// Gets the text of the attribute matching the data name
         /// </summary>
-        /// <param name="loData">Data to use to create the suffix</param>
-        /// <returns>String to use as suffix for primary key</returns>
-        public virtual string GetPrimaryKeySuffix(MaxData loData)
-        {
-            object loValue = loData.Get("_PrimaryKeySuffix");
-            if (null != loValue)
-            {
-                return loValue.ToString();
-            }
-
-            return string.Empty;
-        }
-
-		/// <summary>
-		/// Gets the text of the attribute matching the key
-		/// </summary>
-		/// <param name="lsKey">Key to check</param>
-		/// <param name="lsAttribute">Attribute to get</param>
-		/// <returns>The defined type of the value matching the key</returns>
-		public string GetPropertyAttribute(string lsKey, string lsAttribute)
+        /// <param name="lsDataName">data name to check</param>
+        /// <param name="lsAttribute">Attribute to get</param>
+        /// <returns>The defined type of the value matching the data name</returns>
+        public string GetAttribute(string lsDataName, string lsAttribute)
 		{
-            object loR = this._oPropertyAttributeIndex.FindValue(lsKey, "|", lsAttribute);
-            if (loR is Guid && this._oPropertyAttributeIndex.NotFoundId.Equals((Guid)loR))
+            object loR = this._oDataNameAttributeIndex.FindValue(lsDataName, "|", lsAttribute);
+            if (loR is Guid && this._oDataNameAttributeIndex.NotFoundId.Equals((Guid)loR))
             {
                 return string.Empty;
             }
@@ -305,13 +347,13 @@ namespace MaxFactry.Base.DataLayer
         /// <summary>
         /// Gets a boolean value indicating whether an attribute set to true.
         /// </summary>
-        /// <param name="lsKey">Name of the key</param>
-        /// <param name="lsAttribute">Attribute related to the key</param>
+        /// <param name="lsDataName">Name of the data name</param>
+        /// <param name="lsAttribute">Attribute related to the data name</param>
         /// <returns>True if the attribute is set to true (true, yes, 1).</returns>
-        public bool GetPropertyAttributeSetting(string lsKey, string lsAttribute)
+        public bool GetAttributeSetting(string lsDataName, string lsAttribute)
         {
             bool lbR = false;
-            string lsR = this.GetPropertyAttribute(lsKey, lsAttribute);
+            string lsR = this.GetAttribute(lsDataName, lsAttribute);
             if (null != lsR)
             {
                 if (lsR == "1" || lsR.ToLower() == "true" || lsR.ToLower() == "yes")
@@ -324,37 +366,36 @@ namespace MaxFactry.Base.DataLayer
         }
 
         /// <summary>
-        /// Gets a list of the keys
+        /// Checks to see if the DataModel has the data name
         /// </summary>
-        /// <returns>list of the keys</returns>
-        public string[] GetKeyList()
+        /// <param name="lsDataName">Name to look up</param>
+        /// <returns>true if it has the data name, false otherwise</returns>
+        public bool HasDataName(string lsDataName)
         {
-            string[] laR = new string[this._oKeyIndex.Count];
-            laR = this._oKeyIndex.GetSortedKeyList();
-            return laR;
+            return this._oDataNameIndex.Contains(lsDataName);
         }
 
         /// <summary>
-        /// Checks to see if the DataModel has the key
+        /// Checks to see if this data name is part of the primary key
         /// </summary>
-        /// <param name="lsKey">Key name to look up</param>
-        /// <returns>true if it has the key, false otherwise</returns>
-        public bool HasKey(string lsKey)
+        /// <param name="lsDataName"></param>
+        /// <returns></returns>
+        public bool IsPrimaryKey(string lsDataName)
         {
-            return this._oKeyIndex.Contains(lsKey);
+            return this.GetAttributeSetting(lsDataName, AttributeIsPrimaryKey);
         }
 
         /// <summary>
         /// Adds a type to the definition
         /// </summary>
-        /// <param name="lsKey">Name of the key</param>
-        /// <param name="loType">Type of the value matching the key</param>
+        /// <param name="lsDataName">Name of the data name</param>
+        /// <param name="loType">Type of the value matching the data name</param>
         /// <returns>true if added.  False if already exists.</returns>
-        protected bool AddType(string lsKey, Type loType)
+        protected bool AddType(string lsDataName, Type loType)
         {
-            if (!this._oKeyIndex.Contains(lsKey))
+            if (!this._oDataNameIndex.Contains(lsDataName))
             {
-                this._oKeyIndex.Add(lsKey, loType);
+                this._oDataNameIndex.Add(lsDataName, loType);
                 return true;
             }
 
@@ -364,15 +405,15 @@ namespace MaxFactry.Base.DataLayer
         /// <summary>
         /// Adds a type to the definition
         /// </summary>
-        /// <param name="lsKey">Name of the key</param>
-        /// <param name="loType">Type of the value matching the key</param>
+        /// <param name="lsDataName">Name of the data name</param>
+        /// <param name="loType">Type of the value matching the data name</param>
         /// <returns>true if added.  False if already exists.</returns>
-        protected bool AddKey(string lsKey, Type loType)
+        protected bool AddKey(string lsDataName, Type loType)
         {
-            if (!this._oKeyIndex.Contains(lsKey))
+            if (!this._oDataNameIndex.Contains(lsDataName))
             {
-                this._oKeyIndex.Add(lsKey, loType);
-                this.AddPropertyAttribute(lsKey, "IsPrimaryKey", "true");
+                this._oDataNameIndex.Add(lsDataName, loType);
+                this.AddAttribute(lsDataName, AttributeIsPrimaryKey, "true");
                 return true;
             }
 
@@ -382,15 +423,15 @@ namespace MaxFactry.Base.DataLayer
         /// <summary>
         /// Adds a type to the definition that could have a null value
         /// </summary>
-        /// <param name="lsKey">Name of the key</param>
-        /// <param name="loType">Type of the value matching the key</param>
+        /// <param name="lsDataName">Name of the data name</param>
+        /// <param name="loType">Type of the value matching the data name</param>
         /// <returns>true if added.  False if already exists.</returns>
-        protected bool AddNullable(string lsKey, Type loType)
+        protected bool AddNullable(string lsDataName, Type loType)
         {
-            if (!this._oKeyIndex.Contains(lsKey))
+            if (!this._oDataNameIndex.Contains(lsDataName))
             {
-                this._oKeyIndex.Add(lsKey, loType);
-                this.AddPropertyAttribute(lsKey, "IsAllowDBNull", "true");
+                this._oDataNameIndex.Add(lsDataName, loType);
+                this.AddAttribute(lsDataName, AttributeIsAllowDBNull, "true");
                 return true;
             }
 
@@ -398,21 +439,21 @@ namespace MaxFactry.Base.DataLayer
         }
 
         /// <summary>
-        /// Removes a key from the definition.
+        /// Removes a type from the definition.
         /// </summary>
-        /// <param name="lsKey">Name of the key</param>
+        /// <param name="lsDataName">Name of the data</param>
         /// <returns>true if removed.  False if does not exist.</returns>
-        protected bool RemoveKey(string lsKey)
+        protected bool RemoveType(string lsDataName)
         {
-            if (this._oKeyIndex.Contains(lsKey))
+            if (this._oDataNameIndex.Contains(lsDataName))
             {
-                this._oKeyIndex.Remove(lsKey);
-                string[] laAttributeKeyList = this._oPropertyAttributeIndex.GetSortedKeyList();
+                this._oDataNameIndex.Remove(lsDataName);
+                string[] laAttributeKeyList = this._oDataNameAttributeIndex.GetSortedKeyList();
                 foreach (string lsAttributeKey in laAttributeKeyList)
                 {
-                    if (lsAttributeKey.Length > lsKey.Length + 1 && lsAttributeKey.Substring(0, lsKey.Length + 1).Equals(lsKey + "|"))
+                    if (lsAttributeKey.Length > lsDataName.Length + 1 && lsAttributeKey.Substring(0, lsDataName.Length + 1).Equals(lsDataName + "|"))
                     {
-                        this._oPropertyAttributeIndex.Remove(lsAttributeKey);
+                        this._oDataNameAttributeIndex.Remove(lsAttributeKey);
                     }
                 }
 
@@ -425,16 +466,16 @@ namespace MaxFactry.Base.DataLayer
 		/// <summary>
 		/// Adds a type to the definition
 		/// </summary>
-		/// <param name="lsKey">Name of the key</param>
-		/// <param name="lsAttribute">Name of the attribute associated with the key</param>
+		/// <param name="lsDataName">Name of the data</param>
+		/// <param name="lsAttribute">Name of the attribute associated with the data</param>
 		/// <param name="lsValue">Value for the attribute</param>
 		/// <returns>true if added.  False if already exists.</returns>
-		protected bool AddPropertyAttribute(string lsKey, string lsAttribute, string lsValue)
+		protected bool AddAttribute(string lsDataName, string lsAttribute, string lsValue)
 		{
-            string lsAttributeKey = lsKey + "|" + lsAttribute;
-            if (!this._oPropertyAttributeIndex.Contains(lsAttributeKey))
+            string lsAttributeKey = lsDataName + "|" + lsAttribute;
+            if (!this._oDataNameAttributeIndex.Contains(lsAttributeKey))
 			{
-                this._oPropertyAttributeIndex.Add(lsAttributeKey, lsValue);
+                this._oDataNameAttributeIndex.Add(lsAttributeKey, lsValue);
 				return true;
 			}
 

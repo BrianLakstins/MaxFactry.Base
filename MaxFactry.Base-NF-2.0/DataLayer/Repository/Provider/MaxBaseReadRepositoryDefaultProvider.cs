@@ -1,4 +1,4 @@
-﻿// <copyright file="MaxStorageReadRepositoryDefaultProvider.cs" company="Lakstins Family, LLC">
+﻿// <copyright file="MaxBaseReadRepositoryDefaultProvider.cs" company="Lakstins Family, LLC">
 // Copyright (c) Brian A. Lakstins (http://www.lakstins.com/brian/)
 // </copyright>
 
@@ -27,21 +27,8 @@
 
 #region Change Log
 // <changelog>
-// <change date="6/26/2014" author="Brian A. Lakstins" description="Based on MaxCRUDRepositoryProvider">
-// <change date="7/17/2014" author="Brian A. Lakstins" description="Removed default setting of IsActive and IsDeleted.  Null defaults to false for both.">
-// <change date="8/21/2014" author="Brian A. Lakstins" description="Add stream support.">
-// <change date="8/24/2014" author="Brian A. Lakstins" description="Update to inherit from MaxProviderBase.">
-// <change date="9/26/2014" author="Brian A. Lakstins" description="Add ability to override ContextProvider on a per provider basis through a central configuration.">
-// <change date="10/22/2014" author="Brian A. Lakstins" description="Add ability to specify DataContext through MaxData instance.">
-// <change date="11/10/2014" author="Brian A. Lakstins" description="Update to moving Get and Set methods from MaxData.">
-// <change date="11/11/2014" author="Brian A. Lakstins" description="Added general Selecting by a single property that does not include records marked as deleted.">
-// <change date="12/2/2014" author="Brian A. Lakstins" description="Update to match interface.  Add laFields.  Restrict to only those that are not marked as deleted.">
-// <change date="1/14/2015" author="Brian A. Lakstins" description="Update to throw exception when providers cannot be found.">
-// <change date="1/28/2015" author="Brian A. Lakstins" description="Add the context provider name.">
-// <change date="7/2/2016" author="Brian A. Lakstins" description="Updated to access provider configuration using base provider methods.">
-// <change date="9/9/2019" author="Brian A. Lakstins" description="Add method to get value of a field in a dataquery.">
-// <change date="6/4/2020" author="Brian A. Lakstins" description="Updated for change to base.">
-// <change date="7/20/2023" author="Brian A. Lakstins" description="Use constants instead of strings to access configuration">
+// <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
+// <change date="3/22/2024" author="Brian A. Lakstins" description="Initial creation.  Based on MaxStorageReadRepositoryDefaultProvider.">
 // </changelog>
 #endregion
 
@@ -54,7 +41,7 @@ namespace MaxFactry.Base.DataLayer.Provider
 	/// <summary>
 	/// Provides base for creating Providers for Repositories that use a subclass of MaxDataModel for storage.
 	/// </summary>
-	public class MaxStorageReadRepositoryDefaultProvider : MaxProvider, IMaxStorageReadRepositoryProvider
+	public class MaxBaseReadRepositoryDefaultProvider : MaxProvider, IMaxBaseReadRepositoryProvider
 	{
         /// <summary>
         /// An index to hold extensions and mime types.
@@ -80,7 +67,7 @@ namespace MaxFactry.Base.DataLayer.Provider
                         if (null == _oMimeTypeIndex)
                         {
                             _oMimeTypeIndex = new MaxIndex();
-                            string lsContent = MaxFactryLibrary.GetStringResource(typeof(MaxStorageReadRepositoryDefaultProvider), "mimetypes");
+                            string lsContent = MaxFactryLibrary.GetStringResource(typeof(MaxBaseReadRepositoryDefaultProvider), "mimetypes");
                             if (lsContent.Contains("\n") && lsContent.Contains("\r"))
                             {
                                 lsContent = lsContent.Replace('\r', ' ');
@@ -173,7 +160,7 @@ namespace MaxFactry.Base.DataLayer.Provider
         /// <param name="lsDataStorageName">Name of the data storage (table name).</param>
         /// <param name="laDataNameList">list of fields to return from select</param>
         /// <returns>List of data elements with a base data model.</returns>
-        public virtual MaxDataList SelectAll(string lsDataStorageName, params string[] laDataNameList)
+        public virtual MaxDataList SelectAll(MaxData loData, params string[] laDataNameList)
         {
             IMaxDataContextProvider loDataContextProvider = MaxDataLibrary.GetContextProvider(this, null);
             if (null == loDataContextProvider)
@@ -182,7 +169,7 @@ namespace MaxFactry.Base.DataLayer.Provider
                 //throw new MaxException("DataContextProvider was not found for [" + this.GetType().ToString() + "].  Check configuration for DataContextProvider.");
             }
 
-            return loDataContextProvider.SelectAll(lsDataStorageName, laDataNameList);
+            return loDataContextProvider.SelectAll(loData, laDataNameList);
         }
 
         /// <summary>
@@ -271,7 +258,7 @@ namespace MaxFactry.Base.DataLayer.Provider
         public virtual string GetMimeType(string lsName)
         {
             string lsR = "application/octet-stream";
-            string lsExtension = GetFileNameExtension(lsName);
+            string lsExtension = MaxDataLibrary.GetFileNameExtension(lsName);
             if (null != lsExtension && lsExtension.Length > 0)
             {
                 if (MimeTypeIndex.Contains(lsExtension.ToLower()))
@@ -281,55 +268,6 @@ namespace MaxFactry.Base.DataLayer.Provider
             }
 
             return lsR;
-        }
-
-        /// <summary>
-        /// Gets the extension of a file name.
-        /// </summary>
-        /// <param name="lsName">Name of a file.</param>
-        /// <returns>Extension of the file.</returns>
-        protected virtual string GetFileNameExtension(string lsName)
-        {
-            string lsR = string.Empty;
-            if (lsName.IndexOf(".") >= 0 && lsName.LastIndexOf('.') != lsName.Length - 1)
-            {
-                lsR = lsName.Substring(lsName.LastIndexOf('.') + 1);
-            }
-
-            return lsR;
-        }
-
-        /// <summary>
-        /// Gets the value of a field used in a DataQuery
-        /// </summary>
-        /// <param name="loDataQuery">DataQuery to use</param>
-        /// <param name="lsFieldName">Field name to get value</param>
-        /// <returns>The current value in the query that matches the field.  Null if no match.</returns>
-        protected virtual object GetValue(MaxDataQuery loDataQuery, string lsFieldName)
-        {
-            object loR = null;
-            if (null != loDataQuery)
-            {
-                object[] laDataQuery = loDataQuery.GetQuery();
-                if (laDataQuery.Length > 0)
-                {
-                    string lsDataQuery = string.Empty;
-                    for (int lnDQ = 0; lnDQ < laDataQuery.Length; lnDQ++)
-                    {
-                        object loStatement = laDataQuery[lnDQ];
-                        if (loStatement is MaxDataFilter)
-                        {
-                            MaxDataFilter loDataFilter = (MaxDataFilter)loStatement;
-                            if (loDataFilter.Name == lsFieldName && loDataFilter.Operator == "=")
-                            {
-                                loR = loDataFilter.Value;
-                            }
-                        }
-                    }
-                }
-            }
-
-            return loR;
         }
     }
 }

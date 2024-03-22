@@ -56,6 +56,8 @@
 // <change date="1/18/2021" author="Brian A. Lakstins" description="Fix handling streams when converting to a string.">
 // <change date="5/28/2021" author="Brian A. Lakstins" description="Handle stream path.">
 // <change date="8/2/2023" author="Brian A. Lakstins" description="Fixed a deserialization issue by not having a contstructor without any arguements">
+// <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
+// <change date="3/22/2024" author="Brian A. Lakstins" description="Rename Key to DataName.  Save original value when changed.  Consolidate Clone and MaxData initializer.  Remove Clone by datamodel (initializer can be used instead).  Rename Reset to Clear.  Add GetKey.  Add key to stream path.">
 // </changelog>
 #endregion
 
@@ -63,10 +65,11 @@ namespace MaxFactry.Base.DataLayer
 {
     using System;
     using System.IO;
+    using System.Runtime.CompilerServices;
     using MaxFactry.Core;
 
     /// <summary>
-    /// Wraps an index of values based on keys
+    /// Stores data retrieved from external sources in some name value pair type of collections.
     /// </summary>
     public class MaxData
     {
@@ -89,11 +92,6 @@ namespace MaxFactry.Base.DataLayer
         /// The index of extended fields.
         /// </summary>
         private MaxIndex _oExtendedIndex = new MaxIndex();
-
-        /// <summary>
-        /// The list of keys.
-        /// </summary>
-        private string[] _aKeyList = null;
 
         /// <summary>
         /// Initializes a new instance of the MaxData class
@@ -120,27 +118,16 @@ namespace MaxFactry.Base.DataLayer
         }
 
         /// <summary>
-        /// Initializes a new instance of the MaxData class that includes meta attributes from the existing instance.
+        /// Initializes a new instance of the MaxData class that includes unstored attributes from the existing instance, but not the stored data
         /// </summary>
         /// <param name="loData">Data to base the new MaxData on</param>
         public MaxData(MaxData loData)
         {
             this._oDataModel = loData.DataModel;
-            if (this.DataModel.HasKey(this.DataModel.StorageKey))
+            string[] laExtendedNameList = loData.GetExtendedNameList();
+            foreach (string lsDataName in laExtendedNameList)
             {
-                this.Set(this.DataModel.StorageKey, MaxDataLibrary.GetStorageKey(loData));
-            }
-
-            string lsPrimaryKeySuffix = loData.DataModel.GetPrimaryKeySuffix(loData);
-            if (null != lsPrimaryKeySuffix && lsPrimaryKeySuffix.Length > 0)
-            {
-                this.Set("_PrimaryKeySuffix", lsPrimaryKeySuffix);
-            }
-
-            string[] laExtendedKeyList = loData.GetExtendedKeyList();
-            foreach (string lsKey in laExtendedKeyList)
-            {
-                this.Set(lsKey, loData.Get(lsKey));
+                this.Set(lsDataName, loData.Get(lsDataName));
             }
         }
 
@@ -152,22 +139,6 @@ namespace MaxFactry.Base.DataLayer
             get
             {
                 return this._oDataModel;
-            }
-        }
-
-        /// <summary>
-        /// Gets the list of keys.
-        /// </summary>
-        protected string[] KeyList
-        {
-            get
-            {
-                if (null == this._aKeyList)
-                {
-                    this._aKeyList = this.DataModel.GetKeyList();
-                }
-
-                return this._aKeyList;
             }
         }
 
@@ -219,15 +190,29 @@ namespace MaxFactry.Base.DataLayer
         }
 
         /// <summary>
+        /// Gets the original value of something that changed
+        /// </summary>
+        /// <param name="lsDataName">Name of data</param>
+        /// <returns></returns>
+        public object GetOriginal(string lsDataName)
+        {
+            if (this._oChangedIndex.Contains(lsDataName))
+            {
+                return this._oChangedIndex[lsDataName];
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Gets a value indicating if any property has changed.
         /// </summary>
         /// <returns>True if changed.</returns>
         public bool GetIsChanged()
         {
-            string[] laKey = this.DataModel.GetKeyList();
-            foreach (string lsKey in laKey)
+            foreach (string lsDataName in this.DataModel.DataNameList)
             {
-                if (this.GetIsChanged(lsKey))
+                if (this.GetIsChanged(lsDataName))
                 {
                     return true;
                 }
@@ -241,18 +226,9 @@ namespace MaxFactry.Base.DataLayer
         /// </summary>
         /// <param name="lsKey">Name of the key</param>
         /// <returns>True if changed.</returns>
-        public bool GetIsChanged(string lsKey)
+        public bool GetIsChanged(string lsDataName)
         {
-            if (this._oChangedIndex.Contains(lsKey))
-            {
-                object loObject = this._oChangedIndex[lsKey];
-                if (loObject is bool)
-                {
-                    return (bool)loObject;
-                }
-            }
-
-            return false;
+            return this._oChangedIndex.Contains(lsDataName);
         }
 
         /// <summary>
@@ -266,26 +242,26 @@ namespace MaxFactry.Base.DataLayer
         /// <summary>
         /// Clears the status of a property being changed
         /// </summary>
-        /// <param name="lsKey">Key for the property</param>
-        public void ClearChanged(string lsKey)
+        /// <param name="lsDataName">Name to use for matching data</param>
+        public void ClearChanged(string lsDataName)
         {
-            if (this._oChangedIndex.Contains(lsKey))
+            if (this._oChangedIndex.Contains(lsDataName))
             {
-                this._oChangedIndex[lsKey] = false;
+                this._oChangedIndex.Remove(lsDataName);
             }
         }
 
         /// <summary>
         /// Gets a value based on the key
         /// </summary>
-        /// <param name="lsKey">Key for the index</param>
+        /// <param name="lsDataName">Name to use for matching data</param>
         /// <returns>The value matching the key.</returns>
-        public object Get(string lsKey)
+        public object Get(string lsDataName)
         {
-            object loR = this._oIndex[lsKey];
-            if (this._oExtendedIndex.Contains(lsKey))
+            object loR = this._oIndex[lsDataName];
+            if (this._oExtendedIndex.Contains(lsDataName))
             {
-                loR = this._oExtendedIndex[lsKey];
+                loR = this._oExtendedIndex[lsDataName];
             }
 
             return loR;
@@ -294,45 +270,44 @@ namespace MaxFactry.Base.DataLayer
         /// <summary>
         /// Sets a value
         /// </summary>
-        /// <param name="lsKey">Key to track the value</param>
+        /// <param name="lsDataName">Name to use for matching data</param>
         /// <param name="loValue">The value to set</param>
-        public void Set(string lsKey, object loValue)
+        public void Set(string lsDataName, object loValue)
         {
             try
             {
-                object loCurrent = this.Get(lsKey);
+                object loCurrent = this.Get(lsDataName);
                 if (null != loCurrent || null != loValue)
                 {
-                    object loIsChanged = this._oChangedIndex[lsKey];
-                    if (null == loIsChanged || (loIsChanged is bool && !(bool)loIsChanged))
+                    if (!_oChangedIndex.Contains(lsDataName) && IsChanged(loCurrent, loValue))
                     {
-                        this._oChangedIndex.Add(lsKey, IsChanged(loCurrent, loValue));
+                        this._oChangedIndex.Add(lsDataName, loCurrent);
                     }
 
-                    string lsKeyCheck = lsKey;
+                    string lsDataNameCheck = lsDataName;
                     bool lbFound = false;
-                    foreach (string lsDataKey in this.KeyList)
+                    foreach (string lsDataNameStandard in this.DataModel.DataNameList)
                     {
-                        if (lsDataKey.Equals(lsKey, StringComparison.InvariantCultureIgnoreCase))
+                        if (lsDataNameStandard.Equals(lsDataName, StringComparison.InvariantCultureIgnoreCase))
                         {
                             lbFound = true;
-                            lsKeyCheck = lsDataKey;
+                            lsDataNameCheck = lsDataNameStandard;
                         }
                     }
 
                     if (lbFound)
                     {
-                        this._oIndex.Add(lsKeyCheck, loValue);
+                        this._oIndex.Add(lsDataNameCheck, loValue);
                     }
                     else
                     {
-                        this._oExtendedIndex.Add(lsKey, loValue);
+                        this._oExtendedIndex.Add(lsDataName, loValue);
                     }
                 }
             }
             catch (Exception loE)
             {
-                MaxLogLibrary.Log(new MaxLogEntryStructure("MaxData.Set", MaxEnumGroup.LogError, "Error in MaxData.Set for {lsKey}, {loValue}, {DataModel}", loE, lsKey, loValue, this.DataModel));
+                MaxLogLibrary.Log(new MaxLogEntryStructure("MaxData.Set", MaxEnumGroup.LogError, "Error in MaxData.Set for {lsKey}, {loValue}, {DataModel}", loE, lsDataName, loValue, this.DataModel));
             }
         }
 
@@ -340,10 +315,9 @@ namespace MaxFactry.Base.DataLayer
         /// Gets a list of the extended keys.
         /// </summary>
         /// <returns>list of the keys</returns>
-        public string[] GetExtendedKeyList()
+        public string[] GetExtendedNameList()
         {
-            string[] laR = new string[this._oExtendedIndex.Count];
-            laR = this._oExtendedIndex.GetSortedKeyList();
+            string[] laR = this._oExtendedIndex.GetSortedKeyList();
             return laR;
         }
 
@@ -352,9 +326,9 @@ namespace MaxFactry.Base.DataLayer
         /// </summary>
         public void SetChanged()
         {
-            foreach (string lsKey in this.KeyList)
+            foreach (string lsDataName in this.DataModel.DataNameList)
             {
-                this._oChangedIndex.Add(lsKey, true);
+                this._oChangedIndex.Add(lsDataName, this.Get(lsDataName));
             }
         }
 
@@ -364,46 +338,24 @@ namespace MaxFactry.Base.DataLayer
         /// <returns>A copy including all properties and attributes</returns>
         public MaxData Clone()
         {
-            return this.Clone(this.DataModel);
-        }
-
-        /// <summary>
-        /// Creates a copy of the current MaxData object
-        /// </summary>
-        /// <param name="loDataModel">A possibly different datamodel to use for the copy</param>
-        /// <returns></returns>
-        public MaxData Clone(MaxDataModel loDataModel)
-        {
-            MaxData loR = new MaxData(loDataModel);
-            foreach (string lsKey in this.KeyList)
+            MaxData loR = new MaxData(this);
+            foreach (string lsDataName in this.DataModel.DataNameList)
             {
-                loR.Set(lsKey, this.Get(lsKey));
-            }
+                if (null != this.GetOriginal(lsDataName))
+                {
+                    loR._oIndex.Add(lsDataName, this.GetOriginal(lsDataName));
+                }
 
-            string[] laExtendedKeyList = this.GetExtendedKeyList();
-            foreach (string lsKey in laExtendedKeyList)
-            {
-                loR.Set(lsKey, this.Get(lsKey));
-            }
-
-            if (this.DataModel.HasKey(this.DataModel.StorageKey))
-            {
-                this.Set(this.DataModel.StorageKey, MaxDataLibrary.GetStorageKey(this));
-            }
-
-            string lsPrimaryKeySuffix = this.DataModel.GetPrimaryKeySuffix(this);
-            if (null != lsPrimaryKeySuffix && lsPrimaryKeySuffix.Length > 0)
-            {
-                this.Set("_PrimaryKeySuffix", lsPrimaryKeySuffix);
+                loR.Set(lsDataName, this.Get(lsDataName));
             }
 
             return loR;
         }
 
         /// <summary>
-        /// Reset current stored data
+        /// Clears the current Data
         /// </summary>
-        public void Reset()
+        public void Clear()
         {
             this._oChangedIndex = new MaxIndex();
             this._oExtendedIndex = new MaxIndex();
@@ -413,15 +365,15 @@ namespace MaxFactry.Base.DataLayer
         public override string ToString()
         {
             MaxIndex loDataIndex = new MaxIndex();
-            string[] laKey = this._oIndex.GetSortedKeyList();
+            string[] laDataName = this._oIndex.GetSortedKeyList();
             MaxIndex loIndex = new MaxIndex();
             //// Remove any stream values.  They don't serialize well
-            foreach (string lsKey in laKey)
+            foreach (string lsDataName in laDataName)
             {
-                if (this._oDataModel.GetValueType(lsKey) == typeof(Stream))
+                if (this._oIndex.Contains(lsDataName) && this._oIndex[lsDataName].GetType() == typeof(Stream))
                 {
-                    loIndex.Add(lsKey, this._oIndex[lsKey]);
-                    this._oIndex[lsKey] = null;
+                    loIndex.Add(lsDataName, this._oIndex[lsDataName]);
+                    this._oIndex[lsDataName] = null;
                 }
             }
 
@@ -432,10 +384,34 @@ namespace MaxFactry.Base.DataLayer
             //// Add any stream values back.
             if (loIndex.Count > 0)
             {
-                laKey = loIndex.GetSortedKeyList();
-                foreach (string lsKey in laKey)
+                laDataName = loIndex.GetSortedKeyList();
+                foreach (string lsKey in laDataName)
                 {
                     this._oIndex[lsKey] = loIndex[lsKey];
+                }
+            }
+
+            return lsR;
+        }
+
+        public string GetKey()
+        {
+            string lsR = string.Empty;
+            foreach (string lsDataName in this.DataModel.DataNameKeyList)
+            {
+                string lsValue = MaxConvertLibrary.ConvertToString(typeof(object), this.Get(lsDataName));
+                if (string.IsNullOrEmpty(lsValue))
+                {
+                    lsR = null;
+                }
+                else if (null != lsR)
+                {
+                    if (lsR.Length > 0)
+                    {
+                        lsR += '/';
+                    }
+
+                    lsR += lsValue;
                 }
             }
 
@@ -445,8 +421,17 @@ namespace MaxFactry.Base.DataLayer
         public string[] GetStreamPath()
         {
             MaxIndex loR = new MaxIndex();
-            string lsStorageKey = MaxDataLibrary.GetStorageKey(this);
-            loR.Add(lsStorageKey);
+            MaxBaseDataModel loBaseDataModel = this.DataModel as MaxBaseDataModel;
+            if (null != loBaseDataModel && loBaseDataModel.IsStored(loBaseDataModel.StorageKey) && this.DataModel is MaxIdGuidDataModel)
+            {
+                string lsStorageKey = this.Get(loBaseDataModel.StorageKey) as string;
+                if (string.IsNullOrEmpty(lsStorageKey))
+                {
+                    lsStorageKey = MaxDataLibrary.GetStorageKey(this);
+                }
+
+                loR.Add(lsStorageKey);
+            }
 
             string lsDataStorageName = this.DataModel.DataStorageName;
             if (lsDataStorageName.EndsWith("MaxArchive"))
@@ -459,6 +444,14 @@ namespace MaxFactry.Base.DataLayer
             {
                 string lsId = MaxConvertLibrary.ConvertToString(typeof(object), this.Get(((MaxIdGuidDataModel)this.DataModel).Id));
                 loR.Add(lsId);
+            }
+            else if (null != loBaseDataModel)
+            {
+                string lsKey = this.GetKey();
+                if (!string.IsNullOrEmpty(lsKey))
+                {
+                    loR.Add(lsKey);
+                }
             }
 
             string[] laKey = loR.GetSortedKeyList();

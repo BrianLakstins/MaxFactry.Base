@@ -34,6 +34,8 @@
 // <change date="8/24/2014" author="Brian A. Lakstins" description="Rename.">
 // <change date="9/16/2014" author="Brian A. Lakstins" description="Rename.">
 // <change date="10/22/2014" author="Brian A. Lakstins" description="Add ability to specify DataContext through MaxData instance.">
+// <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
+// <change date="3/22/2024" author="Brian A. Lakstins" description="Add some methods that were in Repository proviers.  Remove some unused methods.">
 // </changelog>
 #endregion
 
@@ -55,26 +57,12 @@ namespace MaxFactry.Base.DataLayer
         /// <returns>Data context provider</returns>
         IMaxDataContextProvider GetContextProvider(IMaxRepositoryProvider loRepositoryProvider, MaxData loData);
 
-		/// <summary>
-		/// Gets the context provider using the Repository provider for this type
-		/// </summary>
-		/// <param name="loType">Type of context provider to get</param>
-		/// <returns>Context provider</returns>
-		MaxDataModel GetDataModel(Type loType);
-
-		/// <summary>
-		/// Gets a data list for the data model based on the type
-		/// </summary>
-		/// <param name="loType">Type of data list to get</param>
-		/// <returns>DataList for the data model specified by the type</returns>
-		MaxDataList GetDataList(Type loType);
-
-		/// <summary>
-		/// Gets a data list for the data model based on the type
-		/// </summary>
-		/// <param name="loDataModel">Data model to be used in the list</param>
-		/// <returns>DataList for the data model specified by the type</returns>
-		MaxDataList GetDataList(MaxDataModel loDataModel);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="loType">Type of context provider to get</param>
+        /// <returns>Context provider</returns>
+        MaxDataModel GetDataModel(Type loType);
 
 		/// <summary>
 		/// Maps a class that uses a specific provider to that provider
@@ -96,5 +84,36 @@ namespace MaxFactry.Base.DataLayer
         /// <param name="loData">The data to be stored using the storage key.</param>
         /// <returns>string used for the storage key</returns>
         string GetStorageKey(MaxData loData);
-	}
+
+        /// <summary>
+        /// Gets the extension of a file name.
+        /// </summary>
+        /// <param name="lsName">Name of a file.</param>
+        /// <returns>Extension of the file.</returns>
+        string GetFileNameExtension(string lsName);
+
+        /// <summary>
+        /// Saves a data to a file
+        /// </summary>
+        /// <param name="lsDirectory"></param>
+        /// <param name="loData"></param>
+        /// <returns></returns>
+        bool SaveAsFile(string lsDirectory, MaxData loData);
+
+        /// <summary>
+        /// Loads data from a file
+        /// </summary>
+        /// <param name="lsDirectory"></param>
+        /// <param name="loData"></param>
+        /// <returns></returns>
+        MaxDataList LoadFromFile(string lsDirectory, MaxData loData);
+
+        /// <summary>
+        /// Gets the value of a field used in a DataQuery
+        /// </summary>
+        /// <param name="loDataQuery">DataQuery to use</param>
+        /// <param name="lsDataName">Field name to get value</param>
+        /// <returns>The current value in the query that matches the field.  Null if no match.</returns>
+        object GetValue(MaxDataQuery loDataQuery, string lsDataName);
+    }
 }
