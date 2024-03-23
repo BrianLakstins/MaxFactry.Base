@@ -38,69 +38,13 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
 	/// <summary>
 	/// Generates Sql specific to any database
 	/// </summary>
-	public class MaxSqlGenerationLibraryMSSql2019Provider : MaxSqlGenerationLibraryDefaultProvider
-	{
+	public class MaxSqlGenerationLibraryMSSql2019Provider : MaxSqlGenerationLibraryMSSql2008Provider
+    {
 		/// <summary>
         /// Initializes a new instance of the MaxSqlGenerationLibraryMSSql2008Provider class
 		/// </summary>
-		public MaxSqlGenerationLibraryMSSql2019Provider()
+		public MaxSqlGenerationLibraryMSSql2019Provider() : base()
 		{
-			this.AddReplacement("#SchemaTable", "INFORMATION_SCHEMA.TABLES");
-			this.AddReplacement("#TableNameField", "TABLE_NAME");
-			this.AddReplacement("#DatabaseList", "sp_databases");
-			this.AddReplacement("#TableExistFilter", " AND TABLE_TYPE='BASE TABLE'");
-			this.AddReplacement("#COUNT", "count(*)");
-
-            this.AddReplacement(string.Concat("MaxDefinitionType.", typeof(byte[]), "."), "IMAGE");
-			this.AddReplacement(string.Concat("MaxDefinitionType.", typeof(bool), "."), "BIT");
-#if !MF_FRAMEWORK_VERSION_V4_3
-			this.AddReplacement(string.Concat("MaxDefinitionType.", typeof(decimal), "."), "MONEY");
-#endif
-			this.AddReplacement(string.Concat("MaxDefinitionType.", typeof(DateTime), "."), "DATETIME2");
-			this.AddReplacement(string.Concat("MaxDefinitionType.", typeof(double), "."), "FLOAT");
-			this.AddReplacement(string.Concat("MaxDefinitionType.", typeof(Guid), "."), "UNIQUEIDENTIFIER");
-			this.AddReplacement(string.Concat("MaxDefinitionType.", typeof(short), "."), "SMALLINT");
-			this.AddReplacement(string.Concat("MaxDefinitionType.", typeof(int), "."), "INT");
-			this.AddReplacement(string.Concat("MaxDefinitionType.", typeof(long), "."), "BIGINT");
-			this.AddReplacement(string.Concat("MaxDefinitionType.", typeof(float), "."), "FLOAT");
-			this.AddReplacement(string.Concat("MaxDefinitionType.", typeof(string), "."), "NVARCHAR(MAX)");
-            this.AddReplacement(string.Concat("MaxDefinitionType.", typeof(MaxShortString), "."), "NVARCHAR(512)");
-            this.AddReplacement(string.Concat("MaxDefinitionType.", typeof(MaxLongString), "."), "NVARCHAR(4000)");
-
-			this.AddReplacement("AUTOINCREMENT", "Identity(1,1)");
-
-			this.AddReplacement("[", "\"");
-			this.AddReplacement("]", "\"");
 		}
-
-        /// <summary>
-        /// Gets Sql to create a table
-        /// </summary>
-        /// <param name="loDataModel">DataModel information used for select</param>
-        /// <returns>Sql to create a table</returns>
-        public override string GetTableCreate(MaxDataModel loDataModel)
-        {
-            string lsR = base.GetTableCreate(loDataModel);
-
-            lsR += "CREATE CLUSTERED INDEX [idx_" + loDataModel.DataStorageName + "] ON [" + loDataModel.DataStorageName + "](";
-            string[] laKeyList = loDataModel.GetKeyList();
-            string lsPK = string.Empty;
-            for (int lnK = 0; lnK < laKeyList.Length; lnK++)
-            {
-                bool lbIsPrimaryKey = loDataModel.GetPropertyAttributeSetting(laKeyList[lnK], "IsPrimaryKey");
-                if (lbIsPrimaryKey)
-                {
-                    if (lsPK.Length > 0)
-                    {
-                        lsPK += ", ";
-                    }
-
-                    lsPK += "[" + laKeyList[lnK] + "] ASC";
-                }
-            }
-
-            lsR += lsPK + ");";
-            return lsR;
-        }
 	}
 }

@@ -50,6 +50,7 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
 			this.AddReplacement("#TableNameField", "TABLE_NAME");
 			this.AddReplacement("#DatabaseList", "sp_databases");
 			this.AddReplacement("#TableExistFilter", " AND TABLE_TYPE='BASE TABLE'");
+            this.AddReplacement("#COUNT", "count(*)");
 
             this.AddReplacement(string.Concat("MaxDefinitionType.", typeof(byte[]), "."), "IMAGE");
 			this.AddReplacement(string.Concat("MaxDefinitionType.", typeof(bool), "."), "TINYINT");
@@ -72,5 +73,29 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
 			this.AddReplacement("[", "\"");
 			this.AddReplacement("]", "\"");
 		}
-	}
+
+        /// <summary>
+        /// Gets Sql to create a table
+        /// </summary>
+        /// <param name="loDataModel">DataModel information used for select</param>
+        /// <returns>Sql to create a table</returns>
+        public override string GetTableCreate(MaxDataModel loDataModel)
+        {
+            string lsR = base.GetTableCreate(loDataModel);
+            lsR += "CREATE CLUSTERED INDEX [idx_" + loDataModel.DataStorageName + "] ON [" + loDataModel.DataStorageName + "](";
+            string lsPK = string.Empty;
+            foreach (string lsDataNameKey in loDataModel.DataNameKeyList)
+            {
+                if (lsPK.Length > 0)
+                {
+                    lsPK += ", ";
+                }
+
+                lsPK += "[" + lsDataNameKey + "] ASC";
+            }
+
+            lsR += lsPK + ");";
+            return lsR;
+        }
+    }
 }

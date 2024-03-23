@@ -40,6 +40,7 @@
 // <change date="5/10/2016" author="Brian A. Lakstins" description="Fix issue when table names have spaces that end up in parameter names.">
 // <change date="5/18/2016" author="Brian A. Lakstins" description="Add support for server generated id (autoincrement).">
 // <change date="8/11/2020" author="Brian A. Lakstins" description="Add default queries for SQL server for adding columns to tables">
+// <change date="3/20/2024" author="Brian A. Lakstins" description="Updated for changes to DataModel.">
 // </changelog>
 #endregion
 
@@ -161,29 +162,27 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
         public virtual string GetTableCreate(MaxDataModel loDataModel)
 		{
 			StringBuilder loCommandText = new StringBuilder("CREATE TABLE [" + loDataModel.DataStorageName + "] (");
-			string[] laKeyList = loDataModel.GetKeyList();
             int lnAdded = 0;
-			for (int lnK = 0; lnK < laKeyList.Length; lnK++)
+			foreach (string lsDataName in loDataModel.DataNameList)
 			{
-                string lsKey = laKeyList[lnK];
-                if (loDataModel.IsStored(lsKey))
+                if (loDataModel.IsStored(lsDataName))
                 {
                     if (lnAdded != 0)
                     {
                         loCommandText.Append(",");
                     }
 
-                    string lsType = string.Concat("MaxDefinitionType.", loDataModel.GetValueType(lsKey), ".");
-                    loCommandText.Append(string.Concat("[", lsKey, "] ", lsType));
+                    string lsType = string.Concat("MaxDefinitionType.", loDataModel.GetValueType(lsDataName), ".");
+                    loCommandText.Append(string.Concat("[", lsDataName, "] ", lsType));
 
-                    bool lbIsAutoIncrement = loDataModel.GetPropertyAttributeSetting(lsKey, "IsAutoIncrement");
+                    bool lbIsAutoIncrement = loDataModel.GetAttributeSetting(lsDataName, "IsAutoIncrement");
 
                     if (lbIsAutoIncrement)
                     {
                         loCommandText.Append(" AUTOINCREMENT");
                     }
 
-                    bool lbIsAllowDBNull = loDataModel.GetPropertyAttributeSetting(lsKey, "IsAllowDBNull");
+                    bool lbIsAllowDBNull = loDataModel.GetAttributeSetting(lsDataName, "IsAllowDBNull");
 
                     if (!lbIsAllowDBNull)
                     {
@@ -207,18 +206,16 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
         public virtual string GetTableAlter(MaxDataModel loDataModel, MaxDataList loDataList)
         {
             StringBuilder loCommandText = new StringBuilder();
-            string[] laKeyList = loDataModel.GetKeyList();
             int lnAdded = 0;
-            for (int lnK = 0; lnK < laKeyList.Length; lnK++)
+            foreach (string lsDataName in loDataModel.DataNameList)
             {
-                string lsKey = laKeyList[lnK];
-                if (loDataModel.IsStored(lsKey))
+                if (loDataModel.IsStored(lsDataName))
                 {
                     bool lbExists = false;
                     for (int lnD = 0; lnD < loDataList.Count; lnD++)
                     {
                         MaxData loData = loDataList[lnD];
-                        if (loData.Get("name").ToString() == lsKey)
+                        if (loData.Get("name").ToString() == lsDataName)
                         {
                             lbExists = true;
                         }
@@ -226,8 +223,8 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
 
                     if (!lbExists)
                     {
-                        string lsType = string.Concat("MaxDefinitionType.", loDataModel.GetValueType(lsKey), ".");
-                        loCommandText.Append(string.Concat("ALTER TABLE [", loDataModel.DataStorageName, "] ADD [", lsKey, "] ", lsType, ";"));
+                        string lsType = string.Concat("MaxDefinitionType.", loDataModel.GetValueType(lsDataName), ".");
+                        loCommandText.Append(string.Concat("ALTER TABLE [", loDataModel.DataStorageName, "] ADD [", lsDataName, "] ", lsType, ";"));
                         lnAdded++;
                     }
                 }
@@ -285,18 +282,16 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
 			StringBuilder loSqlQuery = new StringBuilder();
 			string lsSqlFinal = string.Empty;
 			bool lbUseSelect = false;
-			string[] laKeyList = loDataList.DataModel.GetKeyList();
 			for (int lnL = 0; lnL < loDataList.Count; lnL++)
 			{
 				MaxData loData = loDataList[lnL];
-				for (int lnK = 0; lnK < laKeyList.Length; lnK++)
-				{
-					string lsKey = laKeyList[lnK];
-                    object loValue = loData.Get(lsKey);
-                    Type loDataType = loData.DataModel.GetValueType(lsKey);
-                    bool lbIsServerId = loDataList.DataModel.GetPropertyAttributeSetting(lsKey, "IsServerId");
+                foreach (string lsDataName in loDataList.DataModel.DataNameList)
+                {
+                    object loValue = loData.Get(lsDataName);
+                    Type loDataType = loData.DataModel.GetValueType(lsDataName);
+                    bool lbIsServerId = loDataList.DataModel.GetAttributeSetting(lsDataName, "IsServerId");
 
-                    if (loData.DataModel.IsStored( lsKey) && (null != loValue || typeof(bool).Equals(loDataType)) && !lbIsServerId)
+                    if (loData.DataModel.IsStored(lsDataName) && (null != loValue || typeof(bool).Equals(loDataType)) && !lbIsServerId)
                     {
                         if (0 == loSqlValueClause.Length)
                         {
@@ -316,19 +311,18 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
                             loSqlSelectClause.Append(",");
                         }
 
-                        bool lbIsClientId = loDataList.DataModel.GetPropertyAttributeSetting(lsKey, "IsClientId");
-
+                        bool lbIsClientId = loDataList.DataModel.GetAttributeSetting(lsDataName, "IsClientId");
                         if (lbIsClientId &&
-                            loDataList.DataModel.GetValueType(lsKey) != typeof(Guid))
+                            loDataList.DataModel.GetValueType(lsDataName) != typeof(Guid))
                         {
-                            loSqlSelectClause.Append(string.Concat("10 * FLOOR((isnull(max(", lsKey, "),0)) / 10) + 10 + round(9 * rand(),0)"));
-                            lsSqlFinal = string.Concat("SELECT max(", lsKey, ") from [", loDataList.DataStorageName, "];");
+                            loSqlSelectClause.Append(string.Concat("10 * FLOOR((isnull(max(", lsDataName, "),0)) / 10) + 10 + round(9 * rand(),0)"));
+                            lsSqlFinal = string.Concat("SELECT max(", lsDataName, ") from [", loDataList.DataStorageName, "];");
                             lbUseSelect = true;
                         }
                         else
                         {
-                            loSqlValueClause.Append(string.Concat("@", MaxSqlGenerationLibrary.GetParameterName(lsKey, lnL)));
-                            loSqlSelectClause.Append(string.Concat("@", MaxSqlGenerationLibrary.GetParameterName(lsKey, lnL)));
+                            loSqlValueClause.Append(string.Concat("@", MaxSqlGenerationLibrary.GetParameterName(lsDataName, lnL)));
+                            loSqlSelectClause.Append(string.Concat("@", MaxSqlGenerationLibrary.GetParameterName(lsDataName, lnL)));
                         }
 
                         if (0 == loSqlInsertClause.Length)
@@ -340,7 +334,7 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
                             loSqlInsertClause.Append(", ");
                         }
 
-                        loSqlInsertClause.Append(string.Concat("[", lsKey, "]"));
+                        loSqlInsertClause.Append(string.Concat("[", lsDataName, "]"));
                     }
 				}
 
@@ -377,44 +371,38 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
 			StringBuilder loSqlWhereClause = new StringBuilder();
 			string lsSql = string.Empty;
 
-			string[] laKeyList = loDataList.DataModel.GetKeyList();
 			for (int lnL = 0; lnL < loDataList.Count; lnL++)
 			{
 				MaxData loData = loDataList[lnL];
-				for (int lnK = 0; lnK < laKeyList.Length; lnK++)
+				foreach (string lsDataName in loDataList.DataModel.DataNameList)
 				{
-					string lsKey = laKeyList[lnK];
-                    if (loData.DataModel.IsStored(lsKey))
+                    if (loData.DataModel.IsStored(lsDataName))
                     {
-                        bool lbIsPrimaryKey = loDataList.DataModel.GetPropertyAttributeSetting(lsKey, "IsPrimaryKey");
-                        if (loData.GetIsChanged(lsKey) || (lbIsPrimaryKey && null != loData.Get(lsKey)))
+                        if (loDataList.DataModel.IsPrimaryKey(lsDataName))
                         {
-                            if (lbIsPrimaryKey)
+                            if (0 == loSqlWhereClause.Length)
                             {
-                                if (0 == loSqlWhereClause.Length)
-                                {
-                                    loSqlWhereClause.Append(" WHERE ");
-                                }
-                                else
-                                {
-                                    loSqlWhereClause.Append(" AND ");
-                                }
-
-                                loSqlWhereClause.Append(string.Concat("[", lsKey, "] = @", lsKey, "$", lnL.ToString()));
+                                loSqlWhereClause.Append(" WHERE ");
                             }
                             else
                             {
-                                if (0 == loSqlUpdateClause.Length)
-                                {
-                                    loSqlUpdateClause.Append(string.Concat("UPDATE [", loDataList.DataStorageName, "] SET "));
-                                }
-                                else
-                                {
-                                    loSqlUpdateClause.Append(", ");
-                                }
-
-                                loSqlUpdateClause.Append(string.Concat("[", lsKey, "] = @", lsKey, "$", lnL.ToString()));
+                                loSqlWhereClause.Append(" AND ");
                             }
+
+                            loSqlWhereClause.Append(string.Concat("[", lsDataName, "] = @", lsDataName, "$", lnL.ToString()));
+                        }
+                        else if (loData.GetIsChanged(lsDataName))
+                        {
+                            if (0 == loSqlUpdateClause.Length)
+                            {
+                                loSqlUpdateClause.Append(string.Concat("UPDATE [", loDataList.DataStorageName, "] SET "));
+                            }
+                            else
+                            {
+                                loSqlUpdateClause.Append(", ");
+                            }
+
+                            loSqlUpdateClause.Append(string.Concat("[", lsDataName, "] = @", lsDataName, "$", lnL.ToString()));
                         }
                     }
 				}
@@ -448,29 +436,23 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
 			}
 
 			StringBuilder loSqlDeleteClause = new StringBuilder();
-			string[] laKeyList = loDataList.DataModel.GetKeyList();
 			for (int lnL = 0; lnL < loDataList.Count; lnL++)
 			{
 				MaxData loData = loDataList[lnL];
-				for (int lnK = 0; lnK < laKeyList.Length; lnK++)
+				foreach (string lsDataName in loDataList.DataModel.DataNameList)
 				{
-					string lsKey = laKeyList[lnK];
-					if (loData.DataModel.IsStored(lsKey) && null != loData.Get(lsKey))
+					if (loData.DataModel.IsStored(lsDataName) && loDataList.DataModel.IsPrimaryKey(lsDataName))
 					{
-						bool lbIsPrimaryKey = loDataList.DataModel.GetPropertyAttributeSetting(lsKey, "IsPrimaryKey");
-						if (lbIsPrimaryKey)
+						if (0 == loSqlDeleteClause.Length)
 						{
-							if (0 == loSqlDeleteClause.Length)
-							{
-								loSqlDeleteClause.Append(string.Concat("DELETE FROM [", loDataList.DataStorageName, "] WHERE "));
-							}
-							else
-							{
-								loSqlDeleteClause.Append(" AND ");
-							}
-
-							loSqlDeleteClause.Append(string.Concat("[", lsKey, "] = @", lsKey, "$", lnL.ToString()));
+							loSqlDeleteClause.Append(string.Concat("DELETE FROM [", loDataList.DataStorageName, "] WHERE "));
 						}
+						else
+						{
+							loSqlDeleteClause.Append(" AND ");
+						}
+
+						loSqlDeleteClause.Append(string.Concat("[", lsDataName, "] = @", lsDataName, "$", lnL.ToString()));
 					}
 				}
 			}
@@ -494,34 +476,24 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
 
             string lsR = string.Empty;
             string lsSqlWhere = this.GetWhere(loData, loDataQuery);
-            MaxIndex loFieldsList = new MaxIndex();
+            MaxIndex loRequestedList = new MaxIndex();
             if (null != laDataNameList)
             {
-                foreach (string lsField in laDataNameList)
+                foreach (string lsDataName in laDataNameList)
                 {
-                    if (lsField.Length > 0)
+                    if (lsDataName.Length > 0)
                     {
-                        loFieldsList.Add(lsField);
+                        loRequestedList.Add(lsDataName, true);
                     }
                 }
             }
 
             StringBuilder loSqlSelectClause = new StringBuilder();
-
-            MaxIndex loFieldRequestedList = new MaxIndex();
-            string[] laFieldsKey = loFieldsList.GetSortedKeyList();
-            for (int lnK = 0; lnK < laFieldsKey.Length; lnK++)
+            foreach (string lsDataName in loData.DataModel.DataNameList)
             {
-                loFieldRequestedList.Add(loFieldsList[laFieldsKey[lnK]], true);
-            }
-
-            string[] laTableFieldNameList = loData.DataModel.GetKeyList();
-            for (int lnK = 0; lnK < laTableFieldNameList.Length; lnK++)
-            {
-                string lsFieldName = laTableFieldNameList[lnK];
-                if (loData.DataModel.IsStored(lsFieldName))
+                if (loData.DataModel.IsStored(lsDataName))
                 {
-                    if (loFieldsList.Count == 0 || loFieldRequestedList.Contains(lsFieldName))
+                    if (loRequestedList.Count == 0 || loRequestedList.Contains(lsDataName))
                     {
                         if (0 == loSqlSelectClause.Length)
                         {
@@ -532,33 +504,34 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
                             loSqlSelectClause.Append(", ");
                         }
 
-                        loSqlSelectClause.Append(string.Concat("[", lsFieldName, "]"));
-                        if (loFieldRequestedList.Contains(lsFieldName))
+                        loSqlSelectClause.Append(string.Concat("[", lsDataName, "]"));
+                        if (loRequestedList.Contains(lsDataName))
                         {
-                            loFieldRequestedList.Remove(lsFieldName);
+                            loRequestedList.Remove(lsDataName);
                         }
                     }
                 }
             }
 
-            for (int lnK = 0; lnK < laFieldsKey.Length; lnK++)
+            if (null != laDataNameList)
             {
-                string lsFunction = laFieldsKey[lnK];
-                if (loFieldRequestedList.Contains(lsFunction) && this.IsFunction(lsFunction))
+                foreach (string lsDataName in laDataNameList)
                 {
-                    if (0 == loSqlSelectClause.Length)
+                    if (loRequestedList.Contains(lsDataName) && this.IsFunction(lsDataName))
                     {
-                        loSqlSelectClause.Append("SELECT ");
-                    }
-                    else
-                    {
-                        loSqlSelectClause.Append(", ");
-                    }
+                        if (0 == loSqlSelectClause.Length)
+                        {
+                            loSqlSelectClause.Append("SELECT ");
+                        }
+                        else
+                        {
+                            loSqlSelectClause.Append(", ");
+                        }
 
-                    loSqlSelectClause.Append(lsFunction);
-                    loFieldRequestedList.Remove(lsFunction);
-                }
-            }
+                        loSqlSelectClause.Append(lsDataName);
+                        loRequestedList.Remove(lsDataName);
+                    }
+                } }
 
             lsR = string.Concat(loSqlSelectClause.ToString(), " FROM [", loData.DataModel.DataStorageName, "] ");
             if (lsSqlWhere.Length > 0)
@@ -669,77 +642,71 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
         protected virtual string GetWhere(MaxData loData, MaxDataQuery loDataQuery)
 		{
 			StringBuilder loSqlWhereClause = new StringBuilder();
-
-			string[] laKeyList = loData.DataModel.GetKeyList();
-
-			for (int lnK = 0; lnK < laKeyList.Length; lnK++)
+            //// Check the data to see if parts of the primary key are provided
+			foreach (string lsDataName in loData.DataModel.DataNameKeyList)
 			{
-				string lsKey = laKeyList[lnK];
-				if (loData.DataModel.IsStored(lsKey) && null != loData.Get(lsKey))
+				if (null != loData.Get(lsDataName))
 				{
-					bool lbIsPrimaryKey = loData.DataModel.GetPropertyAttributeSetting(lsKey, "IsPrimaryKey");
-					if (lbIsPrimaryKey)
+					if (0 == loSqlWhereClause.Length)
 					{
-						if (null != loData.Get(lsKey))
-						{
-							if (0 == loSqlWhereClause.Length)
-							{
-								loSqlWhereClause.Append(" WHERE ");
-							}
-							else
-							{
-								loSqlWhereClause.Append(" AND ");
-							}
-
-							loSqlWhereClause.Append(this.GetField(lsKey));
-						}
+						loSqlWhereClause.Append(" WHERE ");
 					}
+					else
+					{
+						loSqlWhereClause.Append(" AND ");
+					}
+
+					loSqlWhereClause.Append(this.GetField(lsDataName));
 				}
 			}
 
-            object[] laDataQuery = loDataQuery.GetQuery();
-            if (laDataQuery.Length > 0)
+            //// Add anything in a data query
+            if (null != loDataQuery)
             {
-                string lsDataQuery = string.Empty;
-                for (int lnDQ = 0; lnDQ < laDataQuery.Length; lnDQ++)
+                object[] laDataQuery = loDataQuery.GetQuery();
+                if (laDataQuery.Length > 0)
                 {
-                    object loStatement = laDataQuery[lnDQ];
-                    if (loStatement is char)
+                    string lsDataQuery = string.Empty;
+                    for (int lnDQ = 0; lnDQ < laDataQuery.Length; lnDQ++)
                     {
-                        // Group Start or end characters
-                        lsDataQuery += (char)loStatement;
-                    }
-                    else if (loStatement is string)
-                    {
-                        // Comparison operators
-                        lsDataQuery += " " + (string)loStatement + " ";
-                    }
-                    else if (loStatement is MaxDataFilter)
-                    {
-                        MaxDataFilter loDataFilter = (MaxDataFilter)loStatement;
-                        if (loDataFilter.Value == null)
+                        object loStatement = laDataQuery[lnDQ];
+                        if (loStatement is char)
                         {
-                            lsDataQuery += "[" + loDataFilter.Name + "] " + loDataFilter.Operator;
+                            // Group Start or end characters
+                            lsDataQuery += (char)loStatement;
+                        }
+                        else if (loStatement is string)
+                        {
+                            // Comparison operators
+                            lsDataQuery += " " + (string)loStatement + " ";
+                        }
+                        else if (loStatement is MaxDataFilter)
+                        {
+                            MaxDataFilter loDataFilter = (MaxDataFilter)loStatement;
+                            if (loDataFilter.Value == null)
+                            {
+                                lsDataQuery += "[" + loDataFilter.Name + "] " + loDataFilter.Operator;
+                            }
+                            else
+                            {
+                                lsDataQuery += "[" + loDataFilter.Name + "] " + loDataFilter.Operator + " @DQ" + lnDQ.ToString() + MaxSqlGenerationLibrary.GetParameterName(loDataFilter.Name, int.MinValue);
+                            }
+                        }
+                    }
+
+                    if (lsDataQuery.Length > 0)
+                    {
+                        if (0 == loSqlWhereClause.Length)
+                        {
+                            loSqlWhereClause.Append(" WHERE ");
                         }
                         else
                         {
-                            lsDataQuery += "[" + loDataFilter.Name + "] " + loDataFilter.Operator + " @DQ" + lnDQ.ToString() + MaxSqlGenerationLibrary.GetParameterName(loDataFilter.Name, int.MinValue);
+                            loSqlWhereClause.Append(" AND ");
                         }
-                    }
-                }
 
-                if (lsDataQuery.Length > 0)
-                {
-                    if (0 == loSqlWhereClause.Length)
-                    {
-                        loSqlWhereClause.Append(" WHERE ");
+                        loSqlWhereClause.Append(lsDataQuery);
                     }
-                    else
-                    {
-                        loSqlWhereClause.Append(" AND ");
-                    }
-
-                    loSqlWhereClause.Append(lsDataQuery);
                 }
             }
 
@@ -795,7 +762,7 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
 				return false;
 			}
 
-			if (loDataList.DataModel.GetKeyList().Length == 0)
+			if (loDataList.DataModel.DataNameList.Length == 0)
 			{
 				return false;
 			}
@@ -820,7 +787,7 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
 				return false;
 			}
 
-			if (loData.DataModel.GetKeyList().Length == 0)
+			if (loData.DataModel.DataNameList.Length == 0)
 			{
 				return false;
 			}
