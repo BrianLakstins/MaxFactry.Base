@@ -36,6 +36,8 @@
 // <change date="8/30/2016" author="Brian A. Lakstins" description="Fix insert when already exists.">
 // <change date="12/12/2019" author="Brian A. Lakstins" description="Reset data for new record instead of reusing loaded data with modifications.">
 // <change date="1/16/2021" author="Brian A. Lakstins" description="Update definition of cache keys.">
+// <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
+// <change date="3/22/2024" author="Brian A. Lakstins" description="Updated for change to MaxData">
 // </changelog>
 #endregion
 
@@ -164,7 +166,7 @@ namespace MaxFactry.Base.BusinessLayer
 
                 if (!lbFound)
                 {
-                    this.Data.Reset();
+                    this.Data.Clear();
                     this.IndexId = loIndexId;
                     this.Name = lsName;
                     this.Value = lsValue;

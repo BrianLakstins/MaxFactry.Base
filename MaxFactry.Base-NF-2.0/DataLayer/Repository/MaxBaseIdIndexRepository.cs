@@ -33,6 +33,8 @@
 // <change date="12/18/2014" author="Brian A. Lakstins" description="Updated Provider and DataModel access pattern.">
 // <change date="3/26/2015" author="Brian A. Lakstins" description="Moved to MaxFactry.Base">
 // <change date="12/21/2016" author="Brian A. Lakstins" description="Updated to work consistently with updated MaxData.">
+// <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
+// <change date="3/23/2024" author="Brian A. Lakstins" description="Removed passing Total to methods.">
 // </changelog>
 #endregion
 
@@ -66,8 +68,7 @@ namespace MaxFactry.Base.DataLayer
             MaxData loDataFilter = new MaxData(loData);
             loDataFilter.Set(loDataModel.Name, lsName);
             MaxDataQuery loDataQuery = new MaxDataQuery();
-            int lnTotal = 0;
-            MaxDataList loDataList = Select(loDataFilter, loDataQuery, 0, 0, string.Empty, out lnTotal, laDataNameList);
+            MaxDataList loDataList = Select(loDataFilter, loDataQuery, 0, 0, string.Empty, laDataNameList);
             return loDataList;
         }
 
@@ -90,8 +91,7 @@ namespace MaxFactry.Base.DataLayer
             MaxData loDataFilter = new MaxData(loData);
             loDataFilter.Set(loDataModel.IndexId, loIndexId);
             MaxDataQuery loDataQuery = new MaxDataQuery();
-            int lnTotal = 0;
-            MaxDataList loDataList = Select(loDataFilter, loDataQuery, 0, 0, string.Empty, out lnTotal, laDataNameList);
+            MaxDataList loDataList = Select(loDataFilter, loDataQuery, 0, 0, string.Empty, laDataNameList);
             return loDataList;
         }
 
@@ -117,8 +117,7 @@ namespace MaxFactry.Base.DataLayer
             loDataFilter.Set(loDataModel.IndexId, loIndexId);
             loDataFilter.Set(loDataModel.Name, lsName);
             MaxDataQuery loDataQuery = new MaxDataQuery();
-            int lnTotal = 0;
-            MaxDataList loDataList = Select(loDataFilter, loDataQuery, 0, 0, string.Empty, out lnTotal, laDataNameList);
+            MaxDataList loDataList = Select(loDataFilter, loDataQuery, 0, 0, string.Empty, laDataNameList);
             return loDataList;
         }
 	}

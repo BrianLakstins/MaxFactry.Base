@@ -31,19 +31,19 @@
 // <change date="12/2/2014" author="Brian A. Lakstins" description="Update to match interface.  Add laFields.">
 // <change date="3/26/2015" author="Brian A. Lakstins" description="Moved to MaxFactry.Base">
 // <change date="12/21/2016" author="Brian A. Lakstins" description="Added central method to filter by deleted property.">
+// <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
+// <change date="3/23/2024" author="Brian A. Lakstins" description="Change parent class.  Update for changes to DataModel.">
 // </changelog>
 #endregion
 
 namespace MaxFactry.Base.DataLayer.Provider
 {
-	using System;
-	using MaxFactry.Core;
     using MaxFactry.Base.DataLayer;
 
 	/// <summary>
     /// Provider for MaxBaseIdRepository
 	/// </summary>
-    public abstract class MaxBaseIdRepositoryDefaultProvider : MaxFactry.Base.DataLayer.Provider.MaxStorageWriteRepositoryDefaultProvider, IMaxBaseIdRepositoryProvider
+    public abstract class MaxBaseIdRepositoryDefaultProvider : MaxFactry.Base.DataLayer.Provider.MaxBaseRepositoryDefaultProvider, IMaxBaseIdRepositoryProvider
 	{
         /// <summary>
         /// Selects data from the database.
@@ -59,7 +59,7 @@ namespace MaxFactry.Base.DataLayer.Provider
         public override MaxDataList Select(MaxData loData, MaxDataQuery loDataQuery, int lnPageIndex, int lnPageSize, string lsOrderBy, out int lnTotal, params string[] laDataNameList)
         {
             ////Update DataQuery to include filter by IsDeleted if one is not already there.
-            if (loData.DataModel is MaxBaseIdDataModel)
+            if (loData.DataModel is MaxBaseDataModel)
             {
                 bool lbHasIsDeleted = false;
                 if (null != loDataQuery)
@@ -69,14 +69,14 @@ namespace MaxFactry.Base.DataLayer.Provider
                     {
                         if (loQuery is MaxDataFilter)
                         {
-                            if (((MaxDataFilter)loQuery).Name == ((MaxBaseIdDataModel)loData.DataModel).IsDeleted)
+                            if (((MaxDataFilter)loQuery).Name == ((MaxBaseDataModel)loData.DataModel).IsDeleted)
                             {
                                 lbHasIsDeleted = true;
                             }
                         }
                     }
 
-                    if (!lbHasIsDeleted && loData.DataModel.HasKey(((MaxBaseIdDataModel)loData.DataModel).IsDeleted))
+                    if (!lbHasIsDeleted && loData.DataModel.HasDataName(((MaxBaseDataModel)loData.DataModel).IsDeleted))
                     {
                         if (laQuery.Length > 0)
                         {
@@ -84,7 +84,7 @@ namespace MaxFactry.Base.DataLayer.Provider
                         }
 
                         loDataQuery.StartGroup();
-                        loDataQuery.AddFilter(((MaxBaseIdDataModel)loData.DataModel).IsDeleted, "=", false);
+                        loDataQuery.AddFilter(((MaxBaseDataModel)loData.DataModel).IsDeleted, "=", false);
                         loDataQuery.EndGroup();
                     }
                 }

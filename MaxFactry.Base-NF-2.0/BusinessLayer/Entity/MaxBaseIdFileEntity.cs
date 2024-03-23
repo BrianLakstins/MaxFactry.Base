@@ -38,6 +38,8 @@
 // <change date="12/21/2016" author="Brian A. Lakstins" description="Removed code that was moved into another method.">
 // <change date="11/8/2018" author="Brian A. Lakstins" description="Fix getting mime type from resource.">
 // <change date="4/30/2021" author="Brian A. Lakstins" description="Add content date for original file date and time.">
+// <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
+// <change date="3/22/2024" author="Brian A. Lakstins" description="Updated repository reference.">
 // </changelog>
 #endregion
 
@@ -257,7 +259,7 @@ namespace MaxFactry.Base.BusinessLayer
         /// <returns>Data updated based on sending of message.</returns>
         public string GetMimeType(string lsFileName)
         {
-            string lsR = MaxStorageReadRepository.GetMimeType(this.Data, lsFileName);
+            string lsR = MaxBaseIdVersionedRepository.GetMimeType(this.Data, lsFileName);
             return lsR;
         }
     }

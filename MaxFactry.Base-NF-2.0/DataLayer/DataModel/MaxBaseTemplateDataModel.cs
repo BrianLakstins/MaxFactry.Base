@@ -28,12 +28,13 @@
 #region Change Log
 // <changelog>
 // <change date="4/4/2015" author="Brian A. Lakstins" description="Initial creation.">
+// <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
+// <change date="3/23/2024" author="Brian A. Lakstins" description="Updated for changes to DataModel.">
 // </changelog>
 #endregion
 
 namespace MaxFactry.Module.Template.DataLayer
 {
-    using System;
     using MaxFactry.Base.DataLayer;
 
     /// <summary>
@@ -59,7 +60,7 @@ namespace MaxFactry.Module.Template.DataLayer
             this.AddType(this.Property, typeof(string));
             this.AddType(this.Property, typeof(MaxLongString));
             this.AddNullable(this.Property, typeof(MaxLongString));
-            this.AddPropertyAttribute(this.Property, "IsEncrypted", "true");
+            this.AddAttribute(this.Property, AttributeIsEncrypted, "true");
         }
     }
 }

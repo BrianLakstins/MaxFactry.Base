@@ -30,6 +30,8 @@
 // <change date="6/25/2014" author="Brian A. Lakstins" description="Based on IMaxAppIdRepositoryProvider">
 // <change date="12/2/2014" author="Brian A. Lakstins" description="Add laFields.">
 // <change date="3/26/2015" author="Brian A. Lakstins" description="Moved to MaxFactry.Base">
+// <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
+// <change date="3/22/2024" author="Brian A. Lakstins" description="Change parent interface.">
 // </changelog>
 #endregion
 
@@ -41,7 +43,7 @@ namespace MaxFactry.Base.DataLayer
 	/// <summary>
 	/// Defines the an interface for interacting with the data repository
 	/// </summary>
-    public interface IMaxBaseIdRepositoryProvider : IMaxStorageWriteRepositoryProvider
+    public interface IMaxBaseIdRepositoryProvider : IMaxBaseWriteRepositoryProvider
 	{
 	}
 }

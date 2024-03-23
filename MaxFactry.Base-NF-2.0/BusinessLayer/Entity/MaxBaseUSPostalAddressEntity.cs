@@ -29,6 +29,8 @@
 // <changelog>
 // <change date="2/26/2014" author="Brian A. Lakstins" description="Initial Release">
 // <change date="2/1/2016" author="Brian A. Lakstins" description="Add a way to load by postal address.">
+// <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
+// <change date="3/23/2024" author="Brian A. Lakstins" description="Updated to use methods from parent.">
 // </changelog>
 #endregion
 
@@ -241,9 +243,7 @@ namespace MaxFactry.Base.BusinessLayer
         /// <returns>List of addresses</returns>
         public MaxEntityList LoadAllByDeliveryAddress(string lsDeliverAddress)
         {
-            MaxDataList loDataList = MaxBaseIdRepository.SelectAllByProperty(this.Data, this.MaxUSPostalAddressDataModel.DeliveryAddress, lsDeliverAddress);
-            MaxEntityList loList = MaxEntityList.Create(this.GetType(), loDataList);
-            return loList;
+            return this.LoadAllByProperty(this.MaxUSPostalAddressDataModel.DeliveryAddress, lsDeliverAddress);
         }
 
         /// <summary>
@@ -253,9 +253,7 @@ namespace MaxFactry.Base.BusinessLayer
         /// <returns>List of addresses</returns>
         public MaxEntityList LoadAllByPostalCode(string lsPostalCode)
         {
-            MaxDataList loDataList = MaxBaseIdRepository.SelectAllByProperty(this.Data, this.MaxUSPostalAddressDataModel.PostalCode, lsPostalCode);
-            MaxEntityList loList = MaxEntityList.Create(this.GetType(), loDataList);
-            return loList;
+            return this.LoadAllByProperty(this.MaxUSPostalAddressDataModel.PostalCode, lsPostalCode);
         }
     }
 }

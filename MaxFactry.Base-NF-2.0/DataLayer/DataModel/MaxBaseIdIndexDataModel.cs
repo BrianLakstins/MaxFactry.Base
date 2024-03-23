@@ -32,6 +32,8 @@
 // <change date="3/26/2015" author="Brian A. Lakstins" description="Moved to MaxFactry.Base">
 // <change date="12/9/2015" author="Brian A. Lakstins" description="Updated to include indexId as part of storage id.">
 // <change date="12/21/2016" author="Brian A. Lakstins" description="Updated to use AddKey method.  Added override for GetPrimaryKeySuffix.">
+// <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
+// <change date="3/22/2024" author="Brian A. Lakstins" description="Remove unused method.">
 // </changelog>
 #endregion
 
@@ -72,25 +74,5 @@ namespace MaxFactry.Base.DataLayer
             this.AddKey(this.Name, typeof(MaxShortString));
             this.AddType(this.Value, typeof(string));
 		}
-
-        /// <summary>
-        /// Gets a suffix for the primary key based on the data to speed up future queries
-        /// </summary>
-        /// <param name="loData">Data to use to create the suffix</param>
-        /// <returns>String to use as suffix for primary key</returns>
-        public override string GetPrimaryKeySuffix(MaxData loData)
-        {
-            string lsR = base.GetPrimaryKeySuffix(loData);
-            if (lsR == null || lsR.Length.Equals(0))
-            {
-                object loIndexId = loData.Get(this.IndexId);
-                if (null != loIndexId)
-                {
-                    lsR = loIndexId.ToString().ToLowerInvariant();
-                }
-            }
-
-            return lsR;
-        }
 	}
 }

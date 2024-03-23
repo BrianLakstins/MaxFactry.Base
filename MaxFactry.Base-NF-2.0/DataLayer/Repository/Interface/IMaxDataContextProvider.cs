@@ -31,6 +31,8 @@
 // <change date="2/25/2014" author="Brian A. Lakstins" description="Add select methods.">
 // <change date="8/21/2014" author="Brian A. Lakstins" description="Add stream management methods.">
 // <change date="12/2/2014" author="Brian A. Lakstins" description="Add laFields.">
+// <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
+// <change date="3/23/2024" author="Brian A. Lakstins" description="Updated SelectAll to use information from MaxData">
 // </changelog>
 #endregion
 
@@ -48,10 +50,10 @@ namespace MaxFactry.Base.DataLayer
         /// <summary>
         /// Selects all data from the data storage name for the specified type.
         /// </summary>
-        /// <param name="lsDataStorageName">Name of the data storage (table name).</param>
+        /// <param name="loData">Data used for return format</param>
         /// <param name="laFields">list of fields to return from select</param>
         /// <returns>List of data elements with a base data model.</returns>
-        MaxDataList SelectAll(string lsDataStorageName, params string[] laFields);
+        MaxDataList SelectAll(MaxData loData, params string[] laFields);
 
         /// <summary>
         /// Selects data from the database

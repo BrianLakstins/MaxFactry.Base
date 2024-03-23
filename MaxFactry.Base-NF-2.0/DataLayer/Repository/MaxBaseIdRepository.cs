@@ -38,21 +38,43 @@
 // <change date="1/14/2015" author="Brian A. Lakstins" description="Update to work without any deleted field.">
 // <change date="3/26/2015" author="Brian A. Lakstins" description="Moved to MaxFactry.Base">
 // <change date="12/21/2016" author="Brian A. Lakstins" description="Updated to work consistently with updated MaxData.">
+// <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
+// <change date="3/22/2024" author="Brian A. Lakstins" description="Change parent class.  Use MaxData without making a copy.  Add SelectAllByProperty because it no longer exists in the parent class.">
 // </changelog>
 #endregion
 
 namespace MaxFactry.Base.DataLayer
 {
 	using System;
-    using System.IO;
     using MaxFactry.Core;
-    using MaxFactry.Base.DataLayer;
 
 	/// <summary>
 	/// Provides static methods to manipulate storage of data
 	/// </summary>
-	public abstract class MaxBaseIdRepository : MaxIdGuidRepository
+	public abstract class MaxBaseIdRepository : MaxBaseRepository
 	{
+        /// <summary>
+        /// Selects all based on a single property
+        /// </summary>
+        /// <param name="loData">Element with data used to determine the provider.</param>
+        /// <param name="lsPropertyName">The name of the property used to select.</param>
+        /// <param name="loPropertyValue">The value of the property used to select.</param>
+        /// <param name="laDataNameList">list of fields to return from select</param>
+        /// <returns>List of data from select</returns>
+        public static MaxDataList SelectAllByProperty(MaxData loData, string lsPropertyName, object loPropertyValue, params string[] laDataNameList)
+        {
+            //// Set the property in case it is used on a PrimaryKey suffix
+            loData.Set(lsPropertyName, loPropertyValue);
+            MaxData loDataFilter = new MaxData(loData);
+            //// Add a Query 
+            MaxDataQuery loDataQuery = new MaxDataQuery();
+            loDataQuery.StartGroup();
+            loDataQuery.AddFilter(lsPropertyName, "=", loPropertyValue);
+            loDataQuery.EndGroup();
+            MaxDataList loDataList = Select(loDataFilter, loDataQuery, 0, 0, string.Empty, laDataNameList);
+            return loDataList;
+        }
+
         /// <summary>
         /// Selects all active not marked as deleted based on a single property
         /// </summary>
@@ -63,23 +85,19 @@ namespace MaxFactry.Base.DataLayer
         /// <returns>List of data from select</returns>
         public static MaxDataList SelectAllActiveByProperty(MaxData loData, string lsPropertyName, object loPropertyValue, params string[] laDataNameList)
         {
-            MaxBaseIdDataModel loDataModel = loData.DataModel as MaxBaseIdDataModel;
+            MaxBaseDataModel loDataModel = loData.DataModel as MaxBaseDataModel;
             if (null == loDataModel)
             {
                 throw new MaxException("Error casting [" + loData.DataModel.GetType() + "] for DataModel");
             }
 
-            loData.Set(lsPropertyName, loPropertyValue);
-            MaxData loDataFilter = new MaxData(loData);
-            loDataFilter.Set(lsPropertyName, loPropertyValue);
             MaxDataQuery loDataQuery = new MaxDataQuery();
             loDataQuery.StartGroup();
             loDataQuery.AddFilter(lsPropertyName, "=", loPropertyValue);
             loDataQuery.AddCondition("AND");
             loDataQuery.AddFilter(loDataModel.IsActive, "=", true);
             loDataQuery.EndGroup();
-            int lnTotal = 0;
-            MaxDataList loDataList = Select(loDataFilter, loDataQuery, 0, 0, string.Empty, out lnTotal, laDataNameList);
+            MaxDataList loDataList = Select(loData, loDataQuery, 0, 0, string.Empty, laDataNameList);
             return loDataList;
         }
 
@@ -99,15 +117,13 @@ namespace MaxFactry.Base.DataLayer
                 throw new MaxException("Error casting [" + loData.DataModel.GetType() + "] for DataModel");
             }
 
-            MaxData loDataFilter = new MaxData(loData);
             MaxDataQuery loDataQuery = new MaxDataQuery();
             loDataQuery.StartGroup();
             loDataQuery.AddFilter(loDataModel.LastUpdateDate, ">=", ldStart);
             loDataQuery.AddCondition("AND");
             loDataQuery.AddFilter(loDataModel.LastUpdateDate, "<", ldEnd);
             loDataQuery.EndGroup();
-            int lnTotal = 0;
-            MaxDataList loDataList = Select(loDataFilter, loDataQuery, 0, 0, string.Empty, out lnTotal, laDataNameList);
+            MaxDataList loDataList = Select(loData, loDataQuery, 0, 0, string.Empty, laDataNameList);
             return loDataList;
         }
 	}
