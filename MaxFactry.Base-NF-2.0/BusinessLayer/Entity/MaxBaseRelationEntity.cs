@@ -28,13 +28,14 @@
 #region Change Log
 // <changelog>
 // <change date="10/28/2022" author="Brian A. Lakstins" description="Initial creation.">
+// <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
+// <change date="3/23/2024" author="Brian A. Lakstins" description="Incorporate parent class method.">
 // </changelog>
 #endregion
 
 namespace MaxFactry.Base.BusinessLayer
 {
 	using System;
-    using MaxFactry.Core;
     using MaxFactry.Base.DataLayer;
 
 	/// <summary>
@@ -197,92 +198,12 @@ namespace MaxFactry.Base.BusinessLayer
 
         protected MaxEntityList LoadAllByParentIdChildIdCache(Guid loParentId, Guid loChildId)
         {
-            MaxEntityList loR = MaxEntityList.Create(this.GetType());
-            string lsCacheAllDataKey = this.GetCacheKey() + "LoadAll";
-            MaxDataList loDataAllList = MaxCacheRepository.Get(this.GetType(), lsCacheAllDataKey, typeof(MaxDataList)) as MaxDataList;
-            if (null != loDataAllList && loDataAllList.Count > 0)
-            {
-                for (int lnD = 0; lnD < loDataAllList.Count; lnD++)
-                {
-                    object loParentIdCheck = loDataAllList[lnD].Get(this.MaxBaseRelationDataModel.ParentId);
-                    if (null != loParentIdCheck && loParentIdCheck.Equals(loParentId))
-                    {
-                        object loChildIdCheck = loDataAllList[lnD].Get(this.MaxBaseRelationDataModel.ChildId);
-                        if (null != loChildIdCheck && loChildIdCheck.Equals(loChildId))
-                        {
-                            MaxEntity loEntity = MaxBusinessLibrary.GetEntity(this.GetType(), loDataAllList[lnD]);
-                            loR.Add(loEntity);
-                        }
-                    }
-                }
-            }
-            else
-            {
-                //// Check Parent Id Cache
-                string lsCacheDataKey = this.GetCacheKey() + "LoadAllByPropertyCache/" + this.MaxBaseRelationDataModel.ParentId + "/" + MaxConvertLibrary.ConvertToString(typeof(object), loParentId);
-                MaxDataList loDataList = MaxCacheRepository.Get(this.GetType(), lsCacheDataKey, typeof(MaxDataList)) as MaxDataList;
-                if (null != loDataList && loDataList.Count > 0)
-                {
-                    for (int lnD = 0; lnD < loDataList.Count; lnD++)
-                    {
-                        object loChildIdCheck = loDataList[lnD].Get(this.MaxBaseRelationDataModel.ChildId);
-                        if (null != loChildIdCheck && loChildIdCheck.Equals(loChildId))
-                        {
-                            MaxEntity loEntity = MaxBusinessLibrary.GetEntity(this.GetType(), loDataList[lnD]);
-                            loR.Add(loEntity);
-                        }
-                    }
-                }
-                else
-                {
-                    //// Check Child Id Cache
-                    lsCacheDataKey = this.GetCacheKey() + "LoadAllByPropertyCache/" + this.MaxBaseRelationDataModel.ChildId + "/" + MaxConvertLibrary.ConvertToString(typeof(object), loChildId);
-                    loDataList = MaxCacheRepository.Get(this.GetType(), lsCacheDataKey, typeof(MaxDataList)) as MaxDataList;
-                    if (null != loDataList && loDataList.Count > 0)
-                    {
-                        for (int lnD = 0; lnD < loDataList.Count; lnD++)
-                        {
-                            object loParentIdCheck = loDataList[lnD].Get(this.MaxBaseRelationDataModel.ParentId);
-                            if (null != loParentIdCheck && loParentIdCheck.Equals(loParentId))
-                            {
-                                MaxEntity loEntity = MaxBusinessLibrary.GetEntity(this.GetType(), loDataList[lnD]);
-                                loR.Add(loEntity);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        //// Check Specific cache
-                        lsCacheDataKey = this.GetCacheKey() + "LoadAllByPropertyCache/" + this.MaxBaseRelationDataModel.ParentId + "/" + MaxConvertLibrary.ConvertToString(typeof(object), loParentId) + "/" + this.MaxBaseRelationDataModel.ChildId + "/" + MaxConvertLibrary.ConvertToString(typeof(object), loChildId);
-                        loDataList = MaxCacheRepository.Get(this.GetType(), lsCacheDataKey, typeof(MaxDataList)) as MaxDataList;
-                        if (null != loDataList && loDataList.Count > 0)
-                        {
-                            for (int lnD = 0; lnD < loDataList.Count; lnD++)
-                            {
-                                MaxEntity loEntity = MaxBusinessLibrary.GetEntity(this.GetType(), loDataList[lnD]);
-                                loR.Add(loEntity);
-                            }
-                        }
-                        else
-                        {
-                            //// Load from database
-                            MaxDataQuery loDataQuery = new MaxDataQuery();
-                            loDataQuery.StartGroup();
-                            loDataQuery.AddFilter(this.MaxBaseRelationDataModel.ParentId, "=", loParentId);
-                            loDataQuery.AddCondition("AND");
-                            loDataQuery.AddFilter(this.MaxBaseRelationDataModel.ChildId, "=", loChildId);
-                            loDataQuery.EndGroup();
-                            int lnTotal = 0;
-                            loDataList = MaxBaseIdRepository.Select(this.GetData(), loDataQuery, 0, 0, string.Empty, out lnTotal);
-                            MaxCacheRepository.Set(this.GetType(), lsCacheDataKey, loDataList);
-                            loR = MaxEntityList.Create(this.GetType(), loDataList);
-                        }
-                    }
-                }
-            }
-
-            return loR;
-
+            MaxDataQuery loDataQuery = new MaxDataQuery();
+            loDataQuery.AddFilter(this.MaxBaseRelationDataModel.ParentId, "=", loParentId);
+            loDataQuery.AddAnd();
+            loDataQuery.AddFilter(this.MaxBaseRelationDataModel.ChildId, "=", loChildId);
+            MaxData loData = new MaxData(this.Data);
+            return this.LoadAllByPageCache(loData, 0, 0, string.Empty, loDataQuery);
         }
     }
 }

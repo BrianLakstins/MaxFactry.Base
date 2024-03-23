@@ -28,6 +28,8 @@
 #region Change Log
 // <changelog>
 // <change date="10/28/2022" author="Brian A. Lakstins" description="Initial creation.">
+// <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
+// <change date="3/23/2024" author="Brian A. Lakstins" description="Incorporate parent class method.">
 // </changelog>
 #endregion
 
@@ -99,24 +101,6 @@ namespace MaxFactry.Base.BusinessLayer
             }
         }
 
-        public override MaxIndex EntityPropertyKeyIndex
-        {
-            get
-            {
-                MaxIndex loR = new MaxIndex();
-#if net4_52 || netcore1 || netstandard1_2
-                loR.Add(this.GetPropertyName(() => this.ParentId), this.ParentId);
-                loR.Add(this.GetPropertyName(() => this.ChildId), this.ChildId);
-                loR.Add(this.GetPropertyName(() => this.StartDate), this.StartDate.ToString("o", CultureInfo.InvariantCulture));
-#else
-                loR.Add("ParentId", this.ParentId);
-                loR.Add("ChildId", this.ChildId);
-                loR.Add("StartDate", this.StartDate.ToString("o", CultureInfo.InvariantCulture));
-#endif
-                return loR;
-            }
-        }
-
         /// <summary>
         /// Gets the Data Model for this entity
         /// </summary>
@@ -136,28 +120,18 @@ namespace MaxFactry.Base.BusinessLayer
         /// <returns></returns>
         public MaxEntityList LoadAllByParentIdDateCache(Guid loParentId, DateTime ldDate)
         {
-            MaxEntityList loR = MaxEntityList.Create(this.GetType());
-            string lsCacheDataKey = this.GetCacheKey() + "LoadAllByPropertyCache/" + this.MaxBaseRelationDateDataModel.ParentId + "/" + MaxConvertLibrary.ConvertToString(typeof(object), loParentId) + "/" + ldDate.ToString();
-            MaxDataList loDataList = MaxCacheRepository.Get(this.GetType(), lsCacheDataKey, typeof(MaxDataList)) as MaxDataList;
-            if (null == loDataList)
-            {
-                MaxDataQuery loQuery = new MaxDataQuery();
-                loQuery.AddFilter(this.MaxBaseRelationDateDataModel.ParentId, "=", loParentId);
-                loQuery.AddCondition("AND");
-                loQuery.AddFilter(this.MaxBaseRelationDateDataModel.StartDate, "<", ldDate.ToUniversalTime());
-                loQuery.AddCondition("AND");
-                loQuery.StartGroup();
-                loQuery.AddFilter(this.MaxBaseRelationDateDataModel.EndDate, "is null", null);
-                loQuery.AddCondition("OR");
-                loQuery.AddFilter(this.MaxBaseRelationDateDataModel.EndDate, ">", ldDate.ToUniversalTime());
-                loQuery.EndGroup();
-                int lnTotal = 0;
-                loDataList = MaxBaseIdRepository.Select(this.Data, loQuery, 0, 0, string.Empty, out lnTotal);
-                MaxCacheRepository.Set(this.GetType(), lsCacheDataKey, loDataList);
-            }
-
-            loR = MaxEntityList.Create(this.GetType(), loDataList);
-            return loR;
+            MaxDataQuery loDataQuery = new MaxDataQuery();
+            loDataQuery.AddFilter(this.MaxBaseRelationDateDataModel.ParentId, "=", loParentId);
+            loDataQuery.AddCondition("AND");
+            loDataQuery.AddFilter(this.MaxBaseRelationDateDataModel.StartDate, "<", ldDate.ToUniversalTime());
+            loDataQuery.AddCondition("AND");
+            loDataQuery.StartGroup();
+            loDataQuery.AddFilter(this.MaxBaseRelationDateDataModel.EndDate, "is null", null);
+            loDataQuery.AddCondition("OR");
+            loDataQuery.AddFilter(this.MaxBaseRelationDateDataModel.EndDate, ">", ldDate.ToUniversalTime());
+            loDataQuery.EndGroup();
+            MaxData loData = this.Data.Clone();
+            return this.LoadAllByPageCache(loData, 0, 0, string.Empty, loDataQuery);
         }
 
         /// <summary>
@@ -169,55 +143,20 @@ namespace MaxFactry.Base.BusinessLayer
         /// <returns></returns>
         public MaxEntityList LoadAllByParentIdChildIdDateCache(Guid loParentId, Guid loChildId, DateTime ldDate)
         {
-            MaxEntityList loR = MaxEntityList.Create(this.GetType());
-            string lsCacheDataKey = this.GetCacheKey() + "LoadAllByPropertyCache/" + this.MaxBaseRelationDateDataModel.ParentId + "/" + MaxConvertLibrary.ConvertToString(typeof(object), loParentId) + "/" + MaxConvertLibrary.ConvertToString(typeof(object), loChildId) + "/" + ldDate.ToString();
-            MaxDataList loDataList = MaxCacheRepository.Get(this.GetType(), lsCacheDataKey, typeof(MaxDataList)) as MaxDataList;
-            if (null == loDataList)
-            {
-                MaxDataQuery loQuery = new MaxDataQuery();
-                loQuery.AddFilter(this.MaxBaseRelationDateDataModel.ParentId, "=", loParentId);
-                loQuery.AddCondition("AND");
-                loQuery.AddFilter(this.MaxBaseRelationDateDataModel.ChildId, "=", loChildId);
-                loQuery.AddCondition("AND");
-                loQuery.AddFilter(this.MaxBaseRelationDateDataModel.StartDate, "<", ldDate.ToUniversalTime());
-                loQuery.AddCondition("AND");
-                loQuery.StartGroup();
-                loQuery.AddFilter(this.MaxBaseRelationDateDataModel.EndDate, "is null", null);
-                loQuery.AddCondition("OR");
-                loQuery.AddFilter(this.MaxBaseRelationDateDataModel.EndDate, ">", ldDate.ToUniversalTime());
-                loQuery.EndGroup();
-                int lnTotal = 0;
-                loDataList = MaxBaseIdRepository.Select(this.Data, loQuery, 0, 0, string.Empty, out lnTotal);
-                MaxCacheRepository.Set(this.GetType(), lsCacheDataKey, loDataList);
-            }
-
-            loR = MaxEntityList.Create(this.GetType(), loDataList);
-            return loR;
-        }
-
-        /// <summary>
-        /// Loads all records matching the parent Id, the child Id, and the date part of the start date
-        /// </summary>
-        /// <param name="loParentId">The Id of the parent entity</param>
-        /// <param name="loChildId">The Id of the child entity</param>
-        /// <param name="ldDate">The data that is used to match the date part of the StartDate</param>
-        /// <returns></returns>
-        public bool LoadByKeyCache(Guid loParentId, Guid loChildId, DateTime ldDate)
-        {
-            bool lbR = false;
-            MaxEntityList loList = this.LoadAllByParentIdChildIdCache(loParentId, loChildId);
-            for (int lnE = 0; lnE < loList.Count && !lbR; lnE++)
-            {
-                MaxBaseRelationDateEntity loEntity = loList[lnE] as MaxBaseRelationDateEntity;
-                if (loEntity.StartDate.Date == ldDate.Date)
-                {
-                    MaxData loData = loEntity.GetData();
-                    loData.ClearChanged();
-                    lbR = this.Load(loData);
-                }
-            }
-
-            return lbR;
+            MaxDataQuery loDataQuery = new MaxDataQuery();
+            loDataQuery.AddFilter(this.MaxBaseRelationDateDataModel.ParentId, "=", loParentId);
+            loDataQuery.AddCondition("AND");
+            loDataQuery.AddFilter(this.MaxBaseRelationDateDataModel.ChildId, "=", loChildId);
+            loDataQuery.AddCondition("AND");
+            loDataQuery.AddFilter(this.MaxBaseRelationDateDataModel.StartDate, "<", ldDate.ToUniversalTime());
+            loDataQuery.AddCondition("AND");
+            loDataQuery.StartGroup();
+            loDataQuery.AddFilter(this.MaxBaseRelationDateDataModel.EndDate, "is null", null);
+            loDataQuery.AddCondition("OR");
+            loDataQuery.AddFilter(this.MaxBaseRelationDateDataModel.EndDate, ">", ldDate.ToUniversalTime());
+            loDataQuery.EndGroup();
+            MaxData loData = this.Data.Clone();
+            return this.LoadAllByPageCache(loData, 0, 0, string.Empty, loDataQuery);
         }
     }
 }
