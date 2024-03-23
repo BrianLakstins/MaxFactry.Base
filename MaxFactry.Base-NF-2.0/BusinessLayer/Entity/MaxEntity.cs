@@ -72,6 +72,7 @@
 // <change date="6/9/2021" author="Brian A. Lakstins" description="Only get property values if they are going to be returned.  Cache strings stored in streams.">
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/22/2024" author="Brian A. Lakstins" description="Remove StorageKey.  Add dynamic KeyPropertyList and Key.  Change Repositories to Base versions.  Remove archiving.  Replace Key with DataName.  Add retries to data changing methods.  Update load methods to reuse other load methods when possible.">
+// <change date="3/23/2024" author="Brian A. Lakstins" description="Updating support generic primary keys.  Renaming Reset method to Clear.">
 // </changelog>
 #endregion
 
@@ -221,7 +222,7 @@ namespace MaxFactry.Base.BusinessLayer
         {
             get
             {
-                string lsR = this.Data.GetKey();
+                string lsR = this.Data.DataModel.GetKey(this.Data);
                 return lsR;
             }
         }
@@ -285,9 +286,9 @@ namespace MaxFactry.Base.BusinessLayer
 
 
         /// <summary>
-        /// Resets the data associated with the entity to it's blank state
+        /// Clears the data associated with the entity to it's blank state
         /// </summary>
-        public virtual void Reset()
+        public virtual void Clear()
         {
             this._oData = null;
         }
@@ -1058,7 +1059,7 @@ namespace MaxFactry.Base.BusinessLayer
         public bool LoadByKeyCache(string lsKey, params string[] laPropertyNameList)
         {
             bool lbR = false;
-            string[] laKey = lsKey.Split('\t');
+            string[] laKey = lsKey.Split(new string[] { this.Data.DataModel.KeySeparator }, StringSplitOptions.None);
             MaxDataQuery loDataQuery = new MaxDataQuery();
             if (laKey.Length == this.PropertyNameKeyList.Length)
             {

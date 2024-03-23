@@ -45,7 +45,8 @@
 // <change date="1/16/2021" author="Brian A. Lakstins" description="Update definition of cache keys.">
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/22/2024" author="Brian A. Lakstins" description="Remove EntityPropertyKeyIndex because it will no longer be used.">
-// </changelog>
+// <change date="3/23/2024" author="Brian A. Lakstins" description="Updated for change to dependency class.">
+// </changelog>// </changelog>
 #endregion
 
 namespace MaxFactry.Base.BusinessLayer
@@ -173,7 +174,7 @@ namespace MaxFactry.Base.BusinessLayer
                 return true;
             }
 
-            this.Reset();
+            this.Clear();
             MaxCacheRepository.Set(this.GetType(), lsCacheIdDataKey, this.Data.Clone());
             return false;
         }

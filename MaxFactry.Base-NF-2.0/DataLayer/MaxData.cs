@@ -58,6 +58,7 @@
 // <change date="8/2/2023" author="Brian A. Lakstins" description="Fixed a deserialization issue by not having a contstructor without any arguements">
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/22/2024" author="Brian A. Lakstins" description="Rename Key to DataName.  Save original value when changed.  Consolidate Clone and MaxData initializer.  Remove Clone by datamodel (initializer can be used instead).  Rename Reset to Clear.  Add GetKey.  Add key to stream path.">
+// <change date="3/23/2024" author="Brian A. Lakstins" description="Remove GetKey method (moving to DataModel so can be overridden in child classes if needed)">
 // </changelog>
 #endregion
 
@@ -394,30 +395,6 @@ namespace MaxFactry.Base.DataLayer
             return lsR;
         }
 
-        public string GetKey()
-        {
-            string lsR = string.Empty;
-            foreach (string lsDataName in this.DataModel.DataNameKeyList)
-            {
-                string lsValue = MaxConvertLibrary.ConvertToString(typeof(object), this.Get(lsDataName));
-                if (string.IsNullOrEmpty(lsValue))
-                {
-                    lsR = null;
-                }
-                else if (null != lsR)
-                {
-                    if (lsR.Length > 0)
-                    {
-                        lsR += '/';
-                    }
-
-                    lsR += lsValue;
-                }
-            }
-
-            return lsR;
-        }
-
         public string[] GetStreamPath()
         {
             MaxIndex loR = new MaxIndex();
@@ -447,7 +424,7 @@ namespace MaxFactry.Base.DataLayer
             }
             else if (null != loBaseDataModel)
             {
-                string lsKey = this.GetKey();
+                string lsKey = this.DataModel.GetKey(this);
                 if (!string.IsNullOrEmpty(lsKey))
                 {
                     loR.Add(lsKey);

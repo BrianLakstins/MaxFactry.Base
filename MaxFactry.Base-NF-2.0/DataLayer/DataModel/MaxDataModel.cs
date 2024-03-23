@@ -40,7 +40,8 @@
 // <change date="11/29/2018" author="Brian A. Lakstins" description="Updated methods to make it clearer that AttributeIndex is for each property so could add an AttributeIndex property.">
 // <change date="7/30/2019" author="Brian A. Lakstins" description="Add method to check to key, especially StorageKey.">
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
-// <change date="3/22/2024" author="Brian A. Lakstins" description="Remove storagekey.  Rename Key and Property to DataName so not confused with Primary Key or Entity property.  Remove unused field _oKeyIndex. Add properies for Data Names.  Remove PrimaryKey suffix. Create some constants for reused strings.    ">
+// <change date="3/22/2024" author="Brian A. Lakstins" description="Remove storagekey.  Rename Key and Property to DataName so not confused with Primary Key or Entity property.  Remove unused field _oKeyIndex. Add properies for Data Names.  Remove PrimaryKey suffix. Create some constants for reused strings.">
+// <change date="3/23/2024" author="Brian A. Lakstins" description="Adding a field and some methods to support generic primary keys.">
 // </changelog>
 #endregion
 
@@ -58,6 +59,7 @@ namespace MaxFactry.Base.DataLayer
         public const string AttributeIsPrimaryKey = "IsPrimaryKey";
 
         public const string AttributeIsAllowDBNull = "IsAllowDBNull";
+        
         public const string AttributeIsEncrypted = "IsEncrypted";
 
         /// <summary>
@@ -201,6 +203,14 @@ namespace MaxFactry.Base.DataLayer
             }
         }
 
+        public virtual string KeySeparator
+        {
+            get
+            {
+                return "/";
+            }
+        }
+
         /// <summary>
         /// Gets a list of the data names
         /// </summary>
@@ -250,6 +260,30 @@ namespace MaxFactry.Base.DataLayer
 
                 return this._aDataNameKeyList;
             }
+        }
+
+        public virtual string GetKey(MaxData loData)
+        {
+            string lsR = string.Empty;
+            foreach (string lsDataName in this.DataNameKeyList)
+            {
+                string lsValue = MaxConvertLibrary.ConvertToString(typeof(object), loData.Get(lsDataName));
+                if (string.IsNullOrEmpty(lsValue))
+                {
+                    lsR = null;
+                }
+                else if (null != lsR)
+                {
+                    if (lsR.Length > 0)
+                    {
+                        lsR += this.KeySeparator;
+                    }
+
+                    lsR += lsValue;
+                }
+            }
+
+            return lsR;
         }
 
         /// <summary>

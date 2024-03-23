@@ -35,6 +35,8 @@
 // <change date="4/20/2016" author="Brian A. Lakstins" description="Fix returning null from GetCurrent.">
 // <change date="7/12/2016" author="Brian A. Lakstins" description="Separate out code to get next version.">
 // <change date="1/16/2021" author="Brian A. Lakstins" description="Update definition of cache keys.">
+// <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
+// <change date="3/23/2024" author="Brian A. Lakstins" description="Updated for change to dependency class.">
 // </changelog>
 #endregion
 
@@ -164,7 +166,7 @@ namespace MaxFactry.Base.BusinessLayer
                 }
             }
 
-            this.Reset();
+            this.Clear();
             MaxCacheRepository.Set(this.GetType(), lsCacheDataKey, this.Data.Clone());
             return this;
         }
