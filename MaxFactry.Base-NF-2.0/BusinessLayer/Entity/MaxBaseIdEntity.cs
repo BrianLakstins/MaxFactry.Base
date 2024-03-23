@@ -63,6 +63,8 @@
 // <change date="1/18/2021" author="Brian A. Lakstins" description="Remove deleted items from cache.">
 // <change date="3/1/2021" author="Brian A. Lakstins" description="Turn off archive because it requires loading all.">
 // <change date="4/12/2021" author="Brian A. Lakstins" description="Fix loading from cache when cache is based on property.">
+// <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
+// <change date="3/22/2024" author="Brian A. Lakstins" description="Change parent class.  Remove unused field.  Remove properties that are in parent class.  Add archive properties that were in previous parent class.  Remove methods that are in parent class.">
 // </changelog>
 #endregion
 
@@ -71,24 +73,17 @@ namespace MaxFactry.Base.BusinessLayer
     using System;
     using System.IO;
     using MaxFactry.Core;
-    using MaxFactry.Base.BusinessLayer;
     using MaxFactry.Base.DataLayer;
-    using System.Diagnostics;
 
     /// <summary>
-    /// Base Business Layer Entity
+    /// Base Business Layer Entity.  Being deprecated in favor of MaxBaseGuidKeyEntity class which has only basic functionality.
     /// </summary>
-    public abstract class MaxBaseIdEntity : MaxIdGuidEntity
+    public abstract class MaxBaseIdEntity : MaxBaseEntity
     {
         /// <summary>
         /// Lock for thread safety
         /// </summary>
         private static object _oLock = new object();
-
-        /// <summary>
-        /// Index of datamodel keys 
-        /// </summary>
-        private MaxIndex _oKeyList = null;
 
         /// <summary>
         /// Initializes a new instance of the MaxBaseIdEntity class
@@ -108,40 +103,29 @@ namespace MaxFactry.Base.BusinessLayer
         }
 
         /// <summary>
-        /// Gets the date the entity was last updated
+        /// Gets the unique Identifier for this entity
         /// </summary>
-        public virtual DateTime LastUpdateDate
+        public virtual Guid Id
         {
             get
             {
-                return this.GetDateTime(this.MaxBaseIdDataModel.LastUpdateDate);
+                return this.GetGuid(this.MaxBaseIdDataModel.Id);
             }
         }
 
         /// <summary>
-        /// Gets a value indicating whether this is deleted
+        /// Gets or sets the unique Identifier for this entity
         /// </summary>
-        public virtual bool IsDeleted
+        public virtual string AlternateId
         {
             get
             {
-                return this.GetBoolean(this.MaxBaseIdDataModel.IsDeleted);
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this is active
-        /// </summary>
-        public virtual bool IsActive
-        {
-            get
-            {
-                return this.GetBoolean(this.MaxBaseIdDataModel.IsActive);
+                return this.GetString(this.MaxBaseIdDataModel.AlternateId);
             }
 
             set
             {
-                this.Set(this.MaxBaseIdDataModel.IsActive, value);
+                this.Set(this.MaxBaseIdDataModel.AlternateId, value);
             }
         }
 
@@ -165,29 +149,40 @@ namespace MaxFactry.Base.BusinessLayer
         }
 
         /// <summary>
-        /// Gets or sets an index of names and values that can be used in any way
+        /// Gets or sets the last date this entity was archived
         /// </summary>
-        public virtual MaxIndex AttributeIndex
+        protected DateTime ArchiveDate
         {
             get
             {
-                MaxIndex loR = this.GetObject(this.MaxBaseIdDataModel.AttributeIndex, typeof(MaxIndex)) as MaxIndex;
-                if (null != loR)
+                DateTime ldR = DateTime.MinValue;
+                string lsCacheKey = this.GetCacheKey() + "Archive";
+                object ldArchive = MaxCacheRepository.Get(typeof(object), lsCacheKey, typeof(DateTime));
+                if (null != ldArchive && ldArchive is DateTime)
                 {
-                    return loR;
+                    ldR = (DateTime)ldArchive;
+                }
+                else
+                {
+                    ldArchive = MaxConfigurationLibrary.GetValue(MaxEnumGroup.ScopePersistent, lsCacheKey);
+                    if (null != ldArchive)
+                    {
+                        ldR = MaxConvertLibrary.ConvertToDateTimeUtc(typeof(object), ldArchive);
+                    }
                 }
 
-                loR = new MaxIndex();
-                this.SetObject(this.MaxBaseIdDataModel.AttributeIndex, loR);
-                return loR;
+                return ldR;
             }
 
             set
             {
-                this.SetObject(this.MaxBaseIdDataModel.AttributeIndex, value);
+                string lsCacheKey = this.GetCacheKey() + "Archive";
+                MaxCacheRepository.Set(typeof(object), lsCacheKey, value);
+                MaxConfigurationLibrary.SetValue(MaxEnumGroup.ScopePersistent, lsCacheKey, value);
             }
         }
 
+        
         /// <summary>
         /// Gets the Data Model for this entity
         /// </summary>
@@ -200,12 +195,12 @@ namespace MaxFactry.Base.BusinessLayer
         }
 
         /// <summary>
-        /// Default is to sort by created date.
+        /// Sets the Id.
         /// </summary>
-        /// <returns>Sortable created date.</returns>
-        public override string GetDefaultSortString()
+        /// <param name="loId">Id to use for this entity.</param>
+        public virtual void SetId(Guid loId)
         {
-            return MaxConvertLibrary.ConvertToSortString(typeof(object), this.CreatedDate) + base.GetDefaultSortString();
+            this.Set(this.MaxBaseIdDataModel.Id, loId);
         }
 
         public override MaxEntityList LoadAllCache(params string[] laPropertyNameList)
@@ -219,10 +214,54 @@ namespace MaxFactry.Base.BusinessLayer
             return loR;
         }
 
-        public virtual MaxEntityList LoadAllActiveCache(params string[] laPropertyNameList)
+        /// <summary>
+        /// Loads an entity based on the Id
+        /// </summary>
+        /// <param name="loId">The Id of the entity to load</param>
+        /// <returns>True if data was found, loaded, and not marked as deleted.  False could be not found, or deleted.</returns>
+        public virtual bool LoadByIdCache(Guid loId)
         {
-            MaxEntityList loR = base.LoadAllByPropertyCache(this.MaxBaseIdDataModel.IsActive, true, laPropertyNameList);
-            return loR;
+            string lsCacheIdDataKey = this.GetCacheKey() + "LoadById/" + loId.ToString();
+            MaxData loData = MaxCacheRepository.Get(this.GetType(), lsCacheIdDataKey, typeof(MaxData)) as MaxData;
+            if (null == loData)
+            {
+                loData = MaxIdGuidRepository.SelectById(this.Data, loId);
+                if (null == loData)
+                {
+                    //// Try loading from archive
+                    if (!this.Data.DataModel.DataStorageName.EndsWith("MaxArchive"))
+                    {
+                        MaxDataModel loDataModel = MaxFactry.Core.MaxFactryLibrary.Create(this.Data.DataModel.GetType(), this.Data.DataModel.DataStorageName + "MaxArchive") as MaxDataModel;
+                        if (null != loDataModel)
+                        {
+                            MaxData loDataArchive = this.Data.Clone();
+                            loData = MaxIdGuidRepository.SelectById(loDataArchive, loId);
+                            if (null != loData)
+                            {
+                                MaxCacheRepository.Set(this.GetType(), lsCacheIdDataKey, loData);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    MaxCacheRepository.Set(this.GetType(), lsCacheIdDataKey, loData);
+                }
+            }
+
+            if (this.Load(loData))
+            {
+                if (null == loData.Get(((MaxIdGuidDataModel)loData.DataModel).Id))
+                {
+                    return false;
+                }
+
+                return true;
+            }
+
+            this.Clear();
+            MaxCacheRepository.Set(this.GetType(), lsCacheIdDataKey, this.Data.Clone());
+            return false;
         }
 
         /// <summary>
@@ -275,132 +314,128 @@ namespace MaxFactry.Base.BusinessLayer
         }
 
         /// <summary>
-        /// Gets a value if the option flag has been set.
-        /// </summary>
-        /// <param name="lnOption">Option flag from 0 to 63</param>
-        /// <returns>value indicating whether the flag is set or not</returns>
-        public bool IsOptionFlagSet(short lnOption)
-        {
-            return this.GetBit(this.MaxBaseIdDataModel.OptionFlagList, lnOption);
-        }
-
-        /// <summary>
-        /// Sets the option to the Value parameter
-        /// </summary>
-        /// <param name="lnOption">Option flag from 0 to 63</param>
-        /// <param name="lbValue">Value to set the option.</param>
-        public void SetOptionFlag(short lnOption, bool lbValue)
-        {
-            this.SetBit(this.MaxBaseIdDataModel.OptionFlagList, lnOption, lbValue);
-        }
-
-        /// <summary>
         /// Inserts a new record
         /// </summary>
         /// <param name="loId">Id for the new record</param>
         /// <returns>true if inserted.  False if cannot be inserted.</returns>
-        public override bool Insert(Guid loId)
+        public virtual bool Insert(Guid loId)
         {
-            this.Set(this.MaxBaseIdDataModel.LastUpdateDate, DateTime.UtcNow);
-            return base.Insert(loId);
+            if (Guid.Empty.Equals(this.Id) && !Guid.Empty.Equals(loId))
+            {
+                this.Set(this.MaxBaseIdDataModel.Id, loId);
+            }
+
+            bool lbR = this.Insert();
+            return lbR;
         }
 
-        /// <summary>
-        /// Updates an existing record
-        /// </summary>
-        /// <returns>true if updated.  False if cannot be updated.</returns>
-        public override bool Update()
+        protected bool InsertRetry(int lnRetryCount)
         {
-            OnUpdateBefore();
+            bool lbR = false;
+            if (lnRetryCount < 5)
+            {
+                this.Set(this.MaxBaseIdDataModel.Id, Guid.NewGuid());
+                lbR = base.Insert();
+                if (!lbR)
+                {
+                    lbR = this.InsertRetry(lnRetryCount + 1);
+                }
+            }
+
+            return lbR;
+        }
+
+        public override bool Insert()
+        {
+            bool lbR = false;
             if (Guid.Empty.Equals(this.Id))
             {
-                throw new MaxException("The Id is empty.  A MaxBaseIdEntity cannot be updated with an empty Id.");
-            }
-
-            this.SetProperties();
-            if (this.IsDataChanged)
-            {
-                this.Set(this.MaxBaseIdDataModel.LastUpdateDate, DateTime.UtcNow);
-                MaxIndex loPropertyChangedIndex = new MaxIndex();
-                string[] laKey = this.Data.DataModel.GetKeyList();
-                foreach (string lsKey in laKey)
-                {
-                    if (this.Data.GetIsChanged(lsKey))
-                    {
-                        loPropertyChangedIndex.Add(lsKey);
-                    }
-                }
-
-                if (MaxStorageWriteRepository.Update(this.Data))
-                {
-                    string lsCacheKey = this.GetCacheKey() + "LoadAll*";
-                    MaxCacheRepository.Remove(this.GetType(), lsCacheKey);
-                    lsCacheKey = this.GetCacheKey() + "LoadById/" + this.Id;
-                    MaxCacheRepository.Set(this.GetType(), lsCacheKey, this.Data);
-                    OnUpdateAfter();
-                    return true;
-                }
-            }
-
-            OnUpdateFail();
-            return false;
-        }
-
-        /// <summary>
-        /// Marks a record as deleted.
-        /// </summary>
-        /// <returns>true if marked as deleted.  False if it cannot be deleted.</returns>
-        public override bool Delete()
-        {
-            OnDeleteBefore();
-            this.Set(this.MaxBaseIdDataModel.IsDeleted, true);
-            bool lbR = this.Update();
-            if (lbR)
-            {
-                string lsCacheKey = this.GetCacheKey() + "LoadById/" + this.Id;
-                MaxCacheRepository.Remove(this.GetType(), lsCacheKey);
-                this.OnDeleteAfter();
+                lbR = this.InsertRetry(1);
             }
             else
             {
-                this.OnDeleteFail();
+                lbR = base.Insert();
             }
 
             return lbR;
         }
 
         /// <summary>
-        /// Deletes an existing record and deleted any related streams.
+        /// Checks to see if the entity was archived recently
         /// </summary>
-        /// <returns>true if deleted.  False if it cannot be deleted.</returns>
-        public virtual bool RemoveFromStorage()
+        /// <param name="loArchiveFrequency"></param>
+        /// <returns></returns>
+        protected virtual bool CanProcessArchive(TimeSpan loArchiveFrequency)
         {
-            if (!Guid.Empty.Equals(this.Id))
+            bool lbR = false;
+            DateTime ldNow = DateTime.UtcNow;
+            if (this.ArchiveDate < ldNow - loArchiveFrequency)
             {
-                return base.Delete();
+                lock (_oLock)
+                {
+                    if (this.ArchiveDate < ldNow - loArchiveFrequency)
+                    {
+                        this.ArchiveDate = ldNow;
+                        lbR = true;
+                    }
+                }
             }
 
-            return false;
+            return lbR;
         }
 
         /// <summary>
         /// Creates a record in another data storage location and deletes this one from storage.
         /// </summary>
-        /// <returns></returns>
-        public override bool Archive()
+        /// <returns>true if archive process ran</returns>
+        public virtual bool Archive()
         {
             bool lbR = false;
-            try
+            string lsDataStorageName = this.Data.DataModel.DataStorageName;
+            if (!lsDataStorageName.EndsWith("MaxArchive"))
             {
-                lbR = base.Archive();
-                if (!lbR)
+                this.SetProperties();
+                //// Not all data models support archiving.  They need a creation method that takes a new storage name that can be used as the Archive name.
+                MaxDataModel loDataModel = MaxFactry.Core.MaxFactryLibrary.Create(this.Data.DataModel.GetType(), lsDataStorageName + "MaxArchive") as MaxDataModel;
+                if (null != loDataModel)
                 {
-                    MaxLogLibrary.Log(new MaxLogEntryStructure("EntityArchive", MaxEnumGroup.LogDebug, "{this.GetType()} for {this.Id} is not coded to be archived. {this.Data.DataModel.DataStorageName}", this.GetType(), this.Id, this.Data.DataModel.DataStorageName));
+                    lock (_oLock)
+                    {
+                        MaxData loDataArchive = this.Data.Clone();
+                        try
+                        {
+                            bool lbDelete = false;
+                            if (MaxBaseWriteRepository.Insert(loDataArchive))
+                            {
+                                lbDelete = true;
+                            }
+                            else
+                            {
+                                if (MaxBaseWriteRepository.Delete(loDataArchive))
+                                {
+                                    if (MaxBaseWriteRepository.Insert(loDataArchive))
+                                    {
+                                        lbDelete = true;
+                                    }
+                                }
+                            }
+
+                            if (lbDelete)
+                            {
+                                if (MaxBaseWriteRepository.Delete(this.Data))
+                                {
+                                    string lsCacheKey = this.GetCacheKey() + "Load*";
+                                    MaxCacheRepository.Remove(this.GetType(), lsCacheKey);
+                                    lbR = true;
+                                }
+                            }
+                        }
+                        catch (Exception loE)
+                        {
+                            MaxLogLibrary.Log(new MaxLogEntryStructure("EntityArchive", MaxEnumGroup.LogError, "Error archiving {Type}", loE, this.GetType()));
+                        }
+                    }
                 }
-            }
-            catch (Exception loE)
-            {
-                MaxLogLibrary.Log(new MaxLogEntryStructure("EntityArchive", MaxEnumGroup.LogError, "Error archiving {Type} {Id}", loE, this.GetType(), this.Id));
             }
 
             return lbR;
@@ -433,67 +468,11 @@ namespace MaxFactry.Base.BusinessLayer
             return lnR;
         }
 
-        /// <summary>
-        /// Loads all entities of this type that have not been marked as deleted and updated since the date passed
-        /// <param name="ldLastUpdate">Date to use to look up</param>
-        /// <returns>List of entities</returns>
-        public virtual MaxEntityList LoadAllSinceLastUpdateDate(DateTime ldLastUpdate, params string[] laPropertyNameList)
-        {
-            //// Add a Query 
-            MaxDataQuery loDataQuery = new MaxDataQuery();
-            loDataQuery.StartGroup();
-            loDataQuery.AddFilter(this.MaxBaseIdDataModel.LastUpdateDate, ">", ldLastUpdate);
-            loDataQuery.EndGroup();
-            int lnTotal = 0;
-
-            string[] laDataNameList = this.GetDataNameList(this.Data.DataModel, laPropertyNameList);
-            MaxDataList loDataList = MaxBaseIdRepository.Select(this.GetData(), loDataQuery, 0, 0, string.Empty, out lnTotal, laDataNameList);
-            MaxEntityList loEntityList = MaxEntityList.Create(this.GetType(), loDataList);
-            loEntityList.Total = lnTotal;
-            return loEntityList;
-        }
-
-        protected MaxIndex KeyList
-        {
-            get
-            {
-                if (null == this._oKeyList)
-                {
-                    this._oKeyList = new MaxIndex();
-                    string[] laKey = this.Data.DataModel.GetKeyList();
-                    foreach (string lsKey in laKey)
-                    {
-                        this._oKeyList.Add(lsKey, true);
-                    }
-
-                    this._oKeyList.Add(this.Data.DataModel.StorageKey, true);
-                }
-
-                return this._oKeyList;
-            }
-        }
-
-        /// <summary>
         /// Sets the datamodel properties for any extended data
         /// </summary>
         protected override void SetProperties()
         {
-            if (null == this.Get(this.MaxBaseIdDataModel.IsDeleted))
-            {
-                this.Set(this.MaxBaseIdDataModel.IsDeleted, false);
-            }
-
-            if (null == this.Get(this.MaxBaseIdDataModel.IsActive))
-            {
-                this.Set(this.MaxBaseIdDataModel.IsActive, false);
-            }
-
-            if (this.GetLong(this.MaxBaseIdDataModel.OptionFlagList) < 0)
-            {
-                this.Set(this.MaxBaseIdDataModel.OptionFlagList, 0);
-            }
-
-            string[] laExtendedKey = this.Data.GetExtendedKeyList();
+            string[] laExtendedKey = this.Data.GetExtendedNameList();
             if (laExtendedKey.Length > 0 && MaxDataLibrary.GetDataModel(this.DataModelType) is MaxBaseIdDataModel)
             {
                 bool lbIsChanged = false;
@@ -548,7 +527,6 @@ namespace MaxFactry.Base.BusinessLayer
 
             base.SetProperties();
         }
-
 
         protected virtual bool CheckDefaults(MaxEntityList loEntityList)
         {
