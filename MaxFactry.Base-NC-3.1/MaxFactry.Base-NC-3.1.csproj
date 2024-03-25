@@ -78,6 +78,7 @@
 		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\MaxSqlGenerationLibrary.cs" Link="DataLayer\Library\MaxSqlGenerationLibrary.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\MaxStreamLibrary.cs" Link="DataLayer\Library\MaxStreamLibrary.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Provider\MaxDataContextLibraryDefaultProvider.cs" Link="DataLayer\Library\Provider\MaxDataContextLibraryDefaultProvider.cs" />
+		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Provider\MaxDataContextLibraryHttpProvider.cs" Link="DataLayer\Library\Provider\MaxDataContextLibraryHttpProvider.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Provider\MaxDataLibraryDefaultProvider.cs" Link="DataLayer\Library\Provider\MaxDataLibraryDefaultProvider.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Provider\MaxHttpLibraryDefaultProvider.cs" Link="DataLayer\Library\Provider\MaxHttpLibraryDefaultProvider.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Provider\MaxSerialPortLibraryDefaultProvider.cs" Link="DataLayer\Library\Provider\MaxSerialPortLibraryDefaultProvider.cs" />

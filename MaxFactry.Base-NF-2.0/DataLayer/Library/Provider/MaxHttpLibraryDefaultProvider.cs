@@ -29,7 +29,7 @@
 // <changelog>
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/24/2024" author="Brian A. Lakstins" description="Initial creation">
-// <change date="3/25/2024" author="Brian A. Lakstins" description="Update method to match arguments used to get data from repositories.">
+// <change date="3/25/2024" author="Brian A. Lakstins" description="Update method to match arguments used to get data from repositories. Add method to get token.">
 // </changelog>
 #endregion
 
@@ -106,6 +106,25 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
             return this.GetResponseConditional(loData, loDataQuery, lnPageSize, lnPageSize, lsOrderBy, laDataNameList);
         }
 
+        public virtual string GetAccessToken(Uri loTokenUrl, string lsClientId, string lsClientSecret, string lsScope)
+        {
+            MaxBaseHttpDataModel loDataModel = new MaxBaseHttpDataModel();
+            MaxData loData = new MaxData(loDataModel);
+            loData.Set(loDataModel.RequestUri, loTokenUrl);
+            loData.Set(loDataModel.ClientId, lsClientId);
+            loData.Set(loDataModel.ClientSecret, lsClientSecret);
+            loData.Set(loDataModel.GrantType, "client_credentials");
+            loData.Set(loDataModel.Scope, lsScope);
+            MaxIndex loContent = new MaxIndex();
+            loContent.Add("grant_type", "client_credentials");
+            loContent.Add("scope", lsScope);
+            loData.Set(loDataModel.RequestContent, loContent);
+
+            MaxIndex loResponse = this.GetResponse(loData, null, 0, 0, string.Empty);
+            string lsR = loResponse.GetValueString(loDataModel.ResponseContent);
+            return lsR;
+        }
+
 #if net4_52 || netcore2 || netstandard1_2
         private System.Net.Http.HttpClient _oHttpClient = null;
 
@@ -175,7 +194,6 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
 
             return loR;
         }
-
 
         protected virtual object GetContentConditional(MaxData loData, MaxDataQuery loDataQuery, string lsDataName)
         {

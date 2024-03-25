@@ -42,6 +42,7 @@
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/22/2024" author="Brian A. Lakstins" description="Remove storagekey.  Rename Key and Property to DataName so not confused with Primary Key or Entity property.  Remove unused field _oKeyIndex. Add properies for Data Names.  Remove PrimaryKey suffix. Create some constants for reused strings.">
 // <change date="3/23/2024" author="Brian A. Lakstins" description="Adding a field and some methods to support generic primary keys.">
+// <change date="3/25/2024" author="Brian A. Lakstins" description="Add method to map content that may not be formatted for the data model.">
 // </changelog>
 #endregion
 
@@ -417,6 +418,39 @@ namespace MaxFactry.Base.DataLayer
         public bool IsPrimaryKey(string lsDataName)
         {
             return this.GetAttributeSetting(lsDataName, AttributeIsPrimaryKey);
+        }
+
+        /// <summary>
+        /// Maps data that does not already match the data model to the data model
+        /// </summary>
+        /// <param name="loIndex">Data to map</param>
+        /// <returns>List of data</returns>
+        public virtual MaxDataList MapIndex(MaxIndex loIndex)
+        {
+            MaxDataList loR = new MaxDataList(this);
+            string[] laKey = loIndex.GetSortedKeyList();
+            MaxData loDataSingle = new MaxData(this);
+            foreach (string lsKey in laKey)
+            {
+                object loValue = loIndex[lsKey];
+                if (loValue is MaxIndex)
+                {
+                    MaxIndex loDataIndex = loValue as MaxIndex;
+                    MaxData loData = new MaxData(this);
+                    foreach (string lsDataName in this.DataNameList)
+                    {
+                        loData.Set(lsDataName, loDataIndex[lsDataName]);
+                    }
+
+                    loR.Add(loData);
+                }
+                else
+                {
+                    loDataSingle.Set(lsKey, loValue);
+                }
+            }
+
+            return loR;
         }
 
         /// <summary>

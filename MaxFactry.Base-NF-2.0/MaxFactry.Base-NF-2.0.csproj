@@ -95,6 +95,7 @@
     <Compile Include="DataLayer\Library\MaxSerialPortLibrary.cs" />
     <Compile Include="DataLayer\Library\MaxStreamLibrary.cs" />
     <Compile Include="DataLayer\Library\Provider\MaxDataContextLibraryDefaultProvider.cs" />
+    <Compile Include="DataLayer\Library\Provider\MaxDataContextLibraryHttpProvider.cs" />
     <Compile Include="DataLayer\Library\Provider\MaxHttpLibraryDefaultProvider.cs" />
     <Compile Include="DataLayer\Library\Provider\MaxSerialPortLibraryDefaultProvider.cs" />
     <Compile Include="DataLayer\Library\Provider\MaxSqlGenerationLibraryMSSql2019Provider.cs" />

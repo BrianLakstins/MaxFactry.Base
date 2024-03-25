@@ -29,12 +29,13 @@
 // <changelog>
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/24/2024" author="Brian A. Lakstins" description="Initial creation">
-// <change date="3/25/2024" author="Brian A. Lakstins" description="Add method for getting remote data">
+// <change date="3/25/2024" author="Brian A. Lakstins" description="Add method for getting remote data.  Add method to get token.">
 // </changelog>
 #endregion
 
 namespace MaxFactry.Base.DataLayer.Library
 {
+    using System;
     using System.IO;
     using MaxFactry.Core;
 
@@ -94,6 +95,19 @@ namespace MaxFactry.Base.DataLayer.Library
         public static MaxIndex GetResponse(MaxData loData, MaxDataQuery loDataQuery, int lnPageIndex, int lnPageSize, string lsOrderBy, params string[] laDataNameList)
         {
             return Provider.GetResponse(loData, loDataQuery, lnPageIndex, lnPageSize, lsOrderBy, laDataNameList);
+        }
+
+        /// <summary>
+        /// Uses client_id and client_secret as basic authentication and includes grant_type and scope in body as formurlencoded data
+        /// </summary>
+        /// <param name="loTokenUrl"></param>
+        /// <param name="lsClientId"></param>
+        /// <param name="lsClientSecret"></param>
+        /// <param name="lsScope"></param>
+        /// <returns></returns>
+        public static string GetAccessToken(Uri loTokenUrl, string lsClientId, string lsClientSecret, string lsScope)
+        {
+            return Provider.GetAccessToken(loTokenUrl, lsClientId, lsClientSecret, lsScope);
         }
     }
 }

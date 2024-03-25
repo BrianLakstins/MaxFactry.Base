@@ -29,12 +29,13 @@
 // <changelog>
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/24/2024" author="Brian A. Lakstins" description="Initial creation">
-// <change date="3/25/2024" author="Brian A. Lakstins" description="Add method for getting remote data">
+// <change date="3/25/2024" author="Brian A. Lakstins" description="Add method for getting remote data.  Add method for getting remote token.">
 // </changelog>
 #endregion
 
 namespace MaxFactry.Base.DataLayer.Library
 {
+    using System;
     using System.IO;
     using MaxFactry.Core;
 
@@ -44,5 +45,7 @@ namespace MaxFactry.Base.DataLayer.Library
     public interface IMaxHttpLibraryProvider : IMaxProvider
     {
         MaxIndex GetResponse(MaxData loData, MaxDataQuery loDataQuery, int lnPageIndex, int lnPageSize, string lsOrderBy, params string[] laDataNameList);
+
+        string GetAccessToken(Uri loTokenUrl, string lsClientId, string lsClientSecret, string lsScope);
     }
 }

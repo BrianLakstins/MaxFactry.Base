@@ -110,6 +110,9 @@
     <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Provider\MaxDataContextLibraryDefaultProvider.cs">
       <Link>DataLayer\Library\Provider\MaxDataContextLibraryDefaultProvider.cs</Link>
     </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Provider\MaxDataContextLibraryHttpProvider.cs">
+      <Link>DataLayer\Library\Provider\MaxDataContextLibraryHttpProvider.cs</Link>
+    </Compile>
     <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Provider\MaxDataLibraryDefaultProvider.cs">
       <Link>DataLayer\Library\Provider\MaxDataLibraryDefaultProvider.cs</Link>
     </Compile>
