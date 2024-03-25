@@ -1,4 +1,4 @@
-﻿// <copyright file="MaxBaseRelationDateEntity.cs" company="Lakstins Family, LLC">
+﻿// <copyright file="MaxBaseRelationGuidKeyDateEntity.cs" company="Lakstins Family, LLC">
 // Copyright (c) Brian A. Lakstins (http://www.lakstins.com/brian/)
 // </copyright>
 
@@ -27,10 +27,8 @@
 
 #region Change Log
 // <changelog>
-// <change date="10/28/2022" author="Brian A. Lakstins" description="Initial creation.">
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
-// <change date="3/23/2024" author="Brian A. Lakstins" description="Incorporate parent class method.">
-// <change date="3/24/2024" author="Brian A. Lakstins" description="Updated for changes namespaces">
+// <change date="3/24/2024" author="Brian A. Lakstins" description="Initial creation.">
 // </changelog>
 #endregion
 
@@ -43,13 +41,13 @@ namespace MaxFactry.Base.BusinessLayer
     /// <summary>
     /// Base Business Layer Entity
     /// </summary>
-    public abstract class MaxBaseRelationDateEntity : MaxBaseRelationEntity
+    public abstract class MaxBaseRelationGuidKeyDateEntity : MaxBaseRelationGuidKeyEntity
 	{
 		/// <summary>
         /// Initializes a new instance of the MaxBaseRelationDateEntity class
 		/// </summary>
 		/// <param name="loData">object to hold data</param>
-		public MaxBaseRelationDateEntity(MaxData loData)
+		public MaxBaseRelationGuidKeyDateEntity(MaxData loData)
 			: base(loData)
 		{
 		}
@@ -58,7 +56,7 @@ namespace MaxFactry.Base.BusinessLayer
         /// Initializes a new instance of the MaxBaseRelationDateEntity class.
         /// </summary>
         /// <param name="loDataModelType">Type of data model.</param>
-        public MaxBaseRelationDateEntity(Type loDataModelType) 
+        public MaxBaseRelationGuidKeyDateEntity(Type loDataModelType) 
             : base(loDataModelType)
         {
         }
@@ -70,12 +68,12 @@ namespace MaxFactry.Base.BusinessLayer
         {
             get
             {
-                return this.GetDateTime(this.MaxBaseRelationDateDataModel.StartDate);
+                return this.GetDateTime(this.MaxBaseRelationGuidKeyDateDataModel.StartDate);
             }
 
             set
             {
-                this.Set(this.MaxBaseRelationDateDataModel.StartDate, value);
+                this.Set(this.MaxBaseRelationGuidKeyDateDataModel.StartDate, value);
             }
         }
 
@@ -86,7 +84,7 @@ namespace MaxFactry.Base.BusinessLayer
         {
             get
             {
-                DateTime loR = this.GetDateTime(this.MaxBaseRelationDateDataModel.EndDate);
+                DateTime loR = this.GetDateTime(this.MaxBaseRelationGuidKeyDateDataModel.EndDate);
                 if (loR == DateTime.MinValue)
                 {
                     loR = DateTime.MaxValue;
@@ -97,18 +95,18 @@ namespace MaxFactry.Base.BusinessLayer
 
             set
             {
-                this.Set(this.MaxBaseRelationDateDataModel.EndDate, value);
+                this.Set(this.MaxBaseRelationGuidKeyDateDataModel.EndDate, value);
             }
         }
 
         /// <summary>
         /// Gets the Data Model for this entity
         /// </summary>
-        protected MaxBaseRelationDateDataModel MaxBaseRelationDateDataModel
+        protected MaxBaseRelationGuidKeyDateDataModel MaxBaseRelationGuidKeyDateDataModel
         {
             get
             {
-                return (MaxBaseRelationDateDataModel)MaxDataLibrary.GetDataModel(this.DataModelType);
+                return (MaxBaseRelationGuidKeyDateDataModel)MaxDataLibrary.GetDataModel(this.DataModelType);
             }
         }
 
@@ -121,14 +119,14 @@ namespace MaxFactry.Base.BusinessLayer
         public MaxEntityList LoadAllByParentIdDateCache(Guid loParentId, DateTime ldDate)
         {
             MaxDataQuery loDataQuery = new MaxDataQuery();
-            loDataQuery.AddFilter(this.MaxBaseRelationDateDataModel.ParentId, "=", loParentId);
+            loDataQuery.AddFilter(this.MaxBaseRelationGuidKeyDateDataModel.ParentId, "=", loParentId);
             loDataQuery.AddCondition("AND");
-            loDataQuery.AddFilter(this.MaxBaseRelationDateDataModel.StartDate, "<", ldDate.ToUniversalTime());
+            loDataQuery.AddFilter(this.MaxBaseRelationGuidKeyDateDataModel.StartDate, "<", ldDate.ToUniversalTime());
             loDataQuery.AddCondition("AND");
             loDataQuery.StartGroup();
-            loDataQuery.AddFilter(this.MaxBaseRelationDateDataModel.EndDate, "is null", null);
+            loDataQuery.AddFilter(this.MaxBaseRelationGuidKeyDateDataModel.EndDate, "is null", null);
             loDataQuery.AddCondition("OR");
-            loDataQuery.AddFilter(this.MaxBaseRelationDateDataModel.EndDate, ">", ldDate.ToUniversalTime());
+            loDataQuery.AddFilter(this.MaxBaseRelationGuidKeyDateDataModel.EndDate, ">", ldDate.ToUniversalTime());
             loDataQuery.EndGroup();
             MaxData loData = this.Data.Clone();
             return this.LoadAllByPageCache(loData, 0, 0, string.Empty, loDataQuery);
@@ -144,16 +142,16 @@ namespace MaxFactry.Base.BusinessLayer
         public MaxEntityList LoadAllByParentIdChildIdDateCache(Guid loParentId, Guid loChildId, DateTime ldDate)
         {
             MaxDataQuery loDataQuery = new MaxDataQuery();
-            loDataQuery.AddFilter(this.MaxBaseRelationDateDataModel.ParentId, "=", loParentId);
+            loDataQuery.AddFilter(this.MaxBaseRelationGuidKeyDateDataModel.ParentId, "=", loParentId);
             loDataQuery.AddCondition("AND");
-            loDataQuery.AddFilter(this.MaxBaseRelationDateDataModel.ChildId, "=", loChildId);
+            loDataQuery.AddFilter(this.MaxBaseRelationGuidKeyDateDataModel.ChildId, "=", loChildId);
             loDataQuery.AddCondition("AND");
-            loDataQuery.AddFilter(this.MaxBaseRelationDateDataModel.StartDate, "<", ldDate.ToUniversalTime());
+            loDataQuery.AddFilter(this.MaxBaseRelationGuidKeyDateDataModel.StartDate, "<", ldDate.ToUniversalTime());
             loDataQuery.AddCondition("AND");
             loDataQuery.StartGroup();
-            loDataQuery.AddFilter(this.MaxBaseRelationDateDataModel.EndDate, "is null", null);
+            loDataQuery.AddFilter(this.MaxBaseRelationGuidKeyDateDataModel.EndDate, "is null", null);
             loDataQuery.AddCondition("OR");
-            loDataQuery.AddFilter(this.MaxBaseRelationDateDataModel.EndDate, ">", ldDate.ToUniversalTime());
+            loDataQuery.AddFilter(this.MaxBaseRelationGuidKeyDateDataModel.EndDate, ">", ldDate.ToUniversalTime());
             loDataQuery.EndGroup();
             MaxData loData = this.Data.Clone();
             return this.LoadAllByPageCache(loData, 0, 0, string.Empty, loDataQuery);

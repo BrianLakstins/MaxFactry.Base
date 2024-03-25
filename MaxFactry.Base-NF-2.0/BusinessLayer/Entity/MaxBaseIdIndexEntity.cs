@@ -38,20 +38,20 @@
 // <change date="1/16/2021" author="Brian A. Lakstins" description="Update definition of cache keys.">
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/22/2024" author="Brian A. Lakstins" description="Updated for change to MaxData">
+// <change date="3/24/2024" author="Brian A. Lakstins" description="Updated for changes namespaces">
 // </changelog>
 #endregion
 
 namespace MaxFactry.Base.BusinessLayer
 {
 	using System;
-    using MaxFactry.Core;
-    using MaxFactry.Base.BusinessLayer;
     using MaxFactry.Base.DataLayer;
+    using MaxFactry.Base.DataLayer.Library;
 
-	/// <summary>
-	/// Base Business Layer Entity
-	/// </summary>
-	public abstract class MaxBaseIdIndexEntity : MaxBaseIdEntity
+    /// <summary>
+    /// Base Business Layer Entity
+    /// </summary>
+    public abstract class MaxBaseIdIndexEntity : MaxBaseIdEntity
 	{
 		/// <summary>
         /// Initializes a new instance of the MaxBaseIdIndexEntity class

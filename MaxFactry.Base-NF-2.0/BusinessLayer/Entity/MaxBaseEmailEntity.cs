@@ -35,6 +35,8 @@
 // <change date="12/1/2020" author="Brian A. Lakstins" description="Store to email address as lowercase">
 // <change date="12/10/2020" author="Brian A. Lakstins" description="Add SentCount.  Remove Moustache handling of Id. Using Nustache library before sending.">
 // <change date="5/18/2021" author="Brian A. Lakstins" description="Update load by relation to use loadbypropertcache method.">
+// <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
+// <change date="3/24/2024" author="Brian A. Lakstins" description="Updated for changes namespaces">
 // </changelog>
 #endregion
 
@@ -44,8 +46,8 @@ namespace MaxFactry.Base.BusinessLayer
     using System.IO;
     using System.Text.RegularExpressions;
     using MaxFactry.Core;
-    using MaxFactry.Base.BusinessLayer;
     using MaxFactry.Base.DataLayer;
+    using MaxFactry.Base.DataLayer.Library;
     using System.Collections.Generic;
 
     /// <summary>

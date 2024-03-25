@@ -41,12 +41,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BusinessLayer\Entity\MaxBaseEmailEntity.cs" />
+    <Compile Include="BusinessLayer\Entity\MaxBaseEntity.cs" />
+    <Compile Include="BusinessLayer\Entity\MaxBaseGuidKeyEntity.cs" />
     <Compile Include="BusinessLayer\Entity\MaxBaseIdEntity.cs" />
     <Compile Include="BusinessLayer\Entity\MaxBaseIdFileEntity.cs" />
     <Compile Include="BusinessLayer\Entity\MaxBaseIdIndexEntity.cs" />
     <Compile Include="BusinessLayer\Entity\MaxBaseIdVersionedEntity.cs" />
     <Compile Include="BusinessLayer\Entity\MaxBasePersonEntity.cs" />
     <Compile Include="BusinessLayer\Entity\MaxBaseRelationDateEntity.cs" />
+    <Compile Include="BusinessLayer\Entity\MaxBaseRelationGuidKeyDateEntity.cs" />
+    <Compile Include="BusinessLayer\Entity\MaxBaseRelationGuidKeyEntity.cs" />
     <Compile Include="BusinessLayer\Entity\MaxBaseTemplateEntity.cs" />
     <Compile Include="BusinessLayer\Entity\MaxBaseUSPostalAddressEntity.cs" />
     <Compile Include="BusinessLayer\Entity\MaxEntity.cs" />
@@ -54,14 +58,16 @@
     <Compile Include="BusinessLayer\Entity\MaxIdIntegerEntity.cs" />
     <Compile Include="BusinessLayer\Entity\MaxIdStringEntity.cs" />
     <Compile Include="BusinessLayer\Entity\MaxBaseRelationEntity.cs" />
-    <Compile Include="BusinessLayer\Entity\MaxRelationEntity.cs" />
     <Compile Include="BusinessLayer\Library\Interface\IMaxBusinessLibraryProvider.cs" />
     <Compile Include="BusinessLayer\Library\MaxBusinessLibrary.cs" />
     <Compile Include="BusinessLayer\Library\Provider\MaxBusinessLibraryDefaultProvider.cs" />
     <Compile Include="BusinessLayer\MaxEntityEventArgs.cs" />
     <Compile Include="BusinessLayer\MaxEntityList.cs" />
+    <Compile Include="DataLayer\DataModel\Interface\IMaxHttpDataModel.cs" />
     <Compile Include="DataLayer\DataModel\Interface\IMaxMessageDataModel.cs" />
+    <Compile Include="DataLayer\DataModel\MaxBaseDataModel.cs" />
     <Compile Include="DataLayer\DataModel\MaxBaseEmailDataModel.cs" />
+    <Compile Include="DataLayer\DataModel\MaxBaseGuidKeyDataModel.cs" />
     <Compile Include="DataLayer\DataModel\MaxBaseIdBranchDataModel.cs" />
     <Compile Include="DataLayer\DataModel\MaxBaseIdDataModel.cs" />
     <Compile Include="DataLayer\DataModel\MaxBaseIdFileDataModel.cs" />
@@ -70,6 +76,8 @@
     <Compile Include="DataLayer\DataModel\MaxBaseIdVersionedDataModel.cs" />
     <Compile Include="DataLayer\DataModel\MaxBasePersonDataModel.cs" />
     <Compile Include="DataLayer\DataModel\MaxBaseRelationDateDataModel.cs" />
+    <Compile Include="DataLayer\DataModel\MaxBaseRelationGuidKeyDataModel.cs" />
+    <Compile Include="DataLayer\DataModel\MaxBaseRelationGuidKeyDateDataModel.cs" />
     <Compile Include="DataLayer\DataModel\MaxBaseTemplateDataModel.cs" />
     <Compile Include="DataLayer\DataModel\MaxBaseUSPostalAddressDataModel.cs" />
     <Compile Include="DataLayer\DataModel\MaxDataModel.cs" />
@@ -77,13 +85,39 @@
     <Compile Include="DataLayer\DataModel\MaxIdIntegerDataModel.cs" />
     <Compile Include="DataLayer\DataModel\MaxIdStringDataModel.cs" />
     <Compile Include="DataLayer\DataModel\MaxBaseRelationDataModel.cs" />
-    <Compile Include="DataLayer\DataModel\MaxRelationDataModel.cs" />
-    <Compile Include="DataLayer\Library\Interface\IMaxDataContextProvider.cs" />
+    <Compile Include="DataLayer\Library\Interface\IMaxSerialPortLibraryProvider.cs" />
+    <Compile Include="DataLayer\Library\Interface\IMaxHttpLibraryProvider.cs" />
+    <Compile Include="DataLayer\Library\Interface\IMaxStreamLibraryProvider.cs" />
     <Compile Include="DataLayer\Library\Interface\IMaxDataLibraryProvider.cs" />
     <Compile Include="DataLayer\Library\Interface\IMaxSqlGenerationLibraryProvider.cs" />
+    <Compile Include="DataLayer\Library\MaxSerialPortLibrary.cs" />
+    <Compile Include="DataLayer\Library\MaxHttpLibrary.cs" />
+    <Compile Include="DataLayer\Library\MaxStreamLibrary.cs" />
     <Compile Include="DataLayer\Library\MaxDataLibrary.cs" />
-    <Compile Include="DataLayer\Library\MaxDataStreamFolderLibrary.cs" />
     <Compile Include="DataLayer\Library\MaxSqlGenerationLibrary.cs" />
+    <Compile Include="DataLayer\Library\Provider\MaxSerialPortLibraryDefaultProvider.cs" />
+    <Compile Include="DataLayer\Library\Provider\MaxHttpLibraryDefaultProvider.cs" />
+    <Compile Include="DataLayer\Library\Provider\MaxStreamLibraryDefaultProvider.cs" />
+    <Compile Include="DataLayer\Library\Provider\MaxSqlGenerationLibraryMSSql2019Provider.cs" />
+    <Compile Include="DataLayer\Repository\Interface\IMaxBaseReadRepositoryProvider.cs" />
+    <Compile Include="DataLayer\Repository\Interface\IMaxBaseRepositoryProvider.cs" />
+    <Compile Include="DataLayer\Repository\Interface\IMaxBaseWriteRepositoryProvider.cs" />
+    <Compile Include="DataLayer\Repository\Interface\IMaxDataContextProvider.cs" />
+    <Compile Include="DataLayer\Repository\MaxBaseIdIndexRepository.cs" />
+    <Compile Include="DataLayer\Repository\MaxBaseIdRepository.cs" />
+    <Compile Include="DataLayer\Repository\MaxBaseIdVersionedRepository.cs" />
+    <Compile Include="DataLayer\Repository\MaxBaseReadRepository.cs" />
+    <Compile Include="DataLayer\Repository\MaxBaseRepository.cs" />
+    <Compile Include="DataLayer\Repository\MaxBaseTemplateRepository.cs" />
+    <Compile Include="DataLayer\Repository\MaxBaseWriteRepository.cs" />
+    <Compile Include="DataLayer\Repository\MaxCacheRepository.cs" />
+    <Compile Include="DataLayer\Repository\MaxIdGuidRepository.cs" />
+    <Compile Include="DataLayer\Repository\MaxIdIntegerRepository.cs" />
+    <Compile Include="DataLayer\Repository\MaxIdStringRepository.cs" />
+    <Compile Include="DataLayer\Repository\MaxMessageRepository.cs" />
+    <Compile Include="DataLayer\Repository\Provider\MaxBaseReadRepositoryDefaultProvider.cs" />
+    <Compile Include="DataLayer\Repository\Provider\MaxBaseRepositoryDefaultProvider.cs" />
+    <Compile Include="DataLayer\Repository\Provider\MaxBaseWriteRepositoryDefaultProvider.cs" />
     <Compile Include="DataLayer\Repository\Provider\MaxDataContextDefaultProvider.cs" />
     <Compile Include="DataLayer\Library\Provider\MaxDataLibraryDefaultProvider.cs" />
     <Compile Include="DataLayer\Library\Provider\MaxSqlGenerationLibraryDefaultProvider.cs" />
@@ -105,28 +139,12 @@
     <Compile Include="DataLayer\Repository\Interface\IMaxCacheRepositoryProvider.cs" />
     <Compile Include="DataLayer\Repository\Interface\IMaxMessageRepositoryProvider.cs" />
     <Compile Include="DataLayer\Repository\Interface\IMaxRepositoryProvider.cs" />
-    <Compile Include="DataLayer\Repository\Interface\IMaxStorageReadRepositoryProvider.cs" />
-    <Compile Include="DataLayer\Repository\Interface\IMaxStorageWriteRepositoryProvider.cs" />
-    <Compile Include="DataLayer\Repository\MaxBaseIdIndexRepository.cs" />
-    <Compile Include="DataLayer\Repository\MaxBaseIdRepository.cs" />
-    <Compile Include="DataLayer\Repository\MaxBaseIdVersionedRepository.cs" />
-    <Compile Include="DataLayer\Repository\MaxBaseTemplateRepository.cs" />
-    <Compile Include="DataLayer\Repository\MaxCacheRepository.cs" />
-    <Compile Include="DataLayer\Repository\MaxIdGuidRepository.cs" />
-    <Compile Include="DataLayer\Repository\MaxIdIntegerRepository.cs" />
-    <Compile Include="DataLayer\Repository\MaxIdStringRepository.cs" />
-    <Compile Include="DataLayer\Repository\MaxMessageRepository.cs" />
-    <Compile Include="DataLayer\Repository\MaxRelationRepository.cs" />
-    <Compile Include="DataLayer\Repository\MaxStorageReadRepository.cs" />
-    <Compile Include="DataLayer\Repository\MaxStorageWriteRepository.cs" />
     <Compile Include="DataLayer\Repository\Provider\MaxBaseIdIndexRepositoryDefaultProvider.cs" />
     <Compile Include="DataLayer\Repository\Provider\MaxBaseIdRepositoryDefaultProvider.cs" />
     <Compile Include="DataLayer\Repository\Provider\MaxBaseIdVersionedRepositoryDefaultProvider.cs" />
     <Compile Include="DataLayer\Repository\Provider\MaxBaseTemplateRepositoryDefaultProvider.cs" />
     <Compile Include="DataLayer\Repository\Provider\MaxCacheRepositoryDefaultProvider.cs" />
     <Compile Include="DataLayer\Repository\Provider\MaxMessageRepositoryDefaultProvider.cs" />
-    <Compile Include="DataLayer\Repository\Provider\MaxStorageReadRepositoryDefaultProvider.cs" />
-    <Compile Include="DataLayer\Repository\Provider\MaxStorageWriteRepositoryDefaultProvider.cs" />
     <Compile Include="MaxResource.cs" />
     <Compile Include="MaxStartup.cs" />
     <Compile Include="PresentationLayer\Models\MaxBaseViewModel.cs" />
@@ -168,4 +186,11 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <Target Name="SpicNSpan" AfterTargets="Clean">
+    <!-- common vars https://msdn.microsoft.com/en-us/library/c02as0cs.aspx?f=255&MSPPError=-2147217396 -->
+    <RemoveDir Directories="$(TargetDir)" />
+    <!-- bin -->
+    <RemoveDir Directories="$(ProjectDir)$(BaseIntermediateOutputPath)" />
+    <!-- obj -->
+  </Target>
 </Project>

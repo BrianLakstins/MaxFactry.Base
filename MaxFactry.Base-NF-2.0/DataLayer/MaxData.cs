@@ -59,6 +59,7 @@
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/22/2024" author="Brian A. Lakstins" description="Rename Key to DataName.  Save original value when changed.  Consolidate Clone and MaxData initializer.  Remove Clone by datamodel (initializer can be used instead).  Rename Reset to Clear.  Add GetKey.  Add key to stream path.">
 // <change date="3/23/2024" author="Brian A. Lakstins" description="Remove GetKey method (moving to DataModel so can be overridden in child classes if needed)">
+// <change date="3/24/2024" author="Brian A. Lakstins" description="Updated for changes namespaces">
 // </changelog>
 #endregion
 
@@ -66,8 +67,8 @@ namespace MaxFactry.Base.DataLayer
 {
     using System;
     using System.IO;
-    using System.Runtime.CompilerServices;
     using MaxFactry.Core;
+    using MaxFactry.Base.DataLayer.Library;
 
     /// <summary>
     /// Stores data retrieved from external sources in some name value pair type of collections.

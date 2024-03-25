@@ -29,18 +29,19 @@
 // <changelog>
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/22/2024" author="Brian A. Lakstins" description="Initial creation.  Based on MaxStorageWriteRepositoryDefaultProvider.">
+// <change date="3/24/2024" author="Brian A. Lakstins" description="Updated for changes namespaces">
 // </changelog>
 #endregion
 
 namespace MaxFactry.Base.DataLayer.Provider
 {
-	using System;
 	using MaxFactry.Core;
+    using MaxFactry.Base.DataLayer.Library;
 
-	/// <summary>
-	/// Provides base for creating Providers for Repositories that use a subclass of MaxDataModel for storage.
-	/// </summary>
-	public class MaxBaseWriteRepositoryDefaultProvider : MaxBaseReadRepositoryDefaultProvider, IMaxBaseWriteRepositoryProvider
+    /// <summary>
+    /// Provides base for creating Providers for Repositories that use a subclass of MaxDataModel for storage.
+    /// </summary>
+    public class MaxBaseWriteRepositoryDefaultProvider : MaxBaseReadRepositoryDefaultProvider, IMaxBaseWriteRepositoryProvider
 	{
         private static object _oLock = new object();
 

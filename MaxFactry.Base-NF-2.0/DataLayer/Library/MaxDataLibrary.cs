@@ -46,10 +46,11 @@
 // <change date="8/3/2020" author="Brian A. Lakstins" description="Add conditional method for netstandard1_2 for not having StopWatch">
 // <change date="3/19/2024" author="Brian A. Lakstins" description="Remove SerializeData method.  Remove need for Stopwatch.  Add methods that were in repository providers.">
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
+// <change date="3/24/2024" author="Brian A. Lakstins" description="Update to namespace.">
 // </changelog>
 #endregion
 
-namespace MaxFactry.Base.DataLayer
+namespace MaxFactry.Base.DataLayer.Library
 {
 	using System;
     using System.Diagnostics;
@@ -79,7 +80,7 @@ namespace MaxFactry.Base.DataLayer
             {
                 if (null == Instance.BaseProvider)
                 {
-                    Instance.SetProvider(typeof(MaxFactry.Base.DataLayer.Provider.MaxDataLibraryDefaultProvider));
+                    Instance.SetProvider(typeof(Provider.MaxDataLibraryDefaultProvider));
                 }
 
                 return (IMaxDataLibraryProvider)Instance.BaseProvider;

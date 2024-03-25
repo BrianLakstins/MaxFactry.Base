@@ -29,14 +29,16 @@
 // <changelog>
 // <change date="11/6/2014" author="Brian A. Lakstins" description="Initial Release">
 // <change date="11/10/2014" author="Brian A. Lakstins" description="Update to moving Get and Set methods from MaxData.">
+// <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
+// <change date="3/24/2024" author="Brian A. Lakstins" description="Updated for changes namespaces">
 // </changelog>
 #endregion
 
 namespace MaxFactry.Base.BusinessLayer
 {
     using System;
-    using MaxFactry.Base.BusinessLayer;
     using MaxFactry.Base.DataLayer;
+    using MaxFactry.Base.DataLayer.Library;
 
     /// <summary>
     /// Entity to represent content in a web site.

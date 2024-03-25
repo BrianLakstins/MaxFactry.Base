@@ -73,6 +73,7 @@
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/22/2024" author="Brian A. Lakstins" description="Remove StorageKey.  Add dynamic KeyPropertyList and Key.  Change Repositories to Base versions.  Remove archiving.  Replace Key with DataName.  Add retries to data changing methods.  Update load methods to reuse other load methods when possible.">
 // <change date="3/23/2024" author="Brian A. Lakstins" description="Updating support generic primary keys.  Renaming Reset method to Clear.">
+// <change date="3/24/2024" author="Brian A. Lakstins" description="Updated for changes namespaces">
 // </changelog>
 #endregion
 
@@ -87,6 +88,7 @@ namespace MaxFactry.Base.BusinessLayer
     using System.Reflection;
     using MaxFactry.Core;
     using MaxFactry.Base.DataLayer;
+    using MaxFactry.Base.DataLayer.Library;
 
     /// <summary>
     /// Base Business Layer Entity

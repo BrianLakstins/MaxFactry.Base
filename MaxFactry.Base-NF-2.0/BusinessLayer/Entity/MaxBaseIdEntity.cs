@@ -65,6 +65,7 @@
 // <change date="4/12/2021" author="Brian A. Lakstins" description="Fix loading from cache when cache is based on property.">
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/22/2024" author="Brian A. Lakstins" description="Change parent class.  Remove unused field.  Remove properties that are in parent class.  Add archive properties that were in previous parent class.  Remove methods that are in parent class.">
+// <change date="3/24/2024" author="Brian A. Lakstins" description="Updated for changes namespaces">
 // </changelog>
 #endregion
 
@@ -74,6 +75,7 @@ namespace MaxFactry.Base.BusinessLayer
     using System.IO;
     using MaxFactry.Core;
     using MaxFactry.Base.DataLayer;
+    using MaxFactry.Base.DataLayer.Library;
 
     /// <summary>
     /// Base Business Layer Entity.  Being deprecated in favor of MaxBaseGuidKeyEntity class which has only basic functionality.

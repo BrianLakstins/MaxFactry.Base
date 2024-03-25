@@ -36,10 +36,11 @@
 // <change date="10/22/2014" author="Brian A. Lakstins" description="Add ability to specify DataContext through MaxData instance.">
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/22/2024" author="Brian A. Lakstins" description="Add some methods that were in Repository proviers.  Remove some unused methods.">
+// <change date="3/24/2024" author="Brian A. Lakstins" description="Update to namespace.">
 // </changelog>
 #endregion
 
-namespace MaxFactry.Base.DataLayer
+namespace MaxFactry.Base.DataLayer.Library
 {
 	using System;
     using MaxFactry.Core;

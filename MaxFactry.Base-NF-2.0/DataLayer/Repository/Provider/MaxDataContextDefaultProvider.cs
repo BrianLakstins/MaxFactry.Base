@@ -34,6 +34,7 @@
 // <change date="7/20/2023" author="Brian A. Lakstins" description="Replacing strings with constant properties.">
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/23/2024" author="Brian A. Lakstins" description="Updated for changes to DataModel">
+// <change date="3/24/2024" author="Brian A. Lakstins" description="Updated for changes namespaces">
 // </changelog>
 #endregion
 
@@ -46,6 +47,8 @@ namespace MaxFactry.Base.DataLayer.Provider
 #endif
     using System.IO;
     using MaxFactry.Core;
+    using MaxFactry.Base.DataLayer.Library;
+
     /// <summary>
     /// Provides static methods to manipulate storage of data
     /// </summary>
@@ -444,7 +447,7 @@ namespace MaxFactry.Base.DataLayer.Provider
         /// <returns>Number of bytes written to storage.</returns>
         public virtual bool StreamSave(MaxData loData, string lsKey)
         {
-            return MaxDataContextStreamLibrary.StreamSave(loData, lsKey);
+            return MaxStreamLibrary.StreamSave(loData, lsKey);
         }
 
         /// <summary>
@@ -455,7 +458,7 @@ namespace MaxFactry.Base.DataLayer.Provider
         /// <returns>Stream that was opened.</returns>
         public virtual Stream StreamOpen(MaxData loData, string lsKey)
         {
-            return MaxDataContextStreamLibrary.StreamOpen(loData, lsKey);
+            return MaxStreamLibrary.StreamOpen(loData, lsKey);
         }
 
         /// <summary>
@@ -466,7 +469,7 @@ namespace MaxFactry.Base.DataLayer.Provider
         /// <returns>Stream that was opened.</returns>
         public virtual bool StreamDelete(MaxData loData, string lsKey)
         {
-            return MaxDataContextStreamLibrary.StreamDelete(loData, lsKey);
+            return MaxStreamLibrary.StreamDelete(loData, lsKey);
         }
 
         /// <summary>
@@ -477,7 +480,7 @@ namespace MaxFactry.Base.DataLayer.Provider
         /// <returns>Url of stream if one can be provided.</returns>
         public virtual string GetStreamUrl(MaxData loData, string lsKey)
         {
-            return MaxDataContextStreamLibrary.GetStreamUrl(loData, lsKey);
+            return MaxStreamLibrary.GetStreamUrl(loData, lsKey);
         }
 
         private void SaveToFile()

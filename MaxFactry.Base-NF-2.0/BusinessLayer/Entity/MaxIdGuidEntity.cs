@@ -46,7 +46,8 @@
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/22/2024" author="Brian A. Lakstins" description="Remove EntityPropertyKeyIndex because it will no longer be used.">
 // <change date="3/23/2024" author="Brian A. Lakstins" description="Updated for change to dependency class.">
-// </changelog>// </changelog>
+// <change date="3/24/2024" author="Brian A. Lakstins" description="Updated for changes namespaces">
+// </changelog>
 #endregion
 
 namespace MaxFactry.Base.BusinessLayer
@@ -54,6 +55,7 @@ namespace MaxFactry.Base.BusinessLayer
     using System;
     using MaxFactry.Core;
     using MaxFactry.Base.DataLayer;
+    using MaxFactry.Base.DataLayer.Library;
 
     /// <summary>
     /// Base Business Layer Entity

@@ -1,4 +1,4 @@
-﻿// <copyright file="MaxDataContextStreamLibraryDefaultProvider.cs" company="Lakstins Family, LLC">
+﻿// <copyright file="MaxDataContextStreamLibrary.cs" company="Lakstins Family, LLC">
 // Copyright (c) Brian A. Lakstins (http://www.lakstins.com/brian/)
 // </copyright>
 
@@ -28,55 +28,66 @@
 #region Change Log
 // <changelog>
 // <change date="9/20/2023" author="Brian A. Lakstins" description="Initial creation">
+// <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
+// <change date="3/24/2024" author="Brian A. Lakstins" description="Rename to MaxSteamLibrary to not indicate some dependency on MaxDataContextProvider">
 // </changelog>
 #endregion
 
-namespace MaxFactry.Base.DataLayer.Provider
+namespace MaxFactry.Base.DataLayer.Library
 {
     using System.IO;
     using MaxFactry.Core;
-    using MaxFactry.Base.DataLayer.Library;
 
     /// <summary>
     /// Provides static methods to manipulate storage of data
     /// </summary>
-    public class MaxDataContextStreamLibraryDefaultProvider : MaxProvider, IMaxDataContextStreamLibraryProvider
+    public class MaxStreamLibrary : MaxSingleFactory
     {
         /// <summary>
-        /// Folder to use for stream storage
+        /// Internal storage of single object
         /// </summary>
-        private string _sDataFolder = string.Empty;
+        private static MaxStreamLibrary _oInstance = null;
 
         /// <summary>
-        /// Configuration name for default context provider 
+        /// Lock object for multi-threaded access.
         /// </summary>
-        public const string DefaultContextProviderConfigName = "DefaultContextProviderName";
+        private static object _oLock = new object();
 
         /// <summary>
-        /// Configuration name for instance context provider
+        /// Gets the Provider used for most methods
         /// </summary>
-        public const string ContextProviderConfigName = "ContextProviderName";
-
-        /// <summary>
-        /// Initializes the provider
-        /// </summary>
-        /// <param name="lsName">Name of the provider</param>
-        /// <param name="loConfig">Configuration information</param>
-        public override void Initialize(string lsName, MaxIndex loConfig)
-        {
-            base.Initialize(lsName, loConfig);
-            string lsDataDirectory = MaxConfigurationLibrary.GetValue(MaxEnumGroup.ScopeApplication, "MaxDataDirectory") as string;
-            if (!string.IsNullOrEmpty(lsDataDirectory))
-            {
-                this._sDataFolder = Path.Combine(lsDataDirectory, "data");
-            }
-        }
-
-        protected string DataFolder
+        public static IMaxStreamLibraryProvider Provider
         {
             get
             {
-                return this._sDataFolder;
+                if (null == Instance.BaseProvider)
+                {
+                    Instance.SetProvider(typeof(Provider.MaxStreamLibraryDefaultProvider));
+                }
+
+                return (IMaxStreamLibraryProvider)Instance.BaseProvider;
+            }
+        }
+
+        /// <summary>
+        /// Gets the single instance of this class.
+        /// </summary>
+        public static MaxStreamLibrary Instance
+        {
+            get
+            {
+                if (null == _oInstance)
+                {
+                    lock (_oLock)
+                    {
+                        if (null == _oInstance)
+                        {
+                            _oInstance = new MaxStreamLibrary();
+                        }
+                    }
+                }
+
+                return _oInstance;
             }
         }
 
@@ -86,9 +97,9 @@ namespace MaxFactry.Base.DataLayer.Provider
         /// <param name="loData">The data index for the object</param>
         /// <param name="lsKey">Data element name to write</param>
         /// <returns>Number of bytes written to storage.</returns>
-        public virtual bool StreamSave(MaxData loData, string lsKey)
+        public static bool StreamSave(MaxData loData, string lsKey)
         {
-            return MaxDataStreamFolderLibrary.StreamSave(loData, lsKey, this.DataFolder);
+            return Provider.StreamSave(loData, lsKey);
         }
 
         /// <summary>
@@ -97,31 +108,31 @@ namespace MaxFactry.Base.DataLayer.Provider
         /// <param name="loData">The data index for the object</param>
         /// <param name="lsKey">Data element name to write</param>
         /// <returns>Stream that was opened.</returns>
-        public virtual Stream StreamOpen(MaxData loData, string lsKey)
+        public static Stream StreamOpen(MaxData loData, string lsKey)
         {
-            return MaxDataStreamFolderLibrary.StreamOpen(loData, lsKey, this.DataFolder);
+            return Provider.StreamOpen(loData, lsKey);
         }
 
         /// <summary>
-        /// Deletes stream data in storage
+        /// Deletes a stream data in storage
         /// </summary>
         /// <param name="loData">The data index for the object</param>
         /// <param name="lsKey">Data element name to write</param>
         /// <returns>Stream that was opened.</returns>
-        public virtual bool StreamDelete(MaxData loData, string lsKey)
+        public static bool StreamDelete(MaxData loData, string lsKey)
         {
-            return MaxDataStreamFolderLibrary.StreamDelete(loData, lsKey, this.DataFolder);
+            return Provider.StreamDelete(loData, lsKey);
         }
 
         /// <summary>
-        /// Gets the Url of a saved stream.
+        /// Gets the Url to use to access the stream.
         /// </summary>
-        /// <param name="loData">The data index for the object</param>
-        /// <param name="lsKey">Data element name</param>
-        /// <returns>Url of stream if one can be provided.</returns>
-        public virtual string GetStreamUrl(MaxData loData, string lsKey)
+        /// <param name="loData">Data used to help determine url.</param>
+        /// <param name="lsKey">Key used to help determine key.</param>
+        /// <returns>Url to access the stream.</returns>
+        public static string GetStreamUrl(MaxData loData, string lsKey)
         {
-            return string.Empty;
+            return Provider.GetStreamUrl(loData, lsKey);
         }
     }
 }

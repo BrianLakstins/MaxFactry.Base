@@ -1,4 +1,4 @@
-﻿// <copyright file="MaxBaseRelationEntity.cs" company="Lakstins Family, LLC">
+﻿// <copyright file="MaxBaseRelationGuidKeyEntity.cs" company="Lakstins Family, LLC">
 // Copyright (c) Brian A. Lakstins (http://www.lakstins.com/brian/)
 // </copyright>
 
@@ -27,10 +27,8 @@
 
 #region Change Log
 // <changelog>
-// <change date="10/28/2022" author="Brian A. Lakstins" description="Initial creation.">
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
-// <change date="3/23/2024" author="Brian A. Lakstins" description="Incorporate parent class method.">
-// <change date="3/24/2024" author="Brian A. Lakstins" description="Updated for changes namespaces">
+// <change date="3/24/2024" author="Brian A. Lakstins" description="Initial creation.">
 // </changelog>
 #endregion
 
@@ -43,13 +41,13 @@ namespace MaxFactry.Base.BusinessLayer
     /// <summary>
     /// Base Business Layer Entity
     /// </summary>
-    public abstract class MaxBaseRelationEntity : MaxEntity
+    public abstract class MaxBaseRelationGuidKeyEntity : MaxBaseGuidKeyEntity
 	{
 		/// <summary>
         /// Initializes a new instance of the MaxBaseRelationEntity class
 		/// </summary>
 		/// <param name="loData">object to hold data</param>
-		public MaxBaseRelationEntity(MaxData loData)
+		public MaxBaseRelationGuidKeyEntity(MaxData loData)
 			: base(loData)
 		{
 		}
@@ -58,7 +56,7 @@ namespace MaxFactry.Base.BusinessLayer
         /// Initializes a new instance of the MaxBaseRelationEntity class.
         /// </summary>
         /// <param name="loDataModelType">Type of data model.</param>
-        public MaxBaseRelationEntity(Type loDataModelType) 
+        public MaxBaseRelationGuidKeyEntity(Type loDataModelType) 
             : base(loDataModelType)
         {
         }
@@ -70,12 +68,12 @@ namespace MaxFactry.Base.BusinessLayer
         {
             get
             {
-                return this.GetString(this.MaxBaseRelationDataModel.Name);
+                return this.GetString(this.MaxBaseRelationGuidKeyDataModel.Name);
             }
 
             set
             {
-                this.Set(this.MaxBaseRelationDataModel.Name, value);
+                this.Set(this.MaxBaseRelationGuidKeyDataModel.Name, value);
             }
         }
 
@@ -86,12 +84,12 @@ namespace MaxFactry.Base.BusinessLayer
         {
             get
             {
-                return this.GetString(this.MaxBaseRelationDataModel.RelationType);
+                return this.GetString(this.MaxBaseRelationGuidKeyDataModel.RelationType);
             }
 
             set
             {
-                this.Set(this.MaxBaseRelationDataModel.RelationType, value);
+                this.Set(this.MaxBaseRelationGuidKeyDataModel.RelationType, value);
             }
         }
 
@@ -102,12 +100,12 @@ namespace MaxFactry.Base.BusinessLayer
         {
             get
             {
-                return this.GetInt(this.MaxBaseRelationDataModel.RelativeOrder);
+                return this.GetInt(this.MaxBaseRelationGuidKeyDataModel.RelativeOrder);
             }
 
             set
             {
-                this.Set(this.MaxBaseRelationDataModel.RelativeOrder, value);
+                this.Set(this.MaxBaseRelationGuidKeyDataModel.RelativeOrder, value);
             }
         }
 
@@ -118,12 +116,12 @@ namespace MaxFactry.Base.BusinessLayer
         {
             get
             {
-                return this.GetGuid(this.MaxBaseRelationDataModel.ParentId);
+                return this.GetGuid(this.MaxBaseRelationGuidKeyDataModel.ParentId);
             }
 
             set
             {
-                this.Set(this.MaxBaseRelationDataModel.ParentId, value);
+                this.Set(this.MaxBaseRelationGuidKeyDataModel.ParentId, value);
             }
         }
 
@@ -134,23 +132,23 @@ namespace MaxFactry.Base.BusinessLayer
         {
             get
             {
-                return this.GetGuid(this.MaxBaseRelationDataModel.ChildId);
+                return this.GetGuid(this.MaxBaseRelationGuidKeyDataModel.ChildId);
             }
 
             set
             {
-                this.Set(this.MaxBaseRelationDataModel.ChildId, value);
+                this.Set(this.MaxBaseRelationGuidKeyDataModel.ChildId, value);
             }
         }
 
         /// <summary>
         /// Gets the Data Model for this entity
         /// </summary>
-        protected MaxBaseRelationDataModel MaxBaseRelationDataModel
+        protected MaxBaseRelationGuidKeyDataModel MaxBaseRelationGuidKeyDataModel
         {
             get
             {
-                return (MaxBaseRelationDataModel)MaxDataLibrary.GetDataModel(this.DataModelType);
+                return (MaxBaseRelationGuidKeyDataModel)MaxDataLibrary.GetDataModel(this.DataModelType);
             }
         }
 
@@ -161,7 +159,7 @@ namespace MaxFactry.Base.BusinessLayer
         /// <returns>List of relations.</returns>
         protected MaxEntityList LoadAllByParentId(Guid loParentId)
         {
-            MaxEntityList loR = this.LoadAllByProperty(this.MaxBaseRelationDataModel.ParentId, loParentId);
+            MaxEntityList loR = this.LoadAllByProperty(this.MaxBaseRelationGuidKeyDataModel.ParentId, loParentId);
             return loR;
         }
 
@@ -172,7 +170,7 @@ namespace MaxFactry.Base.BusinessLayer
         /// <returns>List of relations.</returns>
         protected MaxEntityList LoadAllByChildId(Guid loChildId)
         {
-            MaxEntityList loR = this.LoadAllByProperty(this.MaxBaseRelationDataModel.ChildId, loChildId);
+            MaxEntityList loR = this.LoadAllByProperty(this.MaxBaseRelationGuidKeyDataModel.ChildId, loChildId);
             return loR;
         }
 
@@ -183,7 +181,7 @@ namespace MaxFactry.Base.BusinessLayer
         /// <returns>List of relations.</returns>
         protected MaxEntityList LoadAllByParentIdCache(Guid loParentId)
         {
-            MaxEntityList loR = this.LoadAllByPropertyCache(this.MaxBaseRelationDataModel.ParentId, loParentId);
+            MaxEntityList loR = this.LoadAllByPropertyCache(this.MaxBaseRelationGuidKeyDataModel.ParentId, loParentId);
             return loR;
         }
 
@@ -194,16 +192,16 @@ namespace MaxFactry.Base.BusinessLayer
         /// <returns>List of relations.</returns>
         protected MaxEntityList LoadAllByChildIdCache(Guid loChildId)
         {
-            MaxEntityList loR = this.LoadAllByPropertyCache(this.MaxBaseRelationDataModel.ChildId, loChildId);
+            MaxEntityList loR = this.LoadAllByPropertyCache(this.MaxBaseRelationGuidKeyDataModel.ChildId, loChildId);
             return loR;
         }
 
         protected MaxEntityList LoadAllByParentIdChildIdCache(Guid loParentId, Guid loChildId)
         {
             MaxDataQuery loDataQuery = new MaxDataQuery();
-            loDataQuery.AddFilter(this.MaxBaseRelationDataModel.ParentId, "=", loParentId);
+            loDataQuery.AddFilter(this.MaxBaseRelationGuidKeyDataModel.ParentId, "=", loParentId);
             loDataQuery.AddAnd();
-            loDataQuery.AddFilter(this.MaxBaseRelationDataModel.ChildId, "=", loChildId);
+            loDataQuery.AddFilter(this.MaxBaseRelationGuidKeyDataModel.ChildId, "=", loChildId);
             MaxData loData = new MaxData(this.Data);
             return this.LoadAllByPageCache(loData, 0, 0, string.Empty, loDataQuery);
         }

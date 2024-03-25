@@ -1,4 +1,4 @@
-﻿// <copyright file="IMaxDataContextStreamLibraryProvider.cs" company="Lakstins Family, LLC">
+﻿// <copyright file="IMaxStreamLibraryProvider.cs" company="Lakstins Family, LLC">
 // Copyright (c) Brian A. Lakstins (http://www.lakstins.com/brian/)
 // </copyright>
 
@@ -28,10 +28,12 @@
 #region Change Log
 // <changelog>
 // <change date="9/20/2023" author="Brian A. Lakstins" description="Initial creation">
+// <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
+// <change date="3/24/2024" author="Brian A. Lakstins" description="Rename to MaxSteamLibrary to not indicate some dependency on MaxDataContextProvider">
 // </changelog>
 #endregion
 
-namespace MaxFactry.Base.DataLayer
+namespace MaxFactry.Base.DataLayer.Library
 {
     using System.IO;
     using MaxFactry.Core;
@@ -39,7 +41,7 @@ namespace MaxFactry.Base.DataLayer
     /// <summary>
     /// Provides methods to manipulate storage of data
     /// </summary>
-    public interface IMaxDataContextStreamLibraryProvider : IMaxProvider
+    public interface IMaxStreamLibraryProvider : IMaxProvider
     {
         /// <summary>
         /// Writes stream data to storage.

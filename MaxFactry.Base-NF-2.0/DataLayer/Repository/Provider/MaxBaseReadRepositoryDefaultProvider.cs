@@ -29,6 +29,7 @@
 // <changelog>
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/22/2024" author="Brian A. Lakstins" description="Initial creation.  Based on MaxStorageReadRepositoryDefaultProvider.">
+// <change date="3/24/2024" author="Brian A. Lakstins" description="Updated for changes namespaces">
 // </changelog>
 #endregion
 
@@ -37,11 +38,12 @@ namespace MaxFactry.Base.DataLayer.Provider
 	using System;
     using System.IO;
 	using MaxFactry.Core;
+    using MaxFactry.Base.DataLayer.Library;
 
-	/// <summary>
-	/// Provides base for creating Providers for Repositories that use a subclass of MaxDataModel for storage.
-	/// </summary>
-	public class MaxBaseReadRepositoryDefaultProvider : MaxProvider, IMaxBaseReadRepositoryProvider
+    /// <summary>
+    /// Provides base for creating Providers for Repositories that use a subclass of MaxDataModel for storage.
+    /// </summary>
+    public class MaxBaseReadRepositoryDefaultProvider : MaxProvider, IMaxBaseReadRepositoryProvider
 	{
         /// <summary>
         /// An index to hold extensions and mime types.
