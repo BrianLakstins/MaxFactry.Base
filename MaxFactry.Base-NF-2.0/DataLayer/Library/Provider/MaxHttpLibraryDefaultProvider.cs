@@ -29,6 +29,7 @@
 // <changelog>
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/24/2024" author="Brian A. Lakstins" description="Initial creation">
+// <change date="3/25/2024" author="Brian A. Lakstins" description="Update method to match arguments used to get data from repositories.">
 // </changelog>
 #endregion
 
@@ -100,9 +101,9 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
             return this.GetContentConditional(loData, loDataQuery, lsDataName);
         }
 
-        public virtual MaxIndex GetResponse(MaxData loData, MaxDataQuery loDataQuery)
+        public virtual MaxIndex GetResponse(MaxData loData, MaxDataQuery loDataQuery, int lnPageIndex, int lnPageSize, string lsOrderBy, params string[] laDataNameList)
         {
-            return this.GetResponseConditional(loData, loDataQuery);
+            return this.GetResponseConditional(loData, loDataQuery, lnPageSize, lnPageSize, lsOrderBy, laDataNameList);
         }
 
 #if net4_52 || netcore2 || netstandard1_2
@@ -210,7 +211,7 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
             return loR;
         }
 
-        public virtual MaxIndex GetResponseConditional(MaxData loData, MaxDataQuery loDataQuery)
+        public virtual MaxIndex GetResponseConditional(MaxData loData, MaxDataQuery loDataQuery, int lnPageIndex, int lnPageSize, string lsOrderBy, params string[] laDataNameList)
         {
             MaxIndex loR = new MaxIndex();
             IMaxHttpDataModel loDataModel = loData.DataModel as IMaxHttpDataModel;
@@ -309,7 +310,7 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
             throw new NotImplementedException();
         }
 
-        public virtual MaxIndex GetResponseConditional(MaxData loData, MaxDataQuery loDataQuery)
+        public virtual MaxIndex GetResponseConditional(MaxData loData, MaxDataQuery loDataQuery, int lnPageIndex, int lnPageSize, string lsOrderBy, params string[] laDataNameList)
         {
             throw new NotImplementedException();
         }

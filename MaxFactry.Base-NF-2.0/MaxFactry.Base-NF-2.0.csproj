@@ -66,6 +66,7 @@
     <Compile Include="DataLayer\DataModel\Interface\IMaxHttpDataModel.cs" />
     <Compile Include="DataLayer\DataModel\Interface\IMaxMessageDataModel.cs" />
     <Compile Include="DataLayer\DataModel\MaxBaseEmailDataModel.cs" />
+    <Compile Include="DataLayer\DataModel\MaxBaseHttpDataModel.cs" />
     <Compile Include="DataLayer\DataModel\MaxBaseIdBranchDataModel.cs" />
     <Compile Include="DataLayer\DataModel\MaxBaseDataModel.cs" />
     <Compile Include="DataLayer\DataModel\MaxBaseIdDataModel.cs" />

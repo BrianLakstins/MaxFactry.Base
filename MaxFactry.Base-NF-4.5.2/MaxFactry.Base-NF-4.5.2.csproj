@@ -62,6 +62,9 @@
     <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseGuidKeyDataModel.cs">
       <Link>DataLayer\DataModel\MaxBaseGuidKeyDataModel.cs</Link>
     </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseHttpDataModel.cs">
+      <Link>DataLayer\DataModel\MaxBaseHttpDataModel.cs</Link>
+    </Compile>
     <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseRelationGuidKeyDataModel.cs">
       <Link>DataLayer\DataModel\MaxBaseRelationGuidKeyDataModel.cs</Link>
     </Compile>
