@@ -85,16 +85,19 @@
     <Compile Include="DataLayer\DataModel\MaxIdIntegerDataModel.cs" />
     <Compile Include="DataLayer\DataModel\MaxIdStringDataModel.cs" />
     <Compile Include="DataLayer\DataModel\MaxBaseRelationDataModel.cs" />
+    <Compile Include="DataLayer\Library\Interface\IMaxDataContextLibraryProvider.cs" />
     <Compile Include="DataLayer\Library\Interface\IMaxSerialPortLibraryProvider.cs" />
     <Compile Include="DataLayer\Library\Interface\IMaxHttpLibraryProvider.cs" />
     <Compile Include="DataLayer\Library\Interface\IMaxStreamLibraryProvider.cs" />
     <Compile Include="DataLayer\Library\Interface\IMaxDataLibraryProvider.cs" />
     <Compile Include="DataLayer\Library\Interface\IMaxSqlGenerationLibraryProvider.cs" />
+    <Compile Include="DataLayer\Library\MaxDataContextLibrary.cs" />
     <Compile Include="DataLayer\Library\MaxSerialPortLibrary.cs" />
     <Compile Include="DataLayer\Library\MaxHttpLibrary.cs" />
     <Compile Include="DataLayer\Library\MaxStreamLibrary.cs" />
     <Compile Include="DataLayer\Library\MaxDataLibrary.cs" />
     <Compile Include="DataLayer\Library\MaxSqlGenerationLibrary.cs" />
+    <Compile Include="DataLayer\Library\Provider\MaxDataContextLibraryDefaultProvider.cs" />
     <Compile Include="DataLayer\Library\Provider\MaxSerialPortLibraryDefaultProvider.cs" />
     <Compile Include="DataLayer\Library\Provider\MaxHttpLibraryDefaultProvider.cs" />
     <Compile Include="DataLayer\Library\Provider\MaxStreamLibraryDefaultProvider.cs" />
@@ -102,7 +105,6 @@
     <Compile Include="DataLayer\Repository\Interface\IMaxBaseReadRepositoryProvider.cs" />
     <Compile Include="DataLayer\Repository\Interface\IMaxBaseRepositoryProvider.cs" />
     <Compile Include="DataLayer\Repository\Interface\IMaxBaseWriteRepositoryProvider.cs" />
-    <Compile Include="DataLayer\Repository\Interface\IMaxDataContextProvider.cs" />
     <Compile Include="DataLayer\Repository\MaxBaseIdIndexRepository.cs" />
     <Compile Include="DataLayer\Repository\MaxBaseIdRepository.cs" />
     <Compile Include="DataLayer\Repository\MaxBaseIdVersionedRepository.cs" />
@@ -118,7 +120,6 @@
     <Compile Include="DataLayer\Repository\Provider\MaxBaseReadRepositoryDefaultProvider.cs" />
     <Compile Include="DataLayer\Repository\Provider\MaxBaseRepositoryDefaultProvider.cs" />
     <Compile Include="DataLayer\Repository\Provider\MaxBaseWriteRepositoryDefaultProvider.cs" />
-    <Compile Include="DataLayer\Repository\Provider\MaxDataContextDefaultProvider.cs" />
     <Compile Include="DataLayer\Library\Provider\MaxDataLibraryDefaultProvider.cs" />
     <Compile Include="DataLayer\Library\Provider\MaxSqlGenerationLibraryDefaultProvider.cs" />
     <Compile Include="DataLayer\Library\Provider\MaxSqlGenerationLibraryMSAccessProvider.cs" />
