@@ -29,7 +29,7 @@
 // <changelog>
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/24/2024" author="Brian A. Lakstins" description="Initial creation">
-// <change date="3/25/2024" author="Brian A. Lakstins" description="Add method for getting remote data.  Add method to get token.">
+// <change date="3/25/2024" author="Brian A. Lakstins" description="Add method for getting remote data.  Add method to get token. Add method to get response with just token.">
 // </changelog>
 #endregion
 
@@ -92,11 +92,6 @@ namespace MaxFactry.Base.DataLayer.Library
             }
         }
 
-        public static MaxIndex GetResponse(MaxData loData, MaxDataQuery loDataQuery, int lnPageIndex, int lnPageSize, string lsOrderBy, params string[] laDataNameList)
-        {
-            return Provider.GetResponse(loData, loDataQuery, lnPageIndex, lnPageSize, lsOrderBy, laDataNameList);
-        }
-
         /// <summary>
         /// Uses client_id and client_secret as basic authentication and includes grant_type and scope in body as formurlencoded data
         /// </summary>
@@ -108,6 +103,16 @@ namespace MaxFactry.Base.DataLayer.Library
         public static string GetAccessToken(Uri loTokenUrl, string lsClientId, string lsClientSecret, string lsScope)
         {
             return Provider.GetAccessToken(loTokenUrl, lsClientId, lsClientSecret, lsScope);
+        }
+
+        public static object GetResponse(string lsRequestUrl, string lsToken)
+        {
+            return Provider.GetResponse(lsRequestUrl, lsToken);
+        }
+
+        public static MaxIndex GetResponse(MaxData loData, MaxDataQuery loDataQuery, int lnPageIndex, int lnPageSize, string lsOrderBy, params string[] laDataNameList)
+        {
+            return Provider.GetResponse(loData, loDataQuery, lnPageIndex, lnPageSize, lsOrderBy, laDataNameList);
         }
     }
 }

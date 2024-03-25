@@ -29,7 +29,7 @@
 // <changelog>
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/24/2024" author="Brian A. Lakstins" description="Initial creation">
-// <change date="3/25/2024" author="Brian A. Lakstins" description="Update method to match arguments used to get data from repositories. Add method to get token.">
+// <change date="3/25/2024" author="Brian A. Lakstins" description="Update method to match arguments used to get data from repositories. Add method to get token.  Add method to get response with just token.">
 // </changelog>
 #endregion
 
@@ -104,6 +104,11 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
         public virtual MaxIndex GetResponse(MaxData loData, MaxDataQuery loDataQuery, int lnPageIndex, int lnPageSize, string lsOrderBy, params string[] laDataNameList)
         {
             return this.GetResponseConditional(loData, loDataQuery, lnPageSize, lnPageSize, lsOrderBy, laDataNameList);
+        }
+
+        public virtual object GetResponse(string lsRequestUrl, string lsToken)
+        {
+            return this.GetResponseConditional(lsRequestUrl, lsToken);
         }
 
         public virtual string GetAccessToken(Uri loTokenUrl, string lsClientId, string lsClientSecret, string lsScope)
@@ -229,7 +234,7 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
             return loR;
         }
 
-        public virtual MaxIndex GetResponseConditional(MaxData loData, MaxDataQuery loDataQuery, int lnPageIndex, int lnPageSize, string lsOrderBy, params string[] laDataNameList)
+        protected virtual MaxIndex GetResponseConditional(MaxData loData, MaxDataQuery loDataQuery, int lnPageIndex, int lnPageSize, string lsOrderBy, params string[] laDataNameList)
         {
             MaxIndex loR = new MaxIndex();
             IMaxHttpDataModel loDataModel = loData.DataModel as IMaxHttpDataModel;
@@ -322,6 +327,86 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
 
             return loR;
         }
+
+        protected virtual object GetResponseConditional(string lsRequestUrl, string lsToken)
+        {
+            object loR = null;
+            Uri loRequestUri = new Uri(lsRequestUrl);
+            if (null != loRequestUri)
+            {
+                HttpClient loClient = HttpClient;
+                if (!string.IsNullOrEmpty(lsToken))
+                {
+                    loClient = GetMaxClient();
+                    loClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", lsToken);
+                    System.Net.Http.Headers.CacheControlHeaderValue loCache = new System.Net.Http.Headers.CacheControlHeaderValue();
+                    loCache.NoCache = true;
+                    loClient.DefaultRequestHeaders.CacheControl = loCache;
+                }
+
+                if (null != loClient)
+                {
+                    System.Net.Http.HttpResponseMessage loHttpClientResponse = null;
+                    System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage> loTask = loClient.GetAsync(loRequestUri);
+                    while (!loTask.IsCompleted)
+                    {
+                        System.Threading.Thread.Sleep(10);
+                    }
+
+                    if (loTask.Status == System.Threading.Tasks.TaskStatus.RanToCompletion)
+                    {
+                        loHttpClientResponse = loTask.Result;
+                        if (loHttpClientResponse.Content != null)
+                        {
+                            System.Threading.Tasks.Task loContentTask = null;
+                            if (loHttpClientResponse.Content.GetType() == typeof(System.Net.Http.StreamContent))
+                            {
+                                loContentTask = loHttpClientResponse.Content.ReadAsStreamAsync();
+                            }
+                            else if (loHttpClientResponse.Content.GetType() == typeof(string))
+                            {
+                                loContentTask = loHttpClientResponse.Content.ReadAsStringAsync();
+                            }
+                            else if (loHttpClientResponse.Content.GetType() == typeof(byte[]))
+                            {
+                                loContentTask = loHttpClientResponse.Content.ReadAsByteArrayAsync();
+                            }
+
+                            while (!loContentTask.IsCompleted)
+                            {
+                                System.Threading.Thread.Sleep(10);
+                            }
+
+                            if (loContentTask.Status == System.Threading.Tasks.TaskStatus.RanToCompletion)
+                            {
+                                if (loContentTask is System.Threading.Tasks.Task<Stream>)
+                                {
+                                    loR = ((System.Threading.Tasks.Task<Stream>)loContentTask).Result;
+                                }
+                                else if (loContentTask is System.Threading.Tasks.Task<string>)
+                                {
+                                    loR = ((System.Threading.Tasks.Task<string>)loContentTask).Result;
+                                }
+                                else if (loContentTask is System.Threading.Tasks.Task<byte[]>)
+                                {
+                                    loR = ((System.Threading.Tasks.Task<byte[]>)loContentTask).Result;
+                                }
+                            }
+                            else
+                            {
+                                throw new MaxException("Read content task to " + loRequestUri + " completed with status " + loTask.Status.ToString());
+                            }
+                        }
+                    }
+                    else
+                    {
+                        throw new MaxException("Task to " + loRequestUri + " completed with status " + loTask.Status.ToString());
+                    }
+                }
+            }
+
+            return loR;
+        }
 #else
         protected virtual object GetContentConditional(MaxData loData, MaxDataQuery loDataQuery, string lsDataName)
         {
@@ -333,7 +418,13 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
             throw new NotImplementedException();
         }
 
-        protected virtual object GetClientConditional(MaxData loData, MaxDataQuery loDataQuery) {
+        protected virtual object GetClientConditional(MaxData loData, MaxDataQuery loDataQuery)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected virtual object GetResponseConditional(string lsRequestUrl, string lsToken)
+        {
             throw new NotImplementedException();
         }
 #endif
