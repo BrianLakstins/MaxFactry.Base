@@ -29,6 +29,7 @@
 // <changelog>
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/22/2024" author="Brian A. Lakstins" description="Initial creation.  Based on MaxStorageReadRepository.">
+// <change date="3/25/2024" author="Brian A. Lakstins" description="Removing passing Total">
 // </changelog>
 #endregion
 
@@ -84,9 +85,8 @@ namespace MaxFactry.Base.DataLayer
         public static MaxDataList SelectAll(MaxData loData, params string[] laDataNameList)
         {
             IMaxBaseReadRepositoryProvider loProvider = Instance.GetRepositoryProvider(loData);
-            MaxDataList loDataList = loProvider.SelectAll(loData, laDataNameList);
-            loDataList.Total = loDataList.Count;
-            return loDataList;
+            MaxDataList loR = loProvider.SelectAll(loData, laDataNameList);
+            return loR;
         }
 
         /// <summary>
@@ -102,9 +102,8 @@ namespace MaxFactry.Base.DataLayer
         public static MaxDataList Select(MaxData loData, MaxDataQuery loDataQuery, int lnPageIndex, int lnPageSize, string lsOrderBy, params string[] laDataNameList)
         {
             IMaxBaseReadRepositoryProvider loProvider = Instance.GetRepositoryProvider(loData);
-            MaxDataList loDataList = loProvider.Select(loData, loDataQuery, lnPageIndex, lnPageSize, lsOrderBy, out int lnTotal, laDataNameList);
-            loDataList.Total = lnTotal;
-            return loDataList;
+            MaxDataList loR = loProvider.Select(loData, loDataQuery, lnPageIndex, lnPageSize, lsOrderBy, laDataNameList);
+            return loR;
         }
 
         /// <summary>

@@ -30,6 +30,7 @@
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/22/2024" author="Brian A. Lakstins" description="Initial creation.  Based on MaxStorageWriteRepositoryDefaultProvider.">
 // <change date="3/24/2024" author="Brian A. Lakstins" description="Updated for changes namespaces">
+// <change date="3/25/2024" author="Brian A. Lakstins" description="Use DataContextLibrary">
 // </changelog>
 #endregion
 
@@ -52,21 +53,9 @@ namespace MaxFactry.Base.DataLayer.Provider
         /// <returns>true if inserted.</returns>
         public virtual bool Insert(MaxData loData)
         {
-            IMaxDataContextProvider loProvider = MaxDataLibrary.GetContextProvider(this, loData);
-            if (null == loProvider)
-            {
-                throw new MaxException("DataContextProvider was not found for [" + this.GetType().ToString() + "].  Check configuration for DataContextProvider.");
-            } 
-
             MaxDataList loDataList = new MaxDataList(loData.DataModel);
             loDataList.Add(loData);
-            int lnCount = loProvider.Insert(loDataList);
-            if (lnCount.Equals(1))
-            {
-                return true;
-            }
-
-            return false;
+            return MaxDataContextLibrary.Insert(this, loDataList);
         }
 
 		/// <summary>
@@ -76,21 +65,9 @@ namespace MaxFactry.Base.DataLayer.Provider
 		/// <returns>true if updated.</returns>
         public virtual bool Update(MaxData loData)
         {
-            IMaxDataContextProvider loProvider = MaxDataLibrary.GetContextProvider(this, loData);
-            if (null == loProvider)
-            {
-                throw new MaxException("DataContextProvider was not found for [" + this.GetType().ToString() + "].  Check configuration for DataContextProvider.");
-            } 
-
             MaxDataList loDataList = new MaxDataList(loData.DataModel);
             loDataList.Add(loData);
-            int lnCount = loProvider.Update(loDataList);
-            if (lnCount.Equals(1))
-            {
-                return true;
-            }
-
-            return false;
+            return MaxDataContextLibrary.Update(this, loDataList);
         }
 
 		/// <summary>
@@ -100,21 +77,9 @@ namespace MaxFactry.Base.DataLayer.Provider
 		/// <returns>true if deleted.</returns>
         public virtual bool Delete(MaxData loData)
         {
-            IMaxDataContextProvider loProvider = MaxDataLibrary.GetContextProvider(this, loData);
-            if (null == loProvider)
-            {
-                throw new MaxException("DataContextProvider was not found for [" + this.GetType().ToString() + "].  Check configuration for DataContextProvider.");
-            } 
-            
             MaxDataList loDataList = new MaxDataList(loData.DataModel);
             loDataList.Add(loData);
-            int lnCount = loProvider.Delete(loDataList);
-            if (lnCount > 0)
-            {
-                return true;
-            }
-
-            return false;
+            return MaxDataContextLibrary.Delete(this, loDataList);
         }
 
         /// <summary>
@@ -125,14 +90,7 @@ namespace MaxFactry.Base.DataLayer.Provider
         /// <returns>Number of bytes written to storage.</returns>
         public virtual bool StreamSave(MaxData loData, string lsKey)
         {
-            IMaxDataContextProvider loProvider = MaxDataLibrary.GetContextProvider(this, loData);
-            bool lbR = false;
-            if (null != loProvider)
-            {
-                lbR = loProvider.StreamSave(loData, lsKey);
-            }
-
-            return lbR;
+            return MaxDataContextLibrary.StreamSave(this, loData, lsKey);
         }
 
         /// <summary>
@@ -143,14 +101,7 @@ namespace MaxFactry.Base.DataLayer.Provider
         /// <returns>true if successful.</returns>
         public virtual bool StreamDelete(MaxData loData, string lsKey)
         {
-            IMaxDataContextProvider loProvider = MaxDataLibrary.GetContextProvider(this, loData);
-            bool lbR = false;
-            if (null != loProvider)
-            {
-                lbR = loProvider.StreamDelete(loData, lsKey);
-            }
-
-            return lbR;
+            return MaxDataContextLibrary.StreamDelete(this, loData, lsKey);
         }
     }
 }

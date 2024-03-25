@@ -1,4 +1,4 @@
-﻿// <copyright file="IMaxDataContextProvider.cs" company="Lakstins Family, LLC">
+﻿// <copyright file="IMaxDataContextLibraryProvider.cs" company="Lakstins Family, LLC">
 // Copyright (c) Brian A. Lakstins (http://www.lakstins.com/brian/)
 // </copyright>
 
@@ -33,10 +33,11 @@
 // <change date="12/2/2014" author="Brian A. Lakstins" description="Add laFields.">
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/23/2024" author="Brian A. Lakstins" description="Updated SelectAll to use information from MaxData">
+// <change date="3/25/2024" author="Brian A. Lakstins" description="Moved from MaxFactry.Base.DataLayer namespace and renamed from IMaxDataContextProvider">
 // </changelog>
 #endregion
 
-namespace MaxFactry.Base.DataLayer
+namespace MaxFactry.Base.DataLayer.Library
 {
 	using System;
     using System.IO;
@@ -45,7 +46,7 @@ namespace MaxFactry.Base.DataLayer
     /// <summary>
     /// Provides methods to manipulate storage of data
     /// </summary>
-    public interface IMaxDataContextProvider : IMaxProvider
+    public interface IMaxDataContextLibraryProvider : IMaxProvider
 	{
         /// <summary>
         /// Selects all data from the data storage name for the specified type.
@@ -76,12 +77,28 @@ namespace MaxFactry.Base.DataLayer
         /// <returns>number of records that match.</returns>
         int SelectCount(MaxData loData, MaxDataQuery loDataQuery);
 
-		/// <summary>
-		/// Inserts a list of data objects.
-		/// </summary>
-		/// <param name="loDataList">The list of data objects to insert.</param>
-		/// <returns>The count affected.</returns>
-		int Insert(MaxDataList loDataList);
+        /// <summary>
+        /// Opens stream data in storage
+        /// </summary>
+        /// <param name="loData">The data index for the object</param>
+        /// <param name="lsKey">Data element name to write</param>
+        /// <returns>Stream that was opened.</returns>
+        Stream StreamOpen(MaxData loData, string lsKey);
+
+        /// <summary>
+        /// Gets the Url of a saved stream.
+        /// </summary>
+        /// <param name="loData">The data index for the object</param>
+        /// <param name="lsKey">Data element name</param>
+        /// <returns>Url of stream if one can be provided.</returns>
+        string GetStreamUrl(MaxData loData, string lsKey);
+
+        /// <summary>
+        /// Inserts a list of data objects.
+        /// </summary>
+        /// <param name="loDataList">The list of data objects to insert.</param>
+        /// <returns>The count affected.</returns>
+        int Insert(MaxDataList loDataList);
 
 		/// <summary>
 		/// Updates a list of data objects.
@@ -106,27 +123,11 @@ namespace MaxFactry.Base.DataLayer
         bool StreamSave(MaxData loData, string lsKey);
 
         /// <summary>
-        /// Opens stream data in storage
-        /// </summary>
-        /// <param name="loData">The data index for the object</param>
-        /// <param name="lsKey">Data element name to write</param>
-        /// <returns>Stream that was opened.</returns>
-        Stream StreamOpen(MaxData loData, string lsKey);
-
-        /// <summary>
         /// Removes stream from storage.
         /// </summary>
         /// <param name="loData">The data index for the object</param>
         /// <param name="lsKey">Data element name to remove</param>
         /// <returns>true if successful.</returns>
         bool StreamDelete(MaxData loData, string lsKey);
-
-        /// <summary>
-        /// Gets the Url of a saved stream.
-        /// </summary>
-        /// <param name="loData">The data index for the object</param>
-        /// <param name="lsKey">Data element name</param>
-        /// <returns>Url of stream if one can be provided.</returns>
-        string GetStreamUrl(MaxData loData, string lsKey);
 	}
 }

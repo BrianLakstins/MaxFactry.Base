@@ -47,6 +47,7 @@
 // <change date="3/19/2024" author="Brian A. Lakstins" description="Remove SerializeData method.  Remove need for Stopwatch.  Add methods that were in repository providers.">
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/24/2024" author="Brian A. Lakstins" description="Update to namespace.">
+// <change date="3/25/2024" author="Brian A. Lakstins" description="Remove handling of DataContext">
 // </changelog>
 #endregion
 
@@ -109,17 +110,6 @@ namespace MaxFactry.Base.DataLayer.Library
             }
         }
 
-        /// <summary>
-        /// Gets the context provider using the Repository provider for this type
-        /// </summary>
-        /// <param name="loRepositoryProvider">The repository provider calling the context provider.</param>
-        /// <param name="loData">The data being updated by the context provider.</param>
-        /// <returns>Data context provider</returns>
-        public static IMaxDataContextProvider GetContextProvider(IMaxRepositoryProvider loRepositoryProvider, MaxData loData)
-		{
-            return Provider.GetContextProvider(loRepositoryProvider, loData);
-		}
-
 		/// <summary>
 		/// Gets the context provider using the Repository provider for this type
 		/// </summary>
@@ -128,16 +118,6 @@ namespace MaxFactry.Base.DataLayer.Library
 		public static MaxDataModel GetDataModel(Type loType)
 		{
             return Provider.GetDataModel(loType);
-		}
-
-        /// <summary>
-        /// Maps a class that uses a specific provider to that provider
-        /// </summary>
-        /// <param name="loType">Class that uses a provider</param>
-        /// <param name="loProviderType">The provider to use</param>
-        public static void RegisterContextProvider(Type loType, Type loProviderType)
-		{
-            Provider.RegisterContextProvider(loType, loProviderType);
 		}
 
 		/// <summary>

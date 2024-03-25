@@ -1,4 +1,4 @@
-﻿// <copyright file="MaxDataContextDefaultProvider.cs" company="Lakstins Family, LLC">
+﻿// <copyright file="MaxDataContextLibraryDefaultProvider.cs" company="Lakstins Family, LLC">
 // Copyright (c) Brian A. Lakstins (http://www.lakstins.com/brian/)
 // </copyright>
 
@@ -35,10 +35,11 @@
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/23/2024" author="Brian A. Lakstins" description="Updated for changes to DataModel">
 // <change date="3/24/2024" author="Brian A. Lakstins" description="Updated for changes namespaces">
+// <change date="3/25/2024" author="Brian A. Lakstins" description="Moved from MaxFactry.Base.DataLayer namespace and renamed from MaxDataContextDefaultProvider">
 // </changelog>
 #endregion
 
-namespace MaxFactry.Base.DataLayer.Provider
+namespace MaxFactry.Base.DataLayer.Library.Provider
 {
 	using System;
 #if net2 || netcore2
@@ -52,7 +53,7 @@ namespace MaxFactry.Base.DataLayer.Provider
     /// <summary>
     /// Provides static methods to manipulate storage of data
     /// </summary>
-    public class MaxDataContextDefaultProvider : MaxProvider, IMaxDataContextProvider
+    public class MaxDataContextLibraryDefaultProvider : MaxProvider, IMaxDataContextLibraryProvider
 	{
 
 #if net2 || netcore2
@@ -70,16 +71,6 @@ namespace MaxFactry.Base.DataLayer.Provider
         /// Folder to use for data set storage
         /// </summary>
         private string _sDataSetFolder = string.Empty;
-
-        /// <summary>
-        /// Configuration name for default context provider 
-        /// </summary>
-        public const string DefaultContextProviderConfigName = "DefaultContextProviderName";
-
-        /// <summary>
-        /// Configuration name for instance context provider
-        /// </summary>
-        public const string ContextProviderConfigName = "ContextProviderName";
 
         /// <summary>
         /// Initializes the provider

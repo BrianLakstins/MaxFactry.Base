@@ -67,16 +67,19 @@
 		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxIdGuidDataModel.cs" Link="DataLayer\DataModel\MaxIdGuidDataModel.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxIdIntegerDataModel.cs" Link="DataLayer\DataModel\MaxIdIntegerDataModel.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxIdStringDataModel.cs" Link="DataLayer\DataModel\MaxIdStringDataModel.cs" />
+		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Interface\IMaxDataContextLibraryProvider.cs" Link="DataLayer\Library\Interface\IMaxDataContextLibraryProvider.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Interface\IMaxDataLibraryProvider.cs" Link="DataLayer\Library\Interface\IMaxDataLibraryProvider.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Interface\IMaxHttpLibraryProvider.cs" Link="DataLayer\Library\Interface\IMaxHttpLibraryProvider.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Interface\IMaxSerialPortLibraryProvider.cs" Link="DataLayer\Library\Interface\IMaxSerialPortLibraryProvider.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Interface\IMaxSqlGenerationLibraryProvider.cs" Link="DataLayer\Library\Interface\IMaxSqlGenerationLibraryProvider.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Interface\IMaxStreamLibraryProvider.cs" Link="DataLayer\Library\Interface\IMaxStreamLibraryProvider.cs" />
+		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\MaxDataContextLibrary.cs" Link="DataLayer\Library\MaxDataContextLibrary.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\MaxDataLibrary.cs" Link="DataLayer\Library\MaxDataLibrary.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\MaxHttpLibrary.cs" Link="DataLayer\Library\MaxHttpLibrary.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\MaxSerialPortLibrary.cs" Link="DataLayer\Library\MaxSerialPortLibrary.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\MaxSqlGenerationLibrary.cs" Link="DataLayer\Library\MaxSqlGenerationLibrary.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\MaxStreamLibrary.cs" Link="DataLayer\Library\MaxStreamLibrary.cs" />
+		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Provider\MaxDataContextLibraryDefaultProvider.cs" Link="DataLayer\Library\Provider\MaxDataContextLibraryDefaultProvider.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Provider\MaxDataLibraryDefaultProvider.cs" Link="DataLayer\Library\Provider\MaxDataLibraryDefaultProvider.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Provider\MaxHttpLibraryDefaultProvider.cs" Link="DataLayer\Library\Provider\MaxHttpLibraryDefaultProvider.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Provider\MaxSerialPortLibraryDefaultProvider.cs" Link="DataLayer\Library\Provider\MaxSerialPortLibraryDefaultProvider.cs" />
@@ -102,7 +105,6 @@
 		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Interface\IMaxBaseTemplateRepositoryProvider.cs" Link="DataLayer\Repository\Interface\IMaxBaseTemplateRepositoryProvider.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Interface\IMaxBaseWriteRepositoryProvider.cs" Link="DataLayer\Repository\Interface\IMaxBaseWriteRepositoryProvider.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Interface\IMaxCacheRepositoryProvider.cs" Link="DataLayer\Repository\Interface\IMaxCacheRepositoryProvider.cs" />
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Interface\IMaxDataContextProvider.cs" Link="DataLayer\Repository\Interface\IMaxDataContextProvider.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Interface\IMaxMessageRepositoryProvider.cs" Link="DataLayer\Repository\Interface\IMaxMessageRepositoryProvider.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Interface\IMaxRepositoryProvider.cs" Link="DataLayer\Repository\Interface\IMaxRepositoryProvider.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\MaxBaseIdIndexRepository.cs" Link="DataLayer\Repository\MaxBaseIdIndexRepository.cs" />
@@ -125,7 +127,6 @@
 		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Provider\MaxBaseTemplateRepositoryDefaultProvider.cs" Link="DataLayer\Repository\Provider\MaxBaseTemplateRepositoryDefaultProvider.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Provider\MaxBaseWriteRepositoryDefaultProvider.cs" Link="DataLayer\Repository\Provider\MaxBaseWriteRepositoryDefaultProvider.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Provider\MaxCacheRepositoryDefaultProvider.cs" Link="DataLayer\Repository\Provider\MaxCacheRepositoryDefaultProvider.cs" />
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Provider\MaxDataContextDefaultProvider.cs" Link="DataLayer\Repository\Provider\MaxDataContextDefaultProvider.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Provider\MaxMessageRepositoryDefaultProvider.cs" Link="DataLayer\Repository\Provider\MaxMessageRepositoryDefaultProvider.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\MaxStartup.cs" Link="MaxStartup.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\PresentationLayer\Models\MaxBaseEntityViewModel.cs" Link="PresentationLayer\Models\MaxBaseEntityViewModel.cs" />

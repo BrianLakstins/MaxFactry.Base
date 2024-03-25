@@ -55,6 +55,7 @@
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/22/2024" author="Brian A. Lakstins" description="Add some methods that were in Repository proviers.  Remove some unused methods.">
 // <change date="3/24/2024" author="Brian A. Lakstins" description="Update to namespace.">
+// <change date="3/25/2024" author="Brian A. Lakstins" description="Remove handling of DataContext">
 // </changelog>
 #endregion
 
@@ -74,61 +75,12 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
         /// <summary>
         /// Maps classes that use a provider to the class that is the provider
         /// </summary>
-        private MaxIndex _oContextProviderMapIndex = new MaxIndex();
-
-        /// <summary>
-        /// Maps classes that use a provider to the class that is the provider
-        /// </summary>
         private MaxIndex _oDataModelMapIndex = new MaxIndex();
 
         /// <summary>
         /// Default storage key
         /// </summary>
         private string _sDefaultStorageKey = null;
-
-        /// <summary>
-        /// Gets the context provider using the Repository provider for this type
-        /// </summary>
-        /// <param name="loRepositoryProvider">The object calling the context provider.</param>
-        /// <param name="loData">Data being acted upon by the context provider.</param>
-        /// <returns>Context provider</returns>
-        public virtual IMaxDataContextProvider GetContextProvider(IMaxRepositoryProvider loRepositoryProvider, MaxData loData)
-        {
-            // Try using the type of the caller as the type of the provider.
-            Type loProviderType = loRepositoryProvider.GetType();
-
-            // See if a data context type has been configured for the provider.
-            if (null != loRepositoryProvider.DefaultContextProviderType)
-            {
-                loProviderType = loRepositoryProvider.DefaultContextProviderType;
-            }
-
-            // See if a context provider was sent with the data
-            if (null != loData && null != loData.Get("IMaxDataContextProvider") && loData.Get("IMaxDataContextProvider") is Type)
-            {
-                loProviderType = (Type)loData.Get("IMaxDataContextProvider");
-            }
-
-            // Use the mapping of one exists to override the specified provider.
-            if (this._oContextProviderMapIndex.Contains(loProviderType.ToString()))
-            {
-                loProviderType = (Type)this._oContextProviderMapIndex[loProviderType.ToString()];
-            }
-
-            string lsName = loRepositoryProvider.Name;
-            if (null != loRepositoryProvider.ContextProviderName && loRepositoryProvider.ContextProviderName.Length > 0)
-            {
-                lsName = loRepositoryProvider.ContextProviderName;
-            }
-
-            IMaxProvider loProvider = MaxFactryLibrary.CreateProvider(lsName, loProviderType);
-            if (loProvider is IMaxDataContextProvider)
-            {
-                return (IMaxDataContextProvider)loProvider;
-            }
-
-            return null;
-        }
 
         /// <summary>
         /// Gets the context provider using the Repository provider for this type
@@ -145,16 +97,6 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
 
             object loDataModel = MaxFactryLibrary.CreateSingleton(loDataModelType);
             return loDataModel as MaxDataModel;
-        }
-
-        /// <summary>
-        /// Maps a class that uses a specific provider to that provider
-        /// </summary>
-        /// <param name="loType">Class that uses a provider</param>
-        /// <param name="loProviderType">The provider to use</param>
-        public virtual void RegisterContextProvider(Type loType, Type loProviderType)
-        {
-            this._oContextProviderMapIndex.Add(loType.ToString(), loProviderType);
         }
 
         /// <summary>

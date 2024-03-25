@@ -29,6 +29,7 @@
 // <changelog>
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/22/2024" author="Brian A. Lakstins" description="Initial creation.  Based on IMaxStorageReadRepositoryProvider.">
+// <change date="3/25/2024" author="Brian A. Lakstins" description="Removing passing Total">
 // </changelog>
 #endregion
 
@@ -57,10 +58,9 @@ namespace MaxFactry.Base.DataLayer
         /// <param name="lnPageIndex">Page to return</param>
         /// <param name="lnPageSize">Items per page</param>
         /// <param name="lsOrderBy">Sort information</param>
-        /// <param name="lnTotal">Total items found</param>
         /// <param name="laDataNameList">list of fields to return from select</param>
         /// <returns>List of data from select</returns>
-        MaxDataList Select(MaxData loData, MaxDataQuery loDataQuery, int lnPageIndex, int lnPageSize, string lsOrderBy, out int lnTotal, params string[] laDataNameList);
+        MaxDataList Select(MaxData loData, MaxDataQuery loDataQuery, int lnPageIndex, int lnPageSize, string lsOrderBy, params string[] laDataNameList);
 
         /// <summary>
         /// Selects data from the database.

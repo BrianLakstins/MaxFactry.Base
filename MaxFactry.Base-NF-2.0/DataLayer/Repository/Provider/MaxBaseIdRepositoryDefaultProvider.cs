@@ -33,6 +33,7 @@
 // <change date="12/21/2016" author="Brian A. Lakstins" description="Added central method to filter by deleted property.">
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/23/2024" author="Brian A. Lakstins" description="Change parent class.  Update for changes to DataModel.">
+// <change date="3/25/2024" author="Brian A. Lakstins" description="Removing passing Total">
 // </changelog>
 #endregion
 
@@ -56,7 +57,7 @@ namespace MaxFactry.Base.DataLayer.Provider
         /// <param name="lnTotal">Total items found.</param>
         /// <param name="laDataNameList">list of fields to return from select.</param>
         /// <returns>List of data from select.</returns>
-        public override MaxDataList Select(MaxData loData, MaxDataQuery loDataQuery, int lnPageIndex, int lnPageSize, string lsOrderBy, out int lnTotal, params string[] laDataNameList)
+        public override MaxDataList Select(MaxData loData, MaxDataQuery loDataQuery, int lnPageIndex, int lnPageSize, string lsOrderBy, params string[] laDataNameList)
         {
             ////Update DataQuery to include filter by IsDeleted if one is not already there.
             if (loData.DataModel is MaxBaseDataModel)
@@ -90,7 +91,7 @@ namespace MaxFactry.Base.DataLayer.Provider
                 }
             }
 
-            return base.Select(loData, loDataQuery, lnPageIndex, lnPageSize, lsOrderBy, out lnTotal, laDataNameList);
+            return base.Select(loData, loDataQuery, lnPageIndex, lnPageSize, lsOrderBy, laDataNameList);
         }
 	}
 }

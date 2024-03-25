@@ -37,6 +37,7 @@
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/22/2024" author="Brian A. Lakstins" description="Add some methods that were in Repository proviers.  Remove some unused methods.">
 // <change date="3/24/2024" author="Brian A. Lakstins" description="Update to namespace.">
+// <change date="3/25/2024" author="Brian A. Lakstins" description="Remove handling of DataContext">
 // </changelog>
 #endregion
 
@@ -50,27 +51,12 @@ namespace MaxFactry.Base.DataLayer.Library
     /// </summary>
     public interface IMaxDataLibraryProvider : IMaxProvider
 	{
-		/// <summary>
-		/// Gets the context provider using the Repository provider for this type
-		/// </summary>
-        /// <param name="loRepositoryProvider">The repository provider calling the context provider.</param>
-        /// <param name="loData">The data being updated by the context provider.</param>
-        /// <returns>Data context provider</returns>
-        IMaxDataContextProvider GetContextProvider(IMaxRepositoryProvider loRepositoryProvider, MaxData loData);
-
         /// <summary>
         /// 
         /// </summary>
         /// <param name="loType">Type of context provider to get</param>
         /// <returns>Context provider</returns>
         MaxDataModel GetDataModel(Type loType);
-
-		/// <summary>
-		/// Maps a class that uses a specific provider to that provider
-		/// </summary>
-		/// <param name="loType">Class that uses a provider</param>
-		/// <param name="loProviderType">The provider to use</param>
-		void RegisterContextProvider(Type loType, Type loProviderType);
 
 		/// <summary>
 		/// Maps a class that uses a specific provider to that provider

@@ -30,6 +30,7 @@
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/22/2024" author="Brian A. Lakstins" description="Initial creation.  Based on MaxStorageReadRepositoryDefaultProvider.">
 // <change date="3/24/2024" author="Brian A. Lakstins" description="Updated for changes namespaces">
+// <change date="3/25/2024" author="Brian A. Lakstins" description="Use DataContextLibrary">
 // </changelog>
 #endregion
 
@@ -138,7 +139,7 @@ namespace MaxFactry.Base.DataLayer.Provider
 		public override void Initialize(string lsName, MaxIndex loConfig)
 		{
             base.Initialize(lsName, loConfig);
-            string lsDefaultContextProviderName = this.GetConfigValue(loConfig, MaxDataContextDefaultProvider.DefaultContextProviderConfigName) as string;
+            string lsDefaultContextProviderName = this.GetConfigValue(loConfig, MaxDataContextLibrary.DefaultContextProviderConfigName) as string;
             if (null != lsDefaultContextProviderName)
             {
                 Type loDefaultContextProviderType = this.GetConfigValue(loConfig, lsDefaultContextProviderName) as Type;
@@ -149,7 +150,7 @@ namespace MaxFactry.Base.DataLayer.Provider
                 }
             }
 
-            string lsContextProviderName = this.GetConfigValue(loConfig, MaxDataContextDefaultProvider.ContextProviderConfigName) as string;
+            string lsContextProviderName = this.GetConfigValue(loConfig, MaxDataContextLibrary.ContextProviderConfigName) as string;
             if (null != lsContextProviderName)
             {
                 this.ContextProviderName = lsContextProviderName;
@@ -164,14 +165,7 @@ namespace MaxFactry.Base.DataLayer.Provider
         /// <returns>List of data elements with a base data model.</returns>
         public virtual MaxDataList SelectAll(MaxData loData, params string[] laDataNameList)
         {
-            IMaxDataContextProvider loDataContextProvider = MaxDataLibrary.GetContextProvider(this, null);
-            if (null == loDataContextProvider)
-            {
-                return new MaxDataList();
-                //throw new MaxException("DataContextProvider was not found for [" + this.GetType().ToString() + "].  Check configuration for DataContextProvider.");
-            }
-
-            return loDataContextProvider.SelectAll(loData, laDataNameList);
+            return MaxDataContextLibrary.SelectAll(this, loData, laDataNameList);
         }
 
         /// <summary>
@@ -185,17 +179,9 @@ namespace MaxFactry.Base.DataLayer.Provider
         /// <param name="lnTotal">Total items found.</param>
         /// <param name="laDataNameList">list of fields to return from select.</param>
         /// <returns>List of data from select.</returns>
-        public virtual MaxDataList Select(MaxData loData, MaxDataQuery loDataQuery, int lnPageIndex, int lnPageSize, string lsOrderBy, out int lnTotal, params string[] laDataNameList)
+        public virtual MaxDataList Select(MaxData loData, MaxDataQuery loDataQuery, int lnPageIndex, int lnPageSize, string lsOrderBy, params string[] laDataNameList)
         {
-            IMaxDataContextProvider loDataContextProvider = MaxDataLibrary.GetContextProvider(this, loData);
-            lnTotal = 0;
-            if (null == loDataContextProvider)
-            {
-                return new MaxDataList(loData.DataModel);
-               //throw new MaxException("DataContextProvider was not found for [" + this.GetType().ToString() + "].  Check configuration for DataContextProvider.");
-            }
-
-            return loDataContextProvider.Select(loData, loDataQuery, lnPageIndex, lnPageSize, lsOrderBy, out lnTotal, laDataNameList);
+            return MaxDataContextLibrary.Select(this, loData, loDataQuery, lnPageIndex, lnPageSize, lsOrderBy, laDataNameList);
         }
 
         /// <summary>
@@ -206,14 +192,7 @@ namespace MaxFactry.Base.DataLayer.Provider
         /// <returns>List of data from select.</returns>
         public virtual int SelectCount(MaxData loData, MaxDataQuery loDataQuery)
         {
-            IMaxDataContextProvider loDataContextProvider = MaxDataLibrary.GetContextProvider(this, loData);
-            if (null == loDataContextProvider)
-            {
-                return 0;
-                //throw new MaxException("DataContextProvider was not found for [" + this.GetType().ToString() + "].  Check configuration for DataContextProvider.");
-            } 
-            
-            return loDataContextProvider.SelectCount(loData, loDataQuery);
+            return MaxDataContextLibrary.SelectCount(this, loData, loDataQuery);
         }
 
         /// <summary>
@@ -224,14 +203,7 @@ namespace MaxFactry.Base.DataLayer.Provider
         /// <returns>Stream that was opened.</returns>
         public virtual Stream StreamOpen(MaxData loData, string lsKey)
         {
-            IMaxDataContextProvider loProvider = MaxDataLibrary.GetContextProvider(this, loData);
-            if (null != loProvider)
-            {
-                Stream loStream = loProvider.StreamOpen(loData, lsKey);
-                return loStream;
-            }
-
-            return null;
+            return MaxDataContextLibrary.StreamOpen(this, loData, lsKey);
         }
 
         /// <summary>
@@ -242,14 +214,7 @@ namespace MaxFactry.Base.DataLayer.Provider
         /// <returns>true if successful.</returns>
         public virtual string GetStreamUrl(MaxData loData, string lsKey)
         {
-            IMaxDataContextProvider loProvider = MaxDataLibrary.GetContextProvider(this, loData);
-            string lsR = string.Empty;
-            if (null != loProvider)
-            {
-                lsR = loProvider.GetStreamUrl(loData, lsKey);
-            }
-
-            return lsR;
+            return MaxDataContextLibrary.GetStreamUrl(this, loData, lsKey);
         }
 
         /// <summary>
