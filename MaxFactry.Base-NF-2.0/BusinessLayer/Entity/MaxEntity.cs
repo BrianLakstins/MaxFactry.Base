@@ -74,6 +74,7 @@
 // <change date="3/22/2024" author="Brian A. Lakstins" description="Remove StorageKey.  Add dynamic KeyPropertyList and Key.  Change Repositories to Base versions.  Remove archiving.  Replace Key with DataName.  Add retries to data changing methods.  Update load methods to reuse other load methods when possible.">
 // <change date="3/23/2024" author="Brian A. Lakstins" description="Updating support generic primary keys.  Renaming Reset method to Clear.">
 // <change date="3/24/2024" author="Brian A. Lakstins" description="Updated for changes namespaces">
+// <change date="3/26/2024" author="Brian A. Lakstins" description="Specify between Property Name and Data Name">
 // </changelog>
 #endregion
 
@@ -220,11 +221,45 @@ namespace MaxFactry.Base.BusinessLayer
         /// <summary>
         /// Gets a key for the entity
         /// </summary>
-        public virtual string Key
+        public virtual string PropertyNameKey
         {
             get
             {
-                string lsR = this.Data.DataModel.GetKey(this.Data);
+                string lsR = string.Empty;
+                foreach (string lsPropertyName in this.PropertyNameKeyList)
+                {
+                    if (null != lsR)
+                    {
+                        PropertyInfo loProperty = this.GetType().GetProperty(lsPropertyName);
+                        string lsValue = MaxConvertLibrary.ConvertToString(typeof(object), loProperty.GetValue(this));
+                        if (string.IsNullOrEmpty(lsValue))
+                        {
+                            lsR = null;
+                        }
+                        else
+                        {
+                            if (lsR.Length > 0)
+                            {
+                                lsR += this.Data.DataModel.KeySeparator;
+                            }
+
+                            lsR += lsValue;
+                        }
+                    }
+                }
+
+                return lsR;
+            }
+        }
+
+        /// <summary>
+        /// Gets a key for the entity
+        /// </summary>
+        public virtual string DataNameKey
+        {
+            get
+            {
+                string lsR = this.Data.DataModel.GetDataNameKey(this.Data);
                 return lsR;
             }
         }
@@ -315,7 +350,7 @@ namespace MaxFactry.Base.BusinessLayer
 
             if (lbR)
             {
-                string lsCacheKey = this.GetCacheKey() + "LoadByKey/" + this.Key;
+                string lsCacheKey = this.GetCacheKey() + "LoadByKey/" + this.DataNameKey;
                 MaxCacheRepository.Set(this.GetType(), lsCacheKey, this.Data);
                 lsCacheKey = this.GetCacheKey() + "LoadAll*";
                 MaxCacheRepository.Remove(this.GetType(), lsCacheKey);
@@ -374,7 +409,7 @@ namespace MaxFactry.Base.BusinessLayer
             bool lbR = false;
             OnUpdateBefore();
             this.SetProperties();
-            if (this.IsDataChanged && !string.IsNullOrEmpty(this.Key))
+            if (this.IsDataChanged && !string.IsNullOrEmpty(this.DataNameKey))
             {
                 int lnLimit = 5;
                 int lnTry = 0;
@@ -388,7 +423,7 @@ namespace MaxFactry.Base.BusinessLayer
 
                 if (lbR)
                 {
-                    string lsCacheKey = this.GetCacheKey() + "LoadByKey/" + this.Key;
+                    string lsCacheKey = this.GetCacheKey() + "LoadByKey/" + this.DataNameKey;
                     MaxCacheRepository.Set(this.GetType(), lsCacheKey, this.Data);
                     lsCacheKey = this.GetCacheKey() + "LoadAll*";
                     MaxCacheRepository.Remove(this.GetType(), lsCacheKey);
@@ -445,7 +480,7 @@ namespace MaxFactry.Base.BusinessLayer
         {
             bool lbR = false;
             OnDeleteBefore();
-            if (!string.IsNullOrEmpty(this.Key))
+            if (!string.IsNullOrEmpty(this.DataNameKey))
             {
                 lbR = MaxBaseWriteRepository.Delete(this.Data);
                 if (lbR)
@@ -1052,13 +1087,42 @@ namespace MaxFactry.Base.BusinessLayer
             return loR;
         }
 
+        public bool LoadByPropertyNameKeyCache(string lsKey, params string[] laPropertyNameList)
+        {
+            string lsDataNameKey = string.Empty;
+            string[] laKey = lsKey.Split(new string[] { this.Data.DataModel.KeySeparator }, StringSplitOptions.RemoveEmptyEntries);
+            if (laKey.Length == this.Data.DataModel.DataNameKeyList.Length && laKey.Length == this.PropertyNameKeyList.Length)
+            {
+                foreach (string lsDataName in this.Data.DataModel.DataNameKeyList)
+                {
+                    if (null != lsDataNameKey)
+                    {
+                        for (int lnP = 0; lnP < this.PropertyNameKeyList.Length; lnP++)
+                        {
+                            if (this.GetDataName(this.Data.DataModel, this.PropertyNameKeyList[lnP]) == lsDataNameKey)
+                            {
+                                if (lsDataNameKey.Length > 0)
+                                {
+                                    lsDataNameKey += this.Data.DataModel.KeySeparator;
+                                }
+
+                                lsDataNameKey = laKey[lnP];
+                            }
+                        }
+                    }
+                }
+            }
+
+            return this.LoadByDataNameKeyCache(lsDataNameKey, laPropertyNameList);
+        }
+
         /// <summary>
         /// Loads the entity that matches the key
         /// </summary>
         /// <param name="lsKey"></param>
         /// <param name="laPropertyNameList"></param>
         /// <returns></returns>
-        public bool LoadByKeyCache(string lsKey, params string[] laPropertyNameList)
+        public bool LoadByDataNameKeyCache(string lsKey, params string[] laPropertyNameList)
         {
             bool lbR = false;
             string[] laKey = lsKey.Split(new string[] { this.Data.DataModel.KeySeparator }, StringSplitOptions.None);
@@ -1069,7 +1133,7 @@ namespace MaxFactry.Base.BusinessLayer
                 for (int lnK = 0; lnK < this.PropertyNameKeyList.Length; lnK++)
                 {
                     string lsDataName = this.GetDataName(this.Data.DataModel, this.PropertyNameKeyList[lnK]);
-                    loDataQuery.AddFilter(lsDataName, "=", this.Data.Get(lsDataName));
+                    loDataQuery.AddFilter(lsDataName, "=", laKey[lnK]);
                     if (lnK < this.PropertyNameKeyList.Length - 1)
                     {
                         loDataQuery.AddAnd();

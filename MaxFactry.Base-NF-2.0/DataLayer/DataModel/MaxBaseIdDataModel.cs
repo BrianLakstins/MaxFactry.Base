@@ -35,16 +35,19 @@
 // <change date="12/2/2019" author="Brian A. Lakstins" description="Updated to reference base instantiation method.">
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/22/2024" author="Brian A. Lakstins" description="Change parent class.  Remove fields that are already in parent class.">
+// <change date="3/26/2024" author="Brian A. Lakstins" description="Move logic for GetStreamPath from MaxData">
 // </changelog>
 #endregion
 
 namespace MaxFactry.Base.DataLayer
 {
     using System;
+    using System.Collections.Generic;
+    using MaxFactry.Core;
 
-	/// <summary>
-	/// Defines base data model with some standard storage properties
-	/// </summary>
+    /// <summary>
+    /// Defines base data model with some standard storage properties
+    /// </summary>
 	public abstract class MaxBaseIdDataModel : MaxBaseDataModel
 	{
         /// <summary>
@@ -70,6 +73,13 @@ namespace MaxFactry.Base.DataLayer
             this.AddKey(this.Id, typeof(Guid));
             this.AddNullable(this.AlternateId, typeof(MaxShortString));
             this.AddNullable(this.Extension, typeof(byte[]));
+        }
+
+        public override string[] GetStreamPath(MaxData loData)
+        {
+            List<string> loR = new List<string>(base.GetStreamPath(loData));
+            loR.Add(MaxConvertLibrary.ConvertToString(typeof(object), loData.Get(this.Id)));
+            return loR.ToArray();
         }
     }
 }

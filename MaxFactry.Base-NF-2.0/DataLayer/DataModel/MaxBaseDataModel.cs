@@ -29,12 +29,16 @@
 // <changelog>
 // <change date="3/19/2024" author="Brian A. Lakstins" description="Initial creation">
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
+// <change date="3/26/2024" author="Brian A. Lakstins" description="Move logic for GetStreamPath from MaxData">
 // </changelog>
 #endregion
 
 namespace MaxFactry.Base.DataLayer
 {
     using System;
+    using MaxFactry.Core;
+    using System.Collections.Generic;
+    using MaxFactry.Base.DataLayer.Library;
 
     /// <summary>
     /// Defines base data model with some standard storage properties
@@ -90,6 +94,31 @@ namespace MaxFactry.Base.DataLayer
             this.AddNullable(this.AttributeIndexText, typeof(MaxLongString));
             this.RepositoryType = typeof(MaxBaseRepository);
             this.RepositoryProviderType = typeof(Provider.MaxBaseRepositoryDefaultProvider);
+        }
+
+        public override string[] GetStreamPath(MaxData loData)
+        {
+            List<string> loR = new List<string>();
+            if (this.IsStored(this.StorageKey))
+            {
+                string lsStorageKey = MaxConvertLibrary.ConvertToString(typeof(object), loData.Get(this.StorageKey));
+                if (string.IsNullOrEmpty(lsStorageKey))
+                {
+                    lsStorageKey = MaxDataLibrary.GetStorageKey(loData);
+                }
+
+                loR.Add(lsStorageKey);
+            }
+
+            string lsDataStorageName = this.DataStorageName;
+            if (lsDataStorageName.EndsWith("MaxArchive"))
+            {
+                lsDataStorageName = lsDataStorageName.Substring(0, lsDataStorageName.Length - "MaxArchive".Length);
+            }
+
+            loR.Add(lsDataStorageName);
+
+            return loR.ToArray();
         }
     }
 }

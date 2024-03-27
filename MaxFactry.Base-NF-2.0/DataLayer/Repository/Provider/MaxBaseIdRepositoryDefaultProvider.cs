@@ -34,6 +34,7 @@
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/23/2024" author="Brian A. Lakstins" description="Change parent class.  Update for changes to DataModel.">
 // <change date="3/25/2024" author="Brian A. Lakstins" description="Removing passing Total">
+// <change date="3/26/2024" author="Brian A. Lakstins" description="Remove method to filter by IsDeleted because it's included in the parent class">
 // </changelog>
 #endregion
 
@@ -46,52 +47,5 @@ namespace MaxFactry.Base.DataLayer.Provider
 	/// </summary>
     public abstract class MaxBaseIdRepositoryDefaultProvider : MaxFactry.Base.DataLayer.Provider.MaxBaseRepositoryDefaultProvider, IMaxBaseIdRepositoryProvider
 	{
-        /// <summary>
-        /// Selects data from the database.
-        /// </summary>
-        /// <param name="loData">Element with data used in the filter.</param>
-        /// <param name="loDataQuery">Query information to filter results.</param>
-        /// <param name="lnPageIndex">Page to return.</param>
-        /// <param name="lnPageSize">Items per page.</param>
-        /// <param name="lsOrderBy">Sorting information</param>
-        /// <param name="lnTotal">Total items found.</param>
-        /// <param name="laDataNameList">list of fields to return from select.</param>
-        /// <returns>List of data from select.</returns>
-        public override MaxDataList Select(MaxData loData, MaxDataQuery loDataQuery, int lnPageIndex, int lnPageSize, string lsOrderBy, params string[] laDataNameList)
-        {
-            ////Update DataQuery to include filter by IsDeleted if one is not already there.
-            if (loData.DataModel is MaxBaseDataModel)
-            {
-                bool lbHasIsDeleted = false;
-                if (null != loDataQuery)
-                {
-                    object[] laQuery = loDataQuery.GetQuery();
-                    foreach (object loQuery in laQuery)
-                    {
-                        if (loQuery is MaxDataFilter)
-                        {
-                            if (((MaxDataFilter)loQuery).Name == ((MaxBaseDataModel)loData.DataModel).IsDeleted)
-                            {
-                                lbHasIsDeleted = true;
-                            }
-                        }
-                    }
-
-                    if (!lbHasIsDeleted && loData.DataModel.HasDataName(((MaxBaseDataModel)loData.DataModel).IsDeleted))
-                    {
-                        if (laQuery.Length > 0)
-                        {
-                            loDataQuery.AddCondition("AND");
-                        }
-
-                        loDataQuery.StartGroup();
-                        loDataQuery.AddFilter(((MaxBaseDataModel)loData.DataModel).IsDeleted, "=", false);
-                        loDataQuery.EndGroup();
-                    }
-                }
-            }
-
-            return base.Select(loData, loDataQuery, lnPageIndex, lnPageSize, lsOrderBy, laDataNameList);
-        }
 	}
 }

@@ -29,12 +29,15 @@
 // <changelog>
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/23/2024" author="Brian A. Lakstins" description="Initial creation">
+// <change date="3/26/2024" author="Brian A. Lakstins" description="Move logic for GetStreamPath from MaxData">
 // </changelog>
 #endregion
 
 namespace MaxFactry.Base.DataLayer
 {
     using System;
+    using MaxFactry.Core;
+    using System.Collections.Generic;
 
     /// <summary>
     /// Defines base data model for data with a guid identifier.  Designed to replace MaxBaseIdDataModel.
@@ -53,6 +56,13 @@ namespace MaxFactry.Base.DataLayer
             : base()
         {
             this.AddKey(this.Id, typeof(Guid));
+        }
+
+        public override string[] GetStreamPath(MaxData loData)
+        {
+            List<string> loR = new List<string>(base.GetStreamPath(loData));
+            loR.Add(MaxConvertLibrary.ConvertToString(typeof(object), loData.Get(this.Id)));
+            return loR.ToArray();
         }
     }
 }

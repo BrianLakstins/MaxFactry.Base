@@ -28,12 +28,15 @@
 #region Change Log
 // <changelog>
 // <change date="4/16/2015" author="Brian A. Lakstins" description="Initial creation">
+// <change date="3/26/2024" author="Brian A. Lakstins" description="Move logic for GetStreamPath from MaxData">
 // </changelog>
 #endregion
 
 namespace MaxFactry.Base.DataLayer
 {
     using System;
+    using System.Collections.Generic;
+    using MaxFactry.Core;
 
     /// <summary>
     /// Defines base data model for data with an integer identifier
@@ -65,6 +68,20 @@ namespace MaxFactry.Base.DataLayer
             this.AddKey(this.Id, typeof(long));
             this.AddNullable(this.AlternateId, typeof(MaxShortString));
             this.AddType(this.CreatedDate, typeof(DateTime));
+        }
+
+        public override string[] GetStreamPath(MaxData loData)
+        {
+            List<string> loR = new List<string>();
+            string lsDataStorageName = this.DataStorageName;
+            if (lsDataStorageName.EndsWith("MaxArchive"))
+            {
+                lsDataStorageName = lsDataStorageName.Substring(0, lsDataStorageName.Length - "MaxArchive".Length);
+            }
+
+            loR.Add(lsDataStorageName);
+            loR.Add(MaxConvertLibrary.ConvertToString(typeof(object), loData.Get(this.Id)));
+            return loR.ToArray();
         }
     }
 }

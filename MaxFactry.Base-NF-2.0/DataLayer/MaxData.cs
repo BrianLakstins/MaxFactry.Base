@@ -60,6 +60,7 @@
 // <change date="3/22/2024" author="Brian A. Lakstins" description="Rename Key to DataName.  Save original value when changed.  Consolidate Clone and MaxData initializer.  Remove Clone by datamodel (initializer can be used instead).  Rename Reset to Clear.  Add GetKey.  Add key to stream path.">
 // <change date="3/23/2024" author="Brian A. Lakstins" description="Remove GetKey method (moving to DataModel so can be overridden in child classes if needed)">
 // <change date="3/24/2024" author="Brian A. Lakstins" description="Updated for changes namespaces">
+// <change date="3/26/2024" author="Brian A. Lakstins" description="Move logic for GetStreamPath.  Filter streams from extended data when converting to string.">
 // </changelog>
 #endregion
 
@@ -367,15 +368,24 @@ namespace MaxFactry.Base.DataLayer
         public override string ToString()
         {
             MaxIndex loDataIndex = new MaxIndex();
-            string[] laDataName = this._oIndex.GetSortedKeyList();
             MaxIndex loIndex = new MaxIndex();
             //// Remove any stream values.  They don't serialize well
-            foreach (string lsDataName in laDataName)
+            foreach (string lsDataName in this.DataModel.DataNameList)
             {
                 if (this._oIndex.Contains(lsDataName) && this._oIndex[lsDataName].GetType() == typeof(Stream))
                 {
                     loIndex.Add(lsDataName, this._oIndex[lsDataName]);
                     this._oIndex[lsDataName] = null;
+                }
+            }
+
+            string[] laDataName = this._oExtendedIndex.GetSortedKeyList();
+            foreach (string lsDataName in laDataName)
+            {
+                if (this._oExtendedIndex.Contains(lsDataName) && this._oExtendedIndex[lsDataName].GetType() == typeof(Stream))
+                {
+                    loIndex.Add(lsDataName, this._oExtendedIndex[lsDataName]);
+                    this._oExtendedIndex[lsDataName] = null;
                 }
             }
 
@@ -389,7 +399,7 @@ namespace MaxFactry.Base.DataLayer
                 laDataName = loIndex.GetSortedKeyList();
                 foreach (string lsKey in laDataName)
                 {
-                    this._oIndex[lsKey] = loIndex[lsKey];
+                    this.Set(lsKey, loIndex[lsKey]);
                 }
             }
 
@@ -398,50 +408,7 @@ namespace MaxFactry.Base.DataLayer
 
         public string[] GetStreamPath()
         {
-            MaxIndex loR = new MaxIndex();
-            MaxBaseDataModel loBaseDataModel = this.DataModel as MaxBaseDataModel;
-            if (null != loBaseDataModel && loBaseDataModel.IsStored(loBaseDataModel.StorageKey) && this.DataModel is MaxIdGuidDataModel)
-            {
-                string lsStorageKey = this.Get(loBaseDataModel.StorageKey) as string;
-                if (string.IsNullOrEmpty(lsStorageKey))
-                {
-                    lsStorageKey = MaxDataLibrary.GetStorageKey(this);
-                }
-
-                loR.Add(lsStorageKey);
-            }
-
-            string lsDataStorageName = this.DataModel.DataStorageName;
-            if (lsDataStorageName.EndsWith("MaxArchive"))
-            {
-                lsDataStorageName = lsDataStorageName.Substring(0, lsDataStorageName.Length - "MaxArchive".Length);
-            }
-
-            loR.Add(lsDataStorageName);
-            if (this.DataModel is MaxIdGuidDataModel)
-            {
-                string lsId = MaxConvertLibrary.ConvertToString(typeof(object), this.Get(((MaxIdGuidDataModel)this.DataModel).Id));
-                loR.Add(lsId);
-            }
-            else if (null != loBaseDataModel)
-            {
-                string lsKey = this.DataModel.GetKey(this);
-                if (!string.IsNullOrEmpty(lsKey))
-                {
-                    loR.Add(lsKey);
-                }
-            }
-
-            string[] laKey = loR.GetSortedKeyList();
-            string[] laR = new string[laKey.Length];
-            int lnR = 0;
-            foreach (string lsKey in laKey)
-            {
-                laR[lnR] = loR.GetValueString(lsKey);
-                lnR++;
-            }
-
-            return laR;
+            return this.DataModel.GetStreamPath(this);
         }
     }
 }

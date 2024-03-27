@@ -30,6 +30,7 @@
 // <change date="3/19/2024" author="Brian A. Lakstins" description="Initial creation">
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/24/2024" author="Brian A. Lakstins" description="Updated for changes namespaces">
+// <change date="3/26/2024" author="Brian A. Lakstins" description="Check to see if Data names are being used before using them">
 // </changelog>
 #endregion
 
@@ -318,21 +319,38 @@ namespace MaxFactry.Base.BusinessLayer
 
         public override bool Insert()
         {
-            this.Set(this.MaxBaseDataModel.CreatedDate, DateTime.UtcNow);
-            this.Set(this.MaxBaseDataModel.LastUpdateDate, DateTime.UtcNow);
+            if (this.Data.DataModel.IsStored(this.MaxBaseDataModel.LastUpdateDate))
+            {
+                this.Set(this.MaxBaseDataModel.LastUpdateDate, DateTime.UtcNow);
+            }
+
+            if (this.Data.DataModel.IsStored(this.MaxBaseDataModel.CreatedDate))
+            {
+                this.Set(this.MaxBaseDataModel.CreatedDate, DateTime.UtcNow);
+            }
+
             return base.Insert();
         }
 
         public override bool Update()
         {
-            this.Set(this.MaxBaseDataModel.LastUpdateDate, DateTime.UtcNow);
+            if (this.Data.DataModel.IsStored(this.MaxBaseDataModel.LastUpdateDate))
+            {
+                this.Set(this.MaxBaseDataModel.LastUpdateDate, DateTime.UtcNow);
+            }
+
             return base.Update();
         }
 
         public override bool Delete()
         {
-            this.Set(this.MaxBaseDataModel.IsDeleted, true);
-            return base.Update();
+            if (this.Data.DataModel.IsStored(this.MaxBaseDataModel.IsDeleted))
+            {
+                this.Set(this.MaxBaseDataModel.IsDeleted, true);
+                return this.Update();
+            }
+
+            return base.Delete();
         }
 
         /// <summary>

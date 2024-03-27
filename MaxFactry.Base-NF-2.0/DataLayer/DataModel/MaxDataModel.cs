@@ -43,13 +43,16 @@
 // <change date="3/22/2024" author="Brian A. Lakstins" description="Remove storagekey.  Rename Key and Property to DataName so not confused with Primary Key or Entity property.  Remove unused field _oKeyIndex. Add properies for Data Names.  Remove PrimaryKey suffix. Create some constants for reused strings.">
 // <change date="3/23/2024" author="Brian A. Lakstins" description="Adding a field and some methods to support generic primary keys.">
 // <change date="3/25/2024" author="Brian A. Lakstins" description="Add method to map content that may not be formatted for the data model.">
+// <change date="3/26/2024" author="Brian A. Lakstins" description="Move logic for GetStreamPath from MaxData">
 // </changelog>
 #endregion
 
 namespace MaxFactry.Base.DataLayer
 {
     using System;
+    using System.Collections.Generic;
     using System.Reflection;
+    using MaxFactry.Base.DataLayer.Library;
     using MaxFactry.Core;
 
     /// <summary>
@@ -263,7 +266,7 @@ namespace MaxFactry.Base.DataLayer
             }
         }
 
-        public virtual string GetKey(MaxData loData)
+        public virtual string GetDataNameKey(MaxData loData)
         {
             string lsR = string.Empty;
             foreach (string lsDataName in this.DataNameKeyList)
@@ -558,5 +561,28 @@ namespace MaxFactry.Base.DataLayer
 		{
 			this._sDataStorageName = lsDataStorageName;
 		}
-	}
+
+        public virtual string[] GetStreamPath(MaxData loData)
+        {
+            List<string> loR = new List<string>();
+            string lsDataStorageName = this.DataStorageName;
+            if (lsDataStorageName.EndsWith("MaxArchive"))
+            {
+                lsDataStorageName = lsDataStorageName.Substring(0, lsDataStorageName.Length - "MaxArchive".Length);
+            }
+
+            loR.Add(lsDataStorageName);
+            string lsKey = this.GetDataNameKey(loData);
+            if (!string.IsNullOrEmpty(lsKey))
+            {
+                string[] laStreamKey = lsKey.Split(new string[] { this.KeySeparator }, StringSplitOptions.RemoveEmptyEntries);
+                foreach (string lsStreamKey in laStreamKey)
+                {
+                    loR.Add(lsStreamKey);
+                }
+            }
+
+            return loR.ToArray();
+        }
+    }
 }
