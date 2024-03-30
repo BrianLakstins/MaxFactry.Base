@@ -61,6 +61,7 @@
 // <change date="3/23/2024" author="Brian A. Lakstins" description="Remove GetKey method (moving to DataModel so can be overridden in child classes if needed)">
 // <change date="3/24/2024" author="Brian A. Lakstins" description="Updated for changes namespaces">
 // <change date="3/26/2024" author="Brian A. Lakstins" description="Move logic for GetStreamPath.  Filter streams from extended data when converting to string.">
+// <change date="3/30/2024" author="Brian A. Lakstins" description="Add DataKey as unique identifer for any record.  Update cloning proccess to keep track of changes.  Remove Streams when creating string from data.  Keep DataKey when initialized from another MaxData.">
 // </changelog>
 #endregion
 
@@ -96,6 +97,8 @@ namespace MaxFactry.Base.DataLayer
         /// </summary>
         private MaxIndex _oExtendedIndex = new MaxIndex();
 
+        private string _sDataKey = null;
+
         /// <summary>
         /// Initializes a new instance of the MaxData class
         /// </summary>
@@ -127,6 +130,7 @@ namespace MaxFactry.Base.DataLayer
         public MaxData(MaxData loData)
         {
             this._oDataModel = loData.DataModel;
+            this._sDataKey = loData.DataKey;
             string[] laExtendedNameList = loData.GetExtendedNameList();
             foreach (string lsDataName in laExtendedNameList)
             {
@@ -142,6 +146,14 @@ namespace MaxFactry.Base.DataLayer
             get
             {
                 return this._oDataModel;
+            }
+        }
+
+        public string DataKey
+        {
+            get
+            {
+                return this._sDataKey;
             }
         }
 
@@ -239,6 +251,7 @@ namespace MaxFactry.Base.DataLayer
         /// </summary>
         public void ClearChanged()
         {
+            this._sDataKey = this.DataModel.GetDataKey(this);
             this._oChangedIndex = new MaxIndex();
         }
 
@@ -287,20 +300,9 @@ namespace MaxFactry.Base.DataLayer
                         this._oChangedIndex.Add(lsDataName, loCurrent);
                     }
 
-                    string lsDataNameCheck = lsDataName;
-                    bool lbFound = false;
-                    foreach (string lsDataNameStandard in this.DataModel.DataNameList)
+                    if (this.DataModel.HasDataName(lsDataName))
                     {
-                        if (lsDataNameStandard.Equals(lsDataName, StringComparison.InvariantCultureIgnoreCase))
-                        {
-                            lbFound = true;
-                            lsDataNameCheck = lsDataNameStandard;
-                        }
-                    }
-
-                    if (lbFound)
-                    {
-                        this._oIndex.Add(lsDataNameCheck, loValue);
+                        this._oIndex.Add(lsDataName, loValue);
                     }
                     else
                     {
@@ -342,14 +344,32 @@ namespace MaxFactry.Base.DataLayer
         public MaxData Clone()
         {
             MaxData loR = new MaxData(this);
+            //// First, set only original values to cloned data
             foreach (string lsDataName in this.DataModel.DataNameList)
             {
                 if (null != this.GetOriginal(lsDataName))
                 {
                     loR._oIndex.Add(lsDataName, this.GetOriginal(lsDataName));
                 }
+                else
+                {
+                    loR.Set(lsDataName, this.Get(lsDataName));
+                }
+            }
 
+            foreach (string lsDataName in this.DataModel.DataNameStreamList)
+            {
                 loR.Set(lsDataName, this.Get(lsDataName));
+            }
+
+            this.ClearChanged();
+            //// Second, set all data that was changed to the new data
+            foreach (string lsDataName in this.DataModel.DataNameList)
+            {
+                if (null != this.GetOriginal(lsDataName))
+                {
+                    loR.Set(lsDataName, this.Get(lsDataName));
+                }
             }
 
             return loR;
@@ -370,22 +390,23 @@ namespace MaxFactry.Base.DataLayer
             MaxIndex loDataIndex = new MaxIndex();
             MaxIndex loIndex = new MaxIndex();
             //// Remove any stream values.  They don't serialize well
-            foreach (string lsDataName in this.DataModel.DataNameList)
+            string[] laDataName = this._oIndex.GetSortedKeyList();
+            foreach (string lsDataName in laDataName)
             {
-                if (this._oIndex.Contains(lsDataName) && this._oIndex[lsDataName].GetType() == typeof(Stream))
+                if (this._oIndex.Contains(lsDataName) && this._oIndex[lsDataName] is Stream)
                 {
                     loIndex.Add(lsDataName, this._oIndex[lsDataName]);
-                    this._oIndex[lsDataName] = null;
+                    this._oIndex.Add(lsDataName, "stream");
                 }
             }
 
-            string[] laDataName = this._oExtendedIndex.GetSortedKeyList();
+            laDataName = this._oExtendedIndex.GetSortedKeyList();
             foreach (string lsDataName in laDataName)
             {
-                if (this._oExtendedIndex.Contains(lsDataName) && this._oExtendedIndex[lsDataName].GetType() == typeof(Stream))
+                if (this._oExtendedIndex.Contains(lsDataName) && this._oExtendedIndex[lsDataName] is Stream)
                 {
                     loIndex.Add(lsDataName, this._oExtendedIndex[lsDataName]);
-                    this._oExtendedIndex[lsDataName] = null;
+                    this._oExtendedIndex.Add(lsDataName, "stream");
                 }
             }
 

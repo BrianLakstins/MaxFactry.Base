@@ -49,7 +49,6 @@
 		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseDataModel.cs" Link="DataLayer\DataModel\MaxBaseDataModel.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseEmailDataModel.cs" Link="DataLayer\DataModel\MaxBaseEmailDataModel.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseGuidKeyDataModel.cs" Link="DataLayer\DataModel\MaxBaseGuidKeyDataModel.cs" />
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseHttpDataModel.cs" Link="DataLayer\DataModel\MaxBaseHttpDataModel.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseIdBranchDataModel.cs" Link="DataLayer\DataModel\MaxBaseIdBranchDataModel.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseIdDataModel.cs" Link="DataLayer\DataModel\MaxBaseIdDataModel.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseIdFileDataModel.cs" Link="DataLayer\DataModel\MaxBaseIdFileDataModel.cs" />
@@ -80,7 +79,6 @@
 		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\MaxSqlGenerationLibrary.cs" Link="DataLayer\Library\MaxSqlGenerationLibrary.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\MaxStreamLibrary.cs" Link="DataLayer\Library\MaxStreamLibrary.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Provider\MaxDataContextLibraryDefaultProvider.cs" Link="DataLayer\Library\Provider\MaxDataContextLibraryDefaultProvider.cs" />
-		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Provider\MaxDataContextLibraryHttpProvider.cs" Link="DataLayer\Library\Provider\MaxDataContextLibraryHttpProvider.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Provider\MaxDataLibraryDefaultProvider.cs" Link="DataLayer\Library\Provider\MaxDataLibraryDefaultProvider.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Provider\MaxHttpLibraryDefaultProvider.cs" Link="DataLayer\Library\Provider\MaxHttpLibraryDefaultProvider.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Provider\MaxSerialPortLibraryDefaultProvider.cs" Link="DataLayer\Library\Provider\MaxSerialPortLibraryDefaultProvider.cs" />

@@ -30,6 +30,7 @@
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/24/2024" author="Brian A. Lakstins" description="Initial creation">
 // <change date="3/25/2024" author="Brian A. Lakstins" description="Add method for getting remote data.  Add method to get token. Add method to get response with just token.">
+// <change date="3/30/2024" author="Brian A. Lakstins" description="Update method signatures to make them easier to use.">
 // </changelog>
 #endregion
 
@@ -105,14 +106,14 @@ namespace MaxFactry.Base.DataLayer.Library
             return Provider.GetAccessToken(loTokenUrl, lsClientId, lsClientSecret, lsScope);
         }
 
-        public static object GetResponse(string lsRequestUrl, string lsToken)
+        public static object GetContent(string lsRequestUrl, string lsToken)
         {
-            return Provider.GetResponse(lsRequestUrl, lsToken);
+            return Provider.GetContent(lsRequestUrl, lsToken);
         }
 
-        public static MaxIndex GetResponse(MaxData loData, MaxDataQuery loDataQuery, int lnPageIndex, int lnPageSize, string lsOrderBy, params string[] laDataNameList)
+        public static MaxIndex GetResponse(MaxIndex loRequestContent)
         {
-            return Provider.GetResponse(loData, loDataQuery, lnPageIndex, lnPageSize, lsOrderBy, laDataNameList);
+            return Provider.GetResponse(loRequestContent);
         }
     }
 }

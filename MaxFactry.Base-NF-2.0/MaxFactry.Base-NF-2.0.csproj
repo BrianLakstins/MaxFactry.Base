@@ -66,7 +66,6 @@
     <Compile Include="DataLayer\DataModel\Interface\IMaxHttpDataModel.cs" />
     <Compile Include="DataLayer\DataModel\Interface\IMaxMessageDataModel.cs" />
     <Compile Include="DataLayer\DataModel\MaxBaseEmailDataModel.cs" />
-    <Compile Include="DataLayer\DataModel\MaxBaseHttpDataModel.cs" />
     <Compile Include="DataLayer\DataModel\MaxBaseIdBranchDataModel.cs" />
     <Compile Include="DataLayer\DataModel\MaxBaseDataModel.cs" />
     <Compile Include="DataLayer\DataModel\MaxBaseIdDataModel.cs" />
@@ -95,7 +94,6 @@
     <Compile Include="DataLayer\Library\MaxSerialPortLibrary.cs" />
     <Compile Include="DataLayer\Library\MaxStreamLibrary.cs" />
     <Compile Include="DataLayer\Library\Provider\MaxDataContextLibraryDefaultProvider.cs" />
-    <Compile Include="DataLayer\Library\Provider\MaxDataContextLibraryHttpProvider.cs" />
     <Compile Include="DataLayer\Library\Provider\MaxHttpLibraryDefaultProvider.cs" />
     <Compile Include="DataLayer\Library\Provider\MaxSerialPortLibraryDefaultProvider.cs" />
     <Compile Include="DataLayer\Library\Provider\MaxSqlGenerationLibraryMSSql2019Provider.cs" />

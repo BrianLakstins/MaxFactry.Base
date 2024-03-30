@@ -44,6 +44,7 @@
 // <change date="3/23/2024" author="Brian A. Lakstins" description="Adding a field and some methods to support generic primary keys.">
 // <change date="3/25/2024" author="Brian A. Lakstins" description="Add method to map content that may not be formatted for the data model.">
 // <change date="3/26/2024" author="Brian A. Lakstins" description="Move logic for GetStreamPath from MaxData">
+// <change date="3/30/2024" author="Brian A. Lakstins" description="Integrated DataKey.  Created list of DataNames that could be using Stream as storage.">
 // </changelog>
 #endregion
 
@@ -51,8 +52,7 @@ namespace MaxFactry.Base.DataLayer
 {
     using System;
     using System.Collections.Generic;
-    using System.Reflection;
-    using MaxFactry.Base.DataLayer.Library;
+    using System.IO;
     using MaxFactry.Core;
 
     /// <summary>
@@ -113,6 +113,8 @@ namespace MaxFactry.Base.DataLayer
         private Type _oRepositoryMessageProviderType = null;
 
         private string[] _aDataNameList = null;
+
+        private string[] _aDataNameStreamList = null;
 
         private string[] _aDataNameKeyList = null;
 
@@ -216,7 +218,7 @@ namespace MaxFactry.Base.DataLayer
         }
 
         /// <summary>
-        /// Gets a list of the data names
+        /// Gets a list of the data names stored in the tabular storage
         /// </summary>
         public virtual string[] DataNameList
         {
@@ -238,6 +240,34 @@ namespace MaxFactry.Base.DataLayer
                 }
 
                 return this._aDataNameList;
+            }
+        }
+
+        /// <summary>
+        /// Gets a list of the data names stored as streams
+        /// </summary>
+        public virtual string[] DataNameStreamList
+        {
+            get
+            {
+                if (this._aDataNameStreamList == null)
+                {
+                    string[] laDataNameList = this._oDataNameIndex.GetSortedKeyList();
+                    MaxIndex loR = new MaxIndex();
+                    foreach (string lsDataName in laDataNameList)
+                    {
+                        if (this.GetValueType(lsDataName) == typeof(Stream) ||
+                            this.GetValueType(lsDataName) == typeof(MaxLongString) ||
+                            this.GetValueType(lsDataName) == typeof(byte[]))
+                        {
+                            loR.Add(lsDataName, true);
+                        }
+                    }
+
+                    this._aDataNameStreamList = loR.GetSortedKeyList();
+                }
+
+                return this._aDataNameStreamList;
             }
         }
 
@@ -266,7 +296,7 @@ namespace MaxFactry.Base.DataLayer
             }
         }
 
-        public virtual string GetDataNameKey(MaxData loData)
+        public virtual string GetDataKey(MaxData loData)
         {
             string lsR = string.Empty;
             foreach (string lsDataName in this.DataNameKeyList)
@@ -572,7 +602,7 @@ namespace MaxFactry.Base.DataLayer
             }
 
             loR.Add(lsDataStorageName);
-            string lsKey = this.GetDataNameKey(loData);
+            string lsKey = this.GetDataKey(loData);
             if (!string.IsNullOrEmpty(lsKey))
             {
                 string[] laStreamKey = lsKey.Split(new string[] { this.KeySeparator }, StringSplitOptions.RemoveEmptyEntries);

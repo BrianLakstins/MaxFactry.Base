@@ -30,6 +30,7 @@
 // <change date="3/19/2024" author="Brian A. Lakstins" description="Initial creation">
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/26/2024" author="Brian A. Lakstins" description="Move logic for GetStreamPath from MaxData">
+// <change date="3/30/2024" author="Brian A. Lakstins" description="Filter StorageKey from list of keys so it can be handled internally.">
 // </changelog>
 #endregion
 
@@ -119,6 +120,23 @@ namespace MaxFactry.Base.DataLayer
             loR.Add(lsDataStorageName);
 
             return loR.ToArray();
+        }
+
+        public override string[] DataNameKeyList
+        {
+            get
+            {
+                MaxIndex loR = new MaxIndex();
+                foreach (string lsDataNameKey in base.DataNameKeyList)
+                {
+                    if (lsDataNameKey != this.StorageKey)
+                    {
+                        loR.Add(lsDataNameKey, true);
+                    }
+                }
+
+                return loR.GetSortedKeyList();
+            }
         }
     }
 }

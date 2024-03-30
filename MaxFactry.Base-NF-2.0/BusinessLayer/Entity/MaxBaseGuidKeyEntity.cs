@@ -30,6 +30,7 @@
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/23/2024" author="Brian A. Lakstins" description="Initial creation">
 // <change date="3/24/2024" author="Brian A. Lakstins" description="Updated for changes namespaces">
+// <change date="3/30/2024" author="Brian A. Lakstins" description="Add method to load by Id.">
 // </changelog>
 #endregion
 
@@ -128,6 +129,13 @@ namespace MaxFactry.Base.BusinessLayer
             }
 
             return lbR;
+        }
+
+        public virtual bool LoadByIdCache(Guid loId)
+        {
+            MaxData loData = new MaxData(this.Data.DataModel);
+            loData.Set(this.MaxBaseGuidKeyDataModel.Id, loId);
+            return this.LoadByDataKeyCache(loData.DataModel.GetDataKey(loData));
         }
     }
 }

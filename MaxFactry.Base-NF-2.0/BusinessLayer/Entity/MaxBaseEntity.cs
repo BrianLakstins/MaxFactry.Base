@@ -31,6 +31,7 @@
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/24/2024" author="Brian A. Lakstins" description="Updated for changes namespaces">
 // <change date="3/26/2024" author="Brian A. Lakstins" description="Check to see if Data names are being used before using them">
+// <change date="3/30/2024" author="Brian A. Lakstins" description="Use IsStored to determine if StorageKey needs set.">
 // </changelog>
 #endregion
 
@@ -194,7 +195,7 @@ namespace MaxFactry.Base.BusinessLayer
             get
             {
                 MaxData loR = base.Data;
-                if (loR.DataModel.HasDataName(this.MaxBaseDataModel.StorageKey) &&
+                if (loR.DataModel.IsStored(this.MaxBaseDataModel.StorageKey) &&
                     null == loR.Get(this.MaxBaseDataModel.StorageKey))
                 {
                     loR.Set(this.MaxBaseDataModel.StorageKey, MaxDataLibrary.GetStorageKey(loR));

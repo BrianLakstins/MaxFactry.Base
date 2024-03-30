@@ -41,6 +41,7 @@
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/22/2024" author="Brian A. Lakstins" description="Updated repository reference.">
 // <change date="3/24/2024" author="Brian A. Lakstins" description="Updated for changes namespaces">
+// <change date="3/30/2024" author="Brian A. Lakstins" description="Get file indicated in FromFileName when saving.">
 // </changelog>
 #endregion
 
@@ -222,6 +223,23 @@ namespace MaxFactry.Base.BusinessLayer
             {
                 return (MaxBaseIdFileDataModel)MaxDataLibrary.GetDataModel(this.DataModelType);
             }
+        }
+
+        protected override void SetProperties()
+        {
+            if (!string.IsNullOrEmpty(this.FromFileName) && null == this.Content && File.Exists(this.FromFileName))
+            {
+                FileInfo loFile = new FileInfo(this.FromFileName);
+                this.ContentName = loFile.Name;
+                this.Name = loFile.Name;
+                this.ContentDate = loFile.CreationTime;
+                this.ContentType = this.GetMimeType(loFile.FullName);
+                this.MimeType = this.ContentType;
+                this.ContentLength = loFile.Length;
+                this.Content = loFile.OpenRead();
+            }
+
+            base.SetProperties();
         }
 
         /// <summary>

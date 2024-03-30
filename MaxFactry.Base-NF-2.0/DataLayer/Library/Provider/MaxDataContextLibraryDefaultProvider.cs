@@ -36,6 +36,7 @@
 // <change date="3/23/2024" author="Brian A. Lakstins" description="Updated for changes to DataModel">
 // <change date="3/24/2024" author="Brian A. Lakstins" description="Updated for changes namespaces">
 // <change date="3/25/2024" author="Brian A. Lakstins" description="Moved from MaxFactry.Base.DataLayer namespace and renamed from MaxDataContextDefaultProvider">
+// <change date="3/30/2024" author="Brian A. Lakstins" description="Updated for changes to MaxData.  Changed variable names to be consistent.">
 // </changelog>
 #endregion
 
@@ -115,13 +116,14 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
             {
                 foreach (DataRow loRow in loDataSet.Tables[loData.DataModel.DataStorageName].Rows)
                 {
-                    MaxData loDataNew = new MaxData(loData.DataModel);
+                    MaxData loDataOut = new MaxData(loData.DataModel);
                     foreach (DataColumn loColumn in loDataSet.Tables[loData.DataModel.DataStorageName].Columns)
                     {
-                        loDataNew.Set(loColumn.ColumnName, loRow[loColumn]);
+                        loDataOut.Set(loColumn.ColumnName, loRow[loColumn]);
                     }
 
-                    loDataList.Add(loDataNew);
+                    loDataOut.ClearChanged();
+                    loDataList.Add(loDataOut);
                 }
             }
 
@@ -236,7 +238,7 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
                             }
                         }
 
-                        loData.ClearChanged();
+                        loDataOut.ClearChanged();
                         loDataList.Add(loDataOut);
                     }
 
