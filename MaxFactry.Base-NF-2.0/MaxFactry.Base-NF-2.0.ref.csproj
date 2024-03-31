@@ -78,6 +78,7 @@
     <Compile Include="DataLayer\DataModel\MaxBaseRelationDateDataModel.cs" />
     <Compile Include="DataLayer\DataModel\MaxBaseRelationGuidKeyDataModel.cs" />
     <Compile Include="DataLayer\DataModel\MaxBaseRelationGuidKeyDateDataModel.cs" />
+    <Compile Include="DataLayer\DataModel\MaxBaseSerialPortDataModel.cs" />
     <Compile Include="DataLayer\DataModel\MaxBaseTemplateDataModel.cs" />
     <Compile Include="DataLayer\DataModel\MaxBaseUSPostalAddressDataModel.cs" />
     <Compile Include="DataLayer\DataModel\MaxDataModel.cs" />
@@ -98,6 +99,7 @@
     <Compile Include="DataLayer\Library\MaxDataLibrary.cs" />
     <Compile Include="DataLayer\Library\MaxSqlGenerationLibrary.cs" />
     <Compile Include="DataLayer\Library\Provider\MaxDataContextLibraryDefaultProvider.cs" />
+    <Compile Include="DataLayer\Library\Provider\MaxDataContextLibrarySerialPortDefaultProvider.cs" />
     <Compile Include="DataLayer\Library\Provider\MaxSerialPortLibraryDefaultProvider.cs" />
     <Compile Include="DataLayer\Library\Provider\MaxHttpLibraryDefaultProvider.cs" />
     <Compile Include="DataLayer\Library\Provider\MaxStreamLibraryDefaultProvider.cs" />

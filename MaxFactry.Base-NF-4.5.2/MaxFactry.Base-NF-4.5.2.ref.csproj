@@ -65,6 +65,9 @@
     <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseRelationGuidKeyDateDataModel.cs">
       <Link>DataLayer\DataModel\MaxBaseRelationGuidKeyDateDataModel.cs</Link>
     </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseSerialPortDataModel.cs">
+      <Link>DataLayer\DataModel\MaxBaseSerialPortDataModel.cs</Link>
+    </Compile>
     <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Interface\IMaxDataContextLibraryProvider.cs">
       <Link>DataLayer\Library\Interface\IMaxDataContextLibraryProvider.cs</Link>
     </Compile>
@@ -91,6 +94,9 @@
     </Compile>
     <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Provider\MaxDataContextLibraryDefaultProvider.cs">
       <Link>DataLayer\Library\Provider\MaxDataContextLibraryDefaultProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Provider\MaxDataContextLibrarySerialPortDefaultProvider.cs">
+      <Link>DataLayer\Library\Provider\MaxDataContextLibrarySerialPortDefaultProvider.cs</Link>
     </Compile>
     <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Library\Provider\MaxHttpLibraryDefaultProvider.cs">
       <Link>DataLayer\Library\Provider\MaxHttpLibraryDefaultProvider.cs</Link>
