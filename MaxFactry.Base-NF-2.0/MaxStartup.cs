@@ -37,6 +37,7 @@ namespace MaxFactry.Base
 {
     using MaxFactry.Core;
     using MaxFactry.Base.DataLayer;
+    using MaxFactry.Base.DataLayer.Library.Provider;
 
     /// <summary>
     /// Class used to define initialization a library.
@@ -91,6 +92,7 @@ namespace MaxFactry.Base
             //// Anything that is a descendent of MaxProvider will use the specified config.
             //// Variables in the config need to be prefixed with the typeof(object) that they pertain to so that they are not used on the wrong provider
             MaxFactry.Core.MaxFactryLibrary.SetValue(typeof(MaxFactry.Core.MaxProvider) + "-Config", loConfig);
+            loConfig.Add(typeof(MaxDataContextLibrarySerialPortDefaultProvider).Name, typeof(MaxDataContextLibrarySerialPortDefaultProvider));
         }
 
         /// <summary>
