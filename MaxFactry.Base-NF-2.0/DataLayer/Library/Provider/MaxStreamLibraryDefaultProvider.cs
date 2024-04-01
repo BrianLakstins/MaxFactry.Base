@@ -30,6 +30,7 @@
 // <change date="9/20/2023" author="Brian A. Lakstins" description="Initial creation">
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/24/2024" author="Brian A. Lakstins" description="Rename to MaxSteamLibrary to not indicate some dependency on MaxDataContextProvider">
+// <change date="4/1/2024" author="Brian A. Lakstins" description="Make sure a stream can be read before being processed.">
 // </changelog>
 #endregion
 
@@ -109,7 +110,7 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
                             loStream = (Stream)loValue;
                         }
 
-                        if (null != loStream)
+                        if (null != loStream && loStream.CanRead)
                         {
                             string[] laStreamPath = loData.GetStreamPath();
                             string lsStreamPath = string.Empty;
