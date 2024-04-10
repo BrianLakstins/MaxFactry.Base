@@ -253,7 +253,7 @@ namespace MaxFactry.Base.BusinessLayer
 
             if (this.Load(loData))
             {
-                if (null == loData.Get(((MaxIdGuidDataModel)loData.DataModel).Id))
+                if (null == loData.Get(((MaxBaseIdDataModel)loData.DataModel).Id))
                 {
                     return false;
                 }
