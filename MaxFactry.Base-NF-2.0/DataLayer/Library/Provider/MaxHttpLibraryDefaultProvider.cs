@@ -30,7 +30,8 @@
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/24/2024" author="Brian A. Lakstins" description="Initial creation">
 // <change date="3/25/2024" author="Brian A. Lakstins" description="Update method to match arguments used to get data from repositories. Add method to get token.  Add method to get response with just token.">
-// <change date="3/30/2024" author="Brian A. Lakstins" description="Add fields for Request and Response variable names. Streamlined methods.\">
+// <change date="3/30/2024" author="Brian A. Lakstins" description="Add fields for Request and Response variable names. Streamlined methods.">
+// <change date="5/3/2024" author="Brian A. Lakstins" description="Add a way to specify a time out.">
 // </changelog>
 #endregion
 
@@ -72,6 +73,8 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
             public const string FormUrlEncodedContent = "FormUrlEncodedContent";
 
             public const string HttpContent = "HttpContent";
+
+            public const string Timeout = "Timeout";
         }
 
         public static class ResponseName
@@ -193,7 +196,8 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
 
             loHandler.CookieContainer = new System.Net.CookieContainer();
             loR = new HttpClient(loHandler);
-            loR.Timeout = new TimeSpan(0, 0, 10);
+            //// Default timeout set to 30 seconds
+            loR.Timeout = new TimeSpan(0, 0, 30);
             loR.DefaultRequestHeaders.Add("User-Agent", "Mozilla /5.0 (MaxFactry .NET Framework)");
             loR.DefaultRequestHeaders.Add("DNT", "1");
             loR.DefaultRequestHeaders.Add("Accept-Encoding", "gzip, deflate");
@@ -256,6 +260,11 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
                 System.Net.Http.HttpClient loClient = this.GetClient(lsClientId, lsClientSecret, lsToken) as System.Net.Http.HttpClient;
                 if (null != loClient)
                 {
+                    if (loRequestContent.Contains(RequestContentName.Timeout) && loRequestContent[RequestContentName.Timeout] is TimeSpan)
+                    {
+                        loClient.Timeout = (TimeSpan)loRequestContent[RequestContentName.Timeout];
+                    }
+                    
                     object loContent = loRequestContent[RequestContentName.StringContent] as string;
                     if (null != loContent)
                     {
