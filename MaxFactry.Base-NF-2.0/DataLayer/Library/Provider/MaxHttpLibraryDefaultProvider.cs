@@ -130,9 +130,9 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
             public const string ContentLastModified = "ContentLastModified";
         }
 
-        protected virtual object GetClient(string lsClientId, string lsClientSecret, string lsToken)
+        protected virtual object GetClient(string lsClientId, string lsClientSecret, string lsToken, TimeSpan loTimeout)
         {
-            return this.GetClientConditional(lsClientId, lsClientSecret, lsToken);
+            return this.GetClientConditional(lsClientId, lsClientSecret, lsToken, loTimeout);
         }
 
         protected virtual object GetResponseContent(object loContent)
@@ -184,7 +184,7 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
 #if net4_52 || netcore2 || netstandard1_2
         private System.Net.Http.HttpClient _oHttpClient = null;
 
-        protected HttpClient GetMaxClient()
+        protected HttpClient GetMaxClient(TimeSpan loTimeout)
         {
             HttpClient loR = null;
             System.Net.ServicePointManager.SecurityProtocol |= System.Net.SecurityProtocolType.Tls11 | System.Net.SecurityProtocolType.Tls12;
@@ -196,8 +196,7 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
 
             loHandler.CookieContainer = new System.Net.CookieContainer();
             loR = new HttpClient(loHandler);
-            //// Default timeout set to 30 seconds
-            loR.Timeout = new TimeSpan(0, 0, 30);
+            loR.Timeout = loTimeout;
             loR.DefaultRequestHeaders.Add("User-Agent", "Mozilla /5.0 (MaxFactry .NET Framework)");
             loR.DefaultRequestHeaders.Add("DNT", "1");
             loR.DefaultRequestHeaders.Add("Accept-Encoding", "gzip, deflate");
@@ -215,7 +214,7 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
                     {
                         if (null == _oHttpClient)
                         {
-                            _oHttpClient = GetMaxClient();
+                            _oHttpClient = GetMaxClient(new TimeSpan(0, 0, 30));
                         }
                     }
                 }
@@ -224,12 +223,12 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
             }
         }
 
-        protected virtual object GetClientConditional(string lsClientId, string lsClientSecret, string lsToken)
+        protected virtual object GetClientConditional(string lsClientId, string lsClientSecret, string lsToken, TimeSpan loTimeout)
         {
             HttpClient loR = HttpClient;
-            if ((!string.IsNullOrEmpty(lsClientId) && !string.IsNullOrEmpty(lsClientSecret)) || !string.IsNullOrEmpty(lsToken))
+            if ((!string.IsNullOrEmpty(lsClientId) && !string.IsNullOrEmpty(lsClientSecret)) || !string.IsNullOrEmpty(lsToken) || loR.Timeout != loTimeout)
             {
-                loR = GetMaxClient();
+                loR = GetMaxClient(loTimeout);
                 if (!string.IsNullOrEmpty(lsClientId) && !string.IsNullOrEmpty(lsClientSecret))
                 {
                     string lsAuth = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(string.Format("{0}:{1}", lsClientId, lsClientSecret)));
@@ -257,14 +256,15 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
                 string lsClientId = loRequestContent.GetValueString(RequestContentName.ClientId);
                 string lsClientSecret = loRequestContent.GetValueString(RequestContentName.ClientSecret);
                 string lsToken = loRequestContent.GetValueString(RequestContentName.Token);
-                System.Net.Http.HttpClient loClient = this.GetClient(lsClientId, lsClientSecret, lsToken) as System.Net.Http.HttpClient;
-                if (null != loClient)
+                TimeSpan loTimeout = new TimeSpan(0, 0, 30);
+                if (loRequestContent.Contains(RequestContentName.Timeout) && loRequestContent[RequestContentName.Timeout] is TimeSpan)
                 {
-                    if (loRequestContent.Contains(RequestContentName.Timeout) && loRequestContent[RequestContentName.Timeout] is TimeSpan)
-                    {
-                        loClient.Timeout = (TimeSpan)loRequestContent[RequestContentName.Timeout];
-                    }
-                    
+                    loTimeout = (TimeSpan)loRequestContent[RequestContentName.Timeout];
+                }
+
+                System.Net.Http.HttpClient loClient = this.GetClient(lsClientId, lsClientSecret, lsToken, loTimeout) as System.Net.Http.HttpClient;
+                if (null != loClient)
+                {                   
                     object loContent = loRequestContent[RequestContentName.StringContent] as string;
                     if (null != loContent)
                     {
@@ -411,7 +411,7 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
             throw new NotImplementedException();
         }
 
-        protected virtual object GetClientConditional(string lsClientId, string lsClientSecret, string lsToken)
+        protected virtual object GetClientConditional(string lsClientId, string lsClientSecret, string lsToken, TimeSpan loTimeout)
         {
             throw new NotImplementedException();
         }
