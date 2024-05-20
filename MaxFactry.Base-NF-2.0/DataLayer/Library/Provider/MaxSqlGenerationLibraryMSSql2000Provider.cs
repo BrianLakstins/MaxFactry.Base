@@ -82,7 +82,7 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
         public override string GetTableCreate(MaxDataModel loDataModel)
         {
             string lsR = base.GetTableCreate(loDataModel);
-            lsR += "CREATE CLUSTERED INDEX [idx_" + loDataModel.DataStorageName + "] ON [" + loDataModel.DataStorageName + "](";
+			string lsIndexStart = "CREATE CLUSTERED INDEX [idx_" + loDataModel.DataStorageName + "] ON [" + loDataModel.DataStorageName + "](";
             string lsPK = string.Empty;
             foreach (string lsDataNameKey in loDataModel.DataNameKeyList)
             {
@@ -94,7 +94,11 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
                 lsPK += "[" + lsDataNameKey + "] ASC";
             }
 
-            lsR += lsPK + ");";
+			if (!string.IsNullOrEmpty(lsPK))
+			{
+				lsR += lsIndexStart + lsPK + ");";
+			}
+
             return lsR;
         }
     }
