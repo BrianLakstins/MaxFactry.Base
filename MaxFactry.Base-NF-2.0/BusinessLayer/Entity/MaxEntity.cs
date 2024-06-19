@@ -76,6 +76,7 @@
 // <change date="3/24/2024" author="Brian A. Lakstins" description="Updated for changes namespaces">
 // <change date="3/26/2024" author="Brian A. Lakstins" description="Specify between Property Name and Data Name">
 // <change date="3/30/2024" author="Brian A. Lakstins" description="Use DataKey as unique identifier.  Remove using SelectAll in repository because it ignores any filters including StorageKey and IsDeleted.  Use list of Streams DataNames for stream storage.">
+// <change date="6/19/2024" author="Brian A. Lakstins" description="Fix getting object when binary or long string data cannot be loaded.">
 // </changelog>
 #endregion
 
@@ -1676,15 +1677,25 @@ namespace MaxFactry.Base.BusinessLayer
                 if (loValueType.Equals(typeof(byte[])) &&
                     loValue is byte[])
                 {
-                    loValue = this.GetByte(lsDataName);
-                    loValue = MaxConvertLibrary.DeserializeObject(this.Data.DataModel.GetType(), (byte[])loValue, loType);
+                    loValue = null;
+                    byte[] laValue = this.GetByte(lsDataName);
+                    if (null != laValue &&
+                        laValue != MaxDataModel.StreamByteIndicator)
+                    {
+                        loValue = MaxConvertLibrary.DeserializeObject(this.Data.DataModel.GetType(), laValue, loType);
+                    }
                 }
                 else if ((loValueType.Equals(typeof(string)) ||
                     loValueType.Equals(typeof(MaxLongString))) &&
                     loValue is string)
                 {
-                    loValue = this.GetString(lsDataName);
-                    loValue = MaxConvertLibrary.DeserializeObject(this.Data.DataModel.GetType(), (string)loValue, loType);
+                    loValue = null;
+                    string lsValue = this.GetString(lsDataName);
+                    if (null != lsValue && 
+                        lsValue != MaxDataModel.StreamStringIndicator) 
+                    {
+                        loValue = MaxConvertLibrary.DeserializeObject(this.Data.DataModel.GetType(), lsValue, loType);
+                    }
                 }
             }
 
