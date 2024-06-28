@@ -77,6 +77,7 @@
 // <change date="3/26/2024" author="Brian A. Lakstins" description="Specify between Property Name and Data Name">
 // <change date="3/30/2024" author="Brian A. Lakstins" description="Use DataKey as unique identifier.  Remove using SelectAll in repository because it ignores any filters including StorageKey and IsDeleted.  Use list of Streams DataNames for stream storage.">
 // <change date="6/19/2024" author="Brian A. Lakstins" description="Fix getting object when binary or long string data cannot be loaded.">
+// <change date="6/28/2024" author="Brian A. Lakstins" description="Change how mapindex works so it always returns requested properties.">
 // </changelog>
 #endregion
 
@@ -519,52 +520,52 @@ namespace MaxFactry.Base.BusinessLayer
             MaxIndex loR = new MaxIndex();
             MaxIndex loPropertyIndex = MaxFactry.Core.MaxFactryLibrary.GetPropertyList(this);
             string[] laPropertyNameIndex = loPropertyIndex.GetSortedKeyList();
-            foreach (string lsPropertyNameIndex in laPropertyNameIndex)
+            foreach (string lsPropertyName in laPropertyNameIndex)
             {
-                if (this.HasIndexPropertyName(laPropertyNameList, lsPropertyNameIndex))
+                object loProperty = loPropertyIndex[lsPropertyName];
+                if (loProperty is PropertyInfo)
                 {
-                    object loValue = null;
-                    object loProperty = loPropertyIndex[lsPropertyNameIndex];
-                    if (loProperty is PropertyInfo)
-                    {
-                        loValue = ((PropertyInfo)loProperty).GetValue(this, null);
-                    }
+                    loPropertyIndex.Add(((PropertyInfo)loProperty).Name, loProperty);
+                    loPropertyIndex.Add(this.GetType().ToString() + "." +  ((PropertyInfo)loProperty).Name, loProperty);
+                }
+            }
 
+            foreach (string lsPropertyName in laPropertyNameList)
+            {
+                string lsName = lsPropertyName;
+                if (lsPropertyName.Contains("."))
+                {
+                    lsName = lsPropertyName.Substring(lsPropertyName.LastIndexOf(".") + 1);
+                }
+
+                loR.Add(lsName, string.Empty);
+                object loProperty = loPropertyIndex[lsPropertyName];
+                if (loProperty is PropertyInfo)
+                {
+                    object loValue = ((PropertyInfo)loProperty).GetValue(this, null);
                     if (loValue is MaxEntity)
                     {
-                        loR.Add(lsPropertyNameIndex, ((MaxEntity)loValue).MapIndex(laPropertyNameList));
+                        loR.Add(lsName, ((MaxEntity)loValue).MapIndex(laPropertyNameList));
                     }
                     else if (loValue is double)
                     {
                         if (double.MinValue != (double)loValue)
                         {
-                            loR.Add(lsPropertyNameIndex, loValue);
-                        }
-                        else
-                        {
-                            loR.Add(lsPropertyNameIndex, string.Empty);
+                            loR.Add(lsName, loValue);
                         }
                     }
                     else if (loValue is int)
                     {
                         if (int.MinValue != (int)loValue)
                         {
-                            loR.Add(lsPropertyNameIndex, loValue);
-                        }
-                        else
-                        {
-                            loR.Add(lsPropertyNameIndex, string.Empty);
+                            loR.Add(lsName, loValue);
                         }
                     }
                     else if (loValue is Guid)
                     {
                         if (Guid.Empty != (Guid)loValue)
                         {
-                            loR.Add(lsPropertyNameIndex, loValue);
-                        }
-                        else
-                        {
-                            loR.Add(lsPropertyNameIndex, string.Empty);
+                            loR.Add(lsName, loValue);
                         }
                     }
                     else if (loValue is DateTime)
@@ -572,16 +573,12 @@ namespace MaxFactry.Base.BusinessLayer
                         if ((DateTime)loValue > DateTime.MinValue)
                         {
                             //// Use same format as javascript date .toISOString()
-                            loR.Add(lsPropertyNameIndex, MaxConvertLibrary.ConvertToDateTimeUtc(typeof(object), loValue).ToString("o", CultureInfo.InvariantCulture));
-                        }
-                        else
-                        {
-                            loR.Add(lsPropertyNameIndex, string.Empty);
+                            loR.Add(lsName, MaxConvertLibrary.ConvertToDateTimeUtc(typeof(object), loValue).ToString("o", CultureInfo.InvariantCulture));
                         }
                     }
                     else if (loValue != null && !(loValue is Stream))
                     {
-                        loR.Add(lsPropertyNameIndex, loValue);
+                        loR.Add(lsName, loValue);
                     }
                 }
             }
