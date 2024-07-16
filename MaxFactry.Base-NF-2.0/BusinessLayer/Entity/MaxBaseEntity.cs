@@ -32,6 +32,7 @@
 // <change date="3/24/2024" author="Brian A. Lakstins" description="Updated for changes namespaces">
 // <change date="3/26/2024" author="Brian A. Lakstins" description="Check to see if Data names are being used before using them">
 // <change date="3/30/2024" author="Brian A. Lakstins" description="Use IsStored to determine if StorageKey needs set.">
+// <change date="7/16/2024" author="Brian A. Lakstins" description="Add a way to set an attribute.">
 // </changelog>
 #endregion
 
@@ -254,6 +255,18 @@ namespace MaxFactry.Base.BusinessLayer
         public void SetOptionFlag(short lnOption, bool lbValue)
         {
             this.SetBit(this.MaxBaseDataModel.OptionFlagList, lnOption, lbValue);
+        }
+
+        /// <summary>
+        /// Sets the value of an attribute associated with the attribute index
+        /// </summary>
+        /// <param name="lsName">Name of the attribute</param>
+        /// <param name="loValue">Value for the attribute</param>
+        public void SetAttribute(string lsName, object loValue)
+        {
+            MaxIndex loAttributeIndex = this.AttributeIndex;
+            loAttributeIndex.Add(lsName, loValue);
+            this.AttributeIndex = loAttributeIndex;
         }
 
         /// <summary>
