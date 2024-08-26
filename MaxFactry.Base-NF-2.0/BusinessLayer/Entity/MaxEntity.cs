@@ -78,6 +78,7 @@
 // <change date="3/30/2024" author="Brian A. Lakstins" description="Use DataKey as unique identifier.  Remove using SelectAll in repository because it ignores any filters including StorageKey and IsDeleted.  Use list of Streams DataNames for stream storage.">
 // <change date="6/19/2024" author="Brian A. Lakstins" description="Fix getting object when binary or long string data cannot be loaded.">
 // <change date="6/28/2024" author="Brian A. Lakstins" description="Change how mapindex works so it always returns requested properties.">
+// <change date="8/26/2024" author="Brian A. Lakstins" description="Add methods for dynamic creation and property value setting.">
 // </changelog>
 #endregion
 
@@ -585,6 +586,89 @@ namespace MaxFactry.Base.BusinessLayer
 
             return loR;
         }
+
+        /// <summary>
+        /// Creates a new entity of the current type or base type that has a static "Create" method
+        /// </summary>
+        /// <returns>New Entity of the current type or null if no create method found</returns>
+        public virtual MaxEntity CreateNew()
+        {
+            MaxEntity loR = null;
+            Type loType = this.GetType();
+            MethodInfo loCreateMethod = loType.GetMethod("Create");
+            while (null == loCreateMethod && null != loType.BaseType)
+            {
+                loType = loType.BaseType;
+                loCreateMethod = loType.GetMethod("Create");
+            }
+
+            if (null != loCreateMethod)
+            {
+                loR = loCreateMethod.Invoke(null, null) as MaxEntity;
+            }
+
+            return loR;
+        }
+
+        /// <summary>
+        /// Creates a copy of the current max entity with all current data
+        /// </summary>
+        /// <returns></returns>
+        public virtual MaxEntity Clone()
+        {
+            MaxEntity loR = this.CreateNew();
+            if (null != loR)
+            {
+                loR.Load(this.GetData());
+            }
+
+            return loR;
+        }
+
+        public virtual void SetValue(PropertyInfo loProperty, string lsValue)
+        {
+            if (loProperty.CanWrite)
+            {
+                if (loProperty.PropertyType == typeof(double))
+                {
+                    loProperty.SetValue(this, MaxConvertLibrary.ConvertToDouble(typeof(object), lsValue), BindingFlags.Instance | BindingFlags.Public, null, null, null);
+                }
+                else if (loProperty.PropertyType == typeof(int))
+                {
+                    loProperty.SetValue(this, MaxConvertLibrary.ConvertToInt(typeof(object), lsValue), BindingFlags.Instance | BindingFlags.Public, null, null, null);
+                }
+                else if (loProperty.PropertyType == typeof(bool))
+                {
+                    loProperty.SetValue(this, MaxConvertLibrary.ConvertToBoolean(typeof(object), lsValue), BindingFlags.Instance | BindingFlags.Public, null, null, null);
+                }
+                else if (loProperty.PropertyType == typeof(string))
+                {
+                    loProperty.SetValue(this, MaxConvertLibrary.ConvertToString(typeof(object), lsValue), BindingFlags.Instance | BindingFlags.Public, null, null, null);
+                }
+                else if (loProperty.PropertyType == typeof(Guid))
+                {
+                    loProperty.SetValue(this, MaxConvertLibrary.ConvertToGuid(typeof(object), lsValue), BindingFlags.Instance | BindingFlags.Public, null, null, null);
+                }
+                else if (loProperty.PropertyType == typeof(DateTime))
+                {
+                    DateTime loDateTime = MaxConvertLibrary.ConvertToDateTimeUtc(typeof(object), lsValue);
+                    loProperty.SetValue(this, loDateTime, BindingFlags.Instance | BindingFlags.Public, null, null, null);
+                }
+                else if (loProperty.PropertyType == typeof(MaxIndex))
+                {
+                    MaxIndex loMaxIndex = MaxConvertLibrary.DeserializeObject(typeof(object), lsValue, typeof(MaxIndex)) as MaxIndex;
+                    if (null != loMaxIndex)
+                    {
+                        loProperty.SetValue(this, loMaxIndex, BindingFlags.Instance | BindingFlags.Public, null, null, null);
+                    }
+                }
+                else
+                {
+                    loProperty.SetValue(this, lsValue, BindingFlags.Instance | BindingFlags.Public, null, null, null);
+                }
+            }
+        }
+
 
         /// <summary>
         /// Checks to see if the property name is in the list
