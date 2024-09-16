@@ -79,6 +79,7 @@
 // <change date="6/19/2024" author="Brian A. Lakstins" description="Fix getting object when binary or long string data cannot be loaded.">
 // <change date="6/28/2024" author="Brian A. Lakstins" description="Change how mapindex works so it always returns requested properties.">
 // <change date="8/26/2024" author="Brian A. Lakstins" description="Add methods for dynamic creation and property value setting.">
+// <change date="9/16/2024" author="Brian A. Lakstins" description="Making sure Propertlist is not null.">
 // </changelog>
 #endregion
 
@@ -519,67 +520,71 @@ namespace MaxFactry.Base.BusinessLayer
         public virtual MaxIndex MapIndex(params string[] laPropertyNameList)
         {
             MaxIndex loR = new MaxIndex();
-            MaxIndex loPropertyIndex = MaxFactry.Core.MaxFactryLibrary.GetPropertyList(this);
-            string[] laPropertyNameIndex = loPropertyIndex.GetSortedKeyList();
-            foreach (string lsPropertyName in laPropertyNameIndex)
+            if (null != laPropertyNameList)
             {
-                object loProperty = loPropertyIndex[lsPropertyName];
-                if (loProperty is PropertyInfo)
-                {
-                    loPropertyIndex.Add(((PropertyInfo)loProperty).Name, loProperty);
-                    loPropertyIndex.Add(this.GetType().ToString() + "." +  ((PropertyInfo)loProperty).Name, loProperty);
-                }
-            }
+                MaxIndex loPropertyIndex = MaxFactry.Core.MaxFactryLibrary.GetPropertyList(this);
+                string[] laPropertyNameIndex = loPropertyIndex.GetSortedKeyList();
 
-            foreach (string lsPropertyName in laPropertyNameList)
-            {
-                string lsName = lsPropertyName;
-                if (lsPropertyName.Contains("."))
+                foreach (string lsPropertyName in laPropertyNameIndex)
                 {
-                    lsName = lsPropertyName.Substring(lsPropertyName.LastIndexOf(".") + 1);
+                    object loProperty = loPropertyIndex[lsPropertyName];
+                    if (loProperty is PropertyInfo)
+                    {
+                        loPropertyIndex.Add(((PropertyInfo)loProperty).Name, loProperty);
+                        loPropertyIndex.Add(this.GetType().ToString() + "." + ((PropertyInfo)loProperty).Name, loProperty);
+                    }
                 }
 
-                loR.Add(lsName, string.Empty);
-                object loProperty = loPropertyIndex[lsPropertyName];
-                if (loProperty is PropertyInfo)
+                foreach (string lsPropertyName in laPropertyNameList)
                 {
-                    object loValue = ((PropertyInfo)loProperty).GetValue(this, null);
-                    if (loValue is MaxEntity)
+                    string lsName = lsPropertyName;
+                    if (lsPropertyName.Contains("."))
                     {
-                        loR.Add(lsName, ((MaxEntity)loValue).MapIndex(laPropertyNameList));
+                        lsName = lsPropertyName.Substring(lsPropertyName.LastIndexOf(".") + 1);
                     }
-                    else if (loValue is double)
+
+                    loR.Add(lsName, string.Empty);
+                    object loProperty = loPropertyIndex[lsPropertyName];
+                    if (loProperty is PropertyInfo)
                     {
-                        if (double.MinValue != (double)loValue)
+                        object loValue = ((PropertyInfo)loProperty).GetValue(this, null);
+                        if (loValue is MaxEntity)
+                        {
+                            loR.Add(lsName, ((MaxEntity)loValue).MapIndex(laPropertyNameList));
+                        }
+                        else if (loValue is double)
+                        {
+                            if (double.MinValue != (double)loValue)
+                            {
+                                loR.Add(lsName, loValue);
+                            }
+                        }
+                        else if (loValue is int)
+                        {
+                            if (int.MinValue != (int)loValue)
+                            {
+                                loR.Add(lsName, loValue);
+                            }
+                        }
+                        else if (loValue is Guid)
+                        {
+                            if (Guid.Empty != (Guid)loValue)
+                            {
+                                loR.Add(lsName, loValue);
+                            }
+                        }
+                        else if (loValue is DateTime)
+                        {
+                            if ((DateTime)loValue > DateTime.MinValue)
+                            {
+                                //// Use same format as javascript date .toISOString()
+                                loR.Add(lsName, MaxConvertLibrary.ConvertToDateTimeUtc(typeof(object), loValue).ToString("o", CultureInfo.InvariantCulture));
+                            }
+                        }
+                        else if (loValue != null && !(loValue is Stream))
                         {
                             loR.Add(lsName, loValue);
                         }
-                    }
-                    else if (loValue is int)
-                    {
-                        if (int.MinValue != (int)loValue)
-                        {
-                            loR.Add(lsName, loValue);
-                        }
-                    }
-                    else if (loValue is Guid)
-                    {
-                        if (Guid.Empty != (Guid)loValue)
-                        {
-                            loR.Add(lsName, loValue);
-                        }
-                    }
-                    else if (loValue is DateTime)
-                    {
-                        if ((DateTime)loValue > DateTime.MinValue)
-                        {
-                            //// Use same format as javascript date .toISOString()
-                            loR.Add(lsName, MaxConvertLibrary.ConvertToDateTimeUtc(typeof(object), loValue).ToString("o", CultureInfo.InvariantCulture));
-                        }
-                    }
-                    else if (loValue != null && !(loValue is Stream))
-                    {
-                        loR.Add(lsName, loValue);
                     }
                 }
             }
