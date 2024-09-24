@@ -80,6 +80,7 @@
 // <change date="6/28/2024" author="Brian A. Lakstins" description="Change how mapindex works so it always returns requested properties.">
 // <change date="8/26/2024" author="Brian A. Lakstins" description="Add methods for dynamic creation and property value setting.">
 // <change date="9/16/2024" author="Brian A. Lakstins" description="Making sure Propertlist is not null.">
+// <change date="9/24/2024" author="Brian A. Lakstins" description="Update filtering for when there is not a value.">
 // </changelog>
 #endregion
 
@@ -1064,31 +1065,41 @@ namespace MaxFactry.Base.BusinessLayer
                 string[] laKey = loFilter.GetSortedKeyList();
                 if (laKey.Length > 0)
                 {
-                    loDataQuery.StartGroup();
                     foreach (string lsKey in laKey)
                     {
                         MaxIndex loDetail = loFilter[lsKey] as MaxIndex;
-                        if (loDetail.Contains("StartGroup"))
-                        {
-                            loDataQuery.StartGroup();
-                        }
-
+                        string lsValue = loDetail.GetValueString("Value");
                         string lsPropertyName = loDetail.GetValueString("Name");
                         string lsDataName = this.GetDataName(this.Data.DataModel, lsPropertyName);
-                        if (!string.IsNullOrEmpty(lsDataName))
+                        if (!string.IsNullOrEmpty(lsDataName) && !string.IsNullOrEmpty(lsValue))
                         {
-                            loDataQuery.AddFilter(lsDataName, loDetail.GetValueString("Operator"), loDetail.GetValueString("Value"));
-                        }
+                            if (loDetail.Contains("StartGroup"))
+                            {
+                                loDataQuery.StartGroup();
+                            }
 
-                        if (loDetail.Contains("EndGroup"))
-                        {
-                            loDataQuery.EndGroup();
-                        }
+                            loDataQuery.AddFilter(lsDataName, loDetail.GetValueString("Operator"), lsValue);
+                            if (loDetail.Contains("EndGroup"))
+                            {
+                                loDataQuery.EndGroup();
+                            }
 
-                        if (loDetail.Contains("Condition") && !string.IsNullOrEmpty(loDetail.GetValueString("Condition")))
-                        {
-                            loDataQuery.AddCondition(loDetail.GetValueString("Condition"));
+                            if (loDetail.Contains("Condition") && !string.IsNullOrEmpty(loDetail.GetValueString("Condition")))
+                            {
+                                loDataQuery.AddCondition(loDetail.GetValueString("Condition"));
+                            }
                         }
+                    }
+                }
+
+                object[] laDataQuery = loDataQuery.GetQuery();
+                if (laDataQuery.Length > 0)
+                {
+                    loDataQuery = new MaxDataQuery();
+                    loDataQuery.StartGroup();
+                    foreach (object loQueryPart in laDataQuery)
+                    {
+                        loDataQuery.Add(loQueryPart);
                     }
 
                     loDataQuery.EndGroup();

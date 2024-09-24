@@ -30,6 +30,7 @@
 // <change date="2/25/2014" author="Brian A. Lakstins" description="Initial Release">
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/22/2024" author="Brian A. Lakstins" description="Add some methods so no need to remember strings.  Add a ToString method for caching data based on this query.">
+// <change date="9/24/2024" author="Brian A. Lakstins" description="Centralize code for adding an element and let generic elements be added.">
 // </changelog>
 #endregion
 
@@ -60,7 +61,7 @@ namespace MaxFactry.Base.DataLayer
 		/// </summary>
 		public void StartGroup()
 		{
-            this._oIndex.Add('(');	
+            this.Add('(');	
 		}
 
         /// <summary>
@@ -68,7 +69,7 @@ namespace MaxFactry.Base.DataLayer
         /// </summary>
         public void EndGroup()
         {
-            this._oIndex.Add(')');
+            this.Add(')');
         }
 
         /// <summary>
@@ -77,7 +78,7 @@ namespace MaxFactry.Base.DataLayer
         /// <param name="loFilter">Filter to add to the list.</param>
         public void AddFilter(MaxDataFilter loFilter)
         {
-            this._oIndex.Add(loFilter);
+            this.Add(loFilter);
         }
 
         /// <summary>
@@ -89,7 +90,7 @@ namespace MaxFactry.Base.DataLayer
         public void AddFilter(string lsName, string lsOperator, object loValue)
         {
             MaxDataFilter loFilter = new MaxDataFilter(lsName, lsOperator, loValue);
-            this._oIndex.Add(loFilter);
+            this.Add(loFilter);
         }
 
         /// <summary>
@@ -98,7 +99,7 @@ namespace MaxFactry.Base.DataLayer
         /// <param name="lsCondition">The condition to add.  Normally "AND" or "OR".</param>
         public void AddCondition(string lsCondition)
         {
-            this._oIndex.Add(lsCondition);
+            this.Add(lsCondition);
         }
 
         /// <summary>
@@ -115,6 +116,14 @@ namespace MaxFactry.Base.DataLayer
         public void AddOr()
         {
             this.AddCondition("OR");
+        }
+
+        /// <summary>
+        /// Adds any object
+        /// </summary>
+        public void Add(object loObject)
+        {
+            this._oIndex.Add(loObject);
         }
 
         /// <summary>
