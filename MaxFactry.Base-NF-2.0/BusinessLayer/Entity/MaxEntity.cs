@@ -81,6 +81,7 @@
 // <change date="8/26/2024" author="Brian A. Lakstins" description="Add methods for dynamic creation and property value setting.">
 // <change date="9/16/2024" author="Brian A. Lakstins" description="Making sure Propertlist is not null.">
 // <change date="9/24/2024" author="Brian A. Lakstins" description="Update filtering for when there is not a value.">
+// <change date="10/23/2024" author="Brian A. Lakstins" description="Only include the condition if there is a next value.">
 // </changelog>
 #endregion
 
@@ -1065,6 +1066,7 @@ namespace MaxFactry.Base.BusinessLayer
                 string[] laKey = loFilter.GetSortedKeyList();
                 if (laKey.Length > 0)
                 {
+                    string lsNextCondition = string.Empty;
                     foreach (string lsKey in laKey)
                     {
                         MaxIndex loDetail = loFilter[lsKey] as MaxIndex;
@@ -1073,6 +1075,11 @@ namespace MaxFactry.Base.BusinessLayer
                         string lsDataName = this.GetDataName(this.Data.DataModel, lsPropertyName);
                         if (!string.IsNullOrEmpty(lsDataName) && !string.IsNullOrEmpty(lsValue))
                         {
+                            if (!string.IsNullOrEmpty(lsNextCondition)) {
+                                loDataQuery.AddCondition(lsNextCondition);
+                                lsNextCondition = string.Empty;
+                            }
+
                             if (loDetail.Contains("StartGroup"))
                             {
                                 loDataQuery.StartGroup();
@@ -1086,7 +1093,8 @@ namespace MaxFactry.Base.BusinessLayer
 
                             if (loDetail.Contains("Condition") && !string.IsNullOrEmpty(loDetail.GetValueString("Condition")))
                             {
-                                loDataQuery.AddCondition(loDetail.GetValueString("Condition"));
+                                lsNextCondition = loDetail.GetValueString("Condition");
+                                
                             }
                         }
                     }
