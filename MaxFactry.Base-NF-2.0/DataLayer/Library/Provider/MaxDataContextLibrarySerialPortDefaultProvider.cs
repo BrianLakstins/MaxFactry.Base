@@ -322,7 +322,7 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
             MaxBaseSerialPortDataModel loDataModel = loData.DataModel as MaxBaseSerialPortDataModel;
             if (null == loDataModel)
             {
-                throw new MaxException("MaxSerialPortDataModel is expected by MaxDataContextSerialPortProvider");
+                throw new MaxException("MaxBaseSerialPortDataModel is expected by MaxDataContextSerialPortProvider");
             }
 
             MaxDataList loR = new MaxDataList(loDataModel);

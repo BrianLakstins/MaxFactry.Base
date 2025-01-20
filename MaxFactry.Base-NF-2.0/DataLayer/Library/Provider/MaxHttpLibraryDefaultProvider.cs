@@ -32,6 +32,7 @@
 // <change date="3/25/2024" author="Brian A. Lakstins" description="Update method to match arguments used to get data from repositories. Add method to get token.  Add method to get response with just token.">
 // <change date="3/30/2024" author="Brian A. Lakstins" description="Add fields for Request and Response variable names. Streamlined methods.">
 // <change date="5/3/2024" author="Brian A. Lakstins" description="Add a way to specify a time out.">
+// <change date="1/20/2025" author="Brian A. Lakstins" description="Check request url and use it if it's a string.">
 // </changelog>
 #endregion
 
@@ -251,6 +252,15 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
         {
             MaxIndex loR = new MaxIndex();
             Uri loRequestUri = loRequestContent[RequestContentName.RequestUrl] as Uri;
+            if (null == loRequestUri && loRequestContent.Contains(RequestContentName.RequestUrl))
+            {
+                string lsRequestUrl = loRequestContent.GetValueString(RequestContentName.RequestUrl);
+                if (!string.IsNullOrEmpty(lsRequestUrl))
+                {
+                    loRequestUri = new Uri(lsRequestUrl);
+                }
+            }
+
             if (null != loRequestUri)
             {
                 string lsClientId = loRequestContent.GetValueString(RequestContentName.ClientId);

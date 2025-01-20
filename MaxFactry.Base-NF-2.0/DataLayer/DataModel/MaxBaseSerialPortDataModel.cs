@@ -42,7 +42,6 @@ namespace MaxFactry.Base.DataLayer
     /// </summary>
     public class MaxBaseSerialPortDataModel : MaxDataModel
     {
-
         public readonly string RequestTime = "RequestTime";
 
         public readonly string Request = "Request";
@@ -58,7 +57,7 @@ namespace MaxFactry.Base.DataLayer
         public readonly string Exception = "Exception";
 
         /// <summary>
-        /// Initializes a new instance of the MaxSerialPortDataModel class
+        /// Initializes a new instance of the MaxBaseSerialPortDataModel class
         /// </summary>
         public MaxBaseSerialPortDataModel()
         {
