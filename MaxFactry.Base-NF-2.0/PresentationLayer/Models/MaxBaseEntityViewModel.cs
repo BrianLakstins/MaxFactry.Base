@@ -34,6 +34,7 @@
 // <change date="8/29/2016" author="Brian A. Lakstins" description="Add ability to set MaxIndex.">
 // <change date="10/3/2019" author="Brian A. Lakstins" description="Add support for using functional expressions for getting and setting properties the frameworks that support functional expressions.">
 // <change date="8/3/2020" author="Brian A. Lakstins" description="Change base class and remove duplicated methods.">
+// <change date="1/21/2025" author="Brian A. Lakstins" description="Updated to match MaxBaseEntity.">
 // </changelog>
 #endregion Change Log
 
@@ -73,6 +74,115 @@ namespace MaxFactry.Base.PresentationLayer
         public MaxBaseEntityViewModel(MaxEntity loEntity)
         {
             this.Entity = loEntity;
+            this.IsEntityLoaded = true;
+            this.MapFromEntity();
+        }
+
+        /// <summary>
+        /// Gets the date last updated.  Not changed through view model.
+        /// </summary>
+        public virtual string StorageKey
+        {
+            get
+            {
+                if (this.Entity is MaxBaseEntity)
+                {
+                    return ((MaxBaseEntity)this.Entity).StorageKey;
+                }
+
+                return string.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the date created. Set at record creation.
+        /// </summary>
+        public virtual string CreatedDate
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets the date last updated.  Not changed through view model.
+        /// </summary>
+        public virtual DateTime LastUpdateDate
+        {
+            get
+            {
+                if (this.Entity is MaxBaseEntity)
+                {
+                    return MaxConvertLibrary.ConvertToDateTimeFromUtc(typeof(object), ((MaxBaseEntity)this.Entity).LastUpdateDate);
+                }
+
+                return DateTime.MinValue;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the current entity is active.
+        /// </summary>
+        public virtual string Active { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the current entity is active.
+        /// </summary>
+        public virtual bool IsActive
+        {
+            get
+            {
+                object loR = this.Get("IsActive");
+                if (loR is bool)
+                {
+                    return (bool)loR;
+                }
+                else if (null != this.Active && string.Empty != this.Active)
+                {
+                    return MaxConvertLibrary.ConvertToBoolean(typeof(object), this.Active);
+                }
+
+                return false;
+            }
+
+            set
+            {
+                if (value)
+                {
+                    this.Active = "Yes";
+                    this.Set("IsActive", true);
+                }
+                else
+                {
+                    this.Active = "No";
+                    this.Set("IsActive", false);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the Attribute property to be stored.
+        /// </summary>
+        [MaxMeta(Name = "Attributes")]
+        public virtual string AttributeIndexText
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets the Attribute key value pair information for this entity
+        /// </summary>
+        public MaxIndex AttributeIndex
+        {
+            get
+            {
+                if (this.Entity is MaxBaseEntity)
+                {
+                    return ((MaxBaseEntity)this.Entity).AttributeIndex;
+                }
+
+                return new MaxIndex();
+            }
         }
 
         /// <summary>
@@ -134,21 +244,50 @@ namespace MaxFactry.Base.PresentationLayer
         }
 
         /// <summary>
+        /// Loads the content of the Entity associated with this ViewModel
+        /// </summary>
+        /// <returns>true if successful</returns>
+        public virtual bool EntityLoad()
+        {
+            bool lbR = false;
+            if (!this.IsEntityLoaded && null != this.Entity)
+            {
+                lbR = true;
+            }
+
+            return lbR;
+        }
+
+        /// <summary>
         /// Maps the fields in the view model from the entity.
         /// </summary>
         /// <returns>True if the load was successful.</returns>
         public virtual bool Load()
         {
-            return this.MapFromEntity();
+            bool lbR = false;
+            if (this.EntityLoad())
+            {
+                lbR = this.MapFromEntity();
+            }
+
+            return lbR;
         }
 
         /// <summary>
-        /// Initializes the view model using this entity.  Does not map the entity.
+        /// Maps the fields in the view model from the entity.
         /// </summary>
-        /// <param name="loEntity">Entity to Load.</param>
-        protected void Init(MaxEntity loEntity)
+        /// <returns>True if the load was successful.</returns>
+        public virtual bool Load(MaxEntity loEntity)
         {
-            this.Entity = loEntity;
+            bool lbR = false;
+            if (null != loEntity)
+            {
+                this.Entity = loEntity;
+                this.IsEntityLoaded = true;
+                lbR = this.MapFromEntity();
+            }
+
+            return lbR;
         }
 
         /// <summary>
@@ -158,14 +297,43 @@ namespace MaxFactry.Base.PresentationLayer
         /// <returns>True if successful. False if it cannot be mapped.</returns>
         protected virtual bool MapToEntity()
         {
-            bool lbR = false;
-
-            if (null != this.Entity)
+            if (this.Entity is MaxBaseEntity)
             {
-                lbR = true;
+                MaxBaseEntity loEntity = (MaxBaseEntity)this.Entity;
+                if (null != this.Active && this.Active.Length > 0)
+                {
+                    loEntity.IsActive = MaxConvertLibrary.ConvertToBoolean(typeof(object), this.Active);
+                }
+
+                string lsAttributeIndexText = this.AttributeIndexText;
+                if (string.IsNullOrEmpty(lsAttributeIndexText))
+                {
+                    lsAttributeIndexText = string.Empty;
+                }
+
+                loEntity.AttributeIndex.Clear();
+                if (lsAttributeIndexText.Contains("="))
+                {
+                    string[] laAttributeIndexText = lsAttributeIndexText.Split('\n');
+                    foreach (string lsAttributeKeyValue in laAttributeIndexText)
+                    {
+                        if (lsAttributeKeyValue.IndexOf('=') > 0)
+                        {
+                            string lsKey = lsAttributeKeyValue.Substring(0, lsAttributeKeyValue.IndexOf('='));
+                            string lsValue = lsAttributeKeyValue.Substring(lsAttributeKeyValue.IndexOf('=') + 1);
+                            loEntity.AttributeIndex.Add(lsKey.Trim(), lsValue.Trim());
+                        }
+                    }
+                }
+                else if (lsAttributeIndexText.Length > 0)
+                {
+                    loEntity.AttributeIndex.Add("all", lsAttributeIndexText);
+                }
+
+                return true;
             }
 
-            return lbR;
+            return false;
         }
 
         /// <summary>
@@ -173,9 +341,30 @@ namespace MaxFactry.Base.PresentationLayer
         /// </summary>
         /// <returns>True if the entity exists.</returns>
         protected virtual bool MapFromEntity()
-        {
-            if (null != this.Entity)
+        {            
+            if (this.Entity is MaxBaseEntity)
             {
+                MaxBaseEntity loEntity = (MaxBaseEntity)this.Entity;
+                if (loEntity.CreatedDate > DateTime.MinValue)
+                {
+                    this.CreatedDate = MaxConvertLibrary.ConvertToDateTimeFromUtc(typeof(object), loEntity.CreatedDate).ToString("G");
+                    this.OriginalValues.Add("CreatedDate", this.CreatedDate);
+                }
+                
+                if (loEntity.LastUpdateDate > DateTime.MinValue)
+                {
+                    this.OriginalValues.Add("LastUpdateDate", this.LastUpdateDate);
+                }
+
+                this.OriginalValues.Add("IsActive", this.IsActive);
+                this.IsActive = loEntity.IsActive;
+                this.OriginalValues.Add("Active", this.Active);
+                string[] laKey = loEntity.AttributeIndex.GetSortedKeyList();
+                foreach (string lsKey in laKey)
+                {
+                    this.AttributeIndexText += lsKey + "=" + loEntity.AttributeIndex[lsKey] + "\r\n";
+                }
+
                 return true;
             }
 

@@ -31,6 +31,7 @@
 // <change date="3/23/2024" author="Brian A. Lakstins" description="Initial creation">
 // <change date="3/24/2024" author="Brian A. Lakstins" description="Updated for changes namespaces">
 // <change date="3/30/2024" author="Brian A. Lakstins" description="Add method to load by Id.">
+// <change date="1/21/2025" author="Brian A. Lakstins" description="Add SetId method.">
 // </changelog>
 #endregion
 
@@ -82,6 +83,15 @@ namespace MaxFactry.Base.BusinessLayer
             {
                 return (MaxBaseGuidKeyDataModel)MaxDataLibrary.GetDataModel(this.DataModelType);
             }
+        }
+
+        /// <summary>
+        /// Sets the Id.
+        /// </summary>
+        /// <param name="loId">Id to use for this entity.</param>
+        public virtual void SetId(Guid loId)
+        {
+            this.Set(this.MaxBaseGuidKeyDataModel.Id, loId);
         }
 
         /// <summary>

@@ -131,6 +131,7 @@
 		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Provider\MaxMessageRepositoryDefaultProvider.cs" Link="DataLayer\Repository\Provider\MaxMessageRepositoryDefaultProvider.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\MaxStartup.cs" Link="MaxStartup.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\PresentationLayer\Models\MaxBaseEntityViewModel.cs" Link="PresentationLayer\Models\MaxBaseEntityViewModel.cs" />
+		<Compile Include="..\MaxFactry.Base-NF-2.0\PresentationLayer\Models\MaxBaseGuidKeyViewModel.cs" Link="PresentationLayer\Models\MaxBaseGuidKeyViewModel.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\PresentationLayer\Models\MaxBaseIdFileViewModel.cs" Link="PresentationLayer\Models\MaxBaseIdFileViewModel.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\PresentationLayer\Models\MaxBaseIdViewModel.cs" Link="PresentationLayer\Models\MaxBaseIdViewModel.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\PresentationLayer\Models\MaxBasePersonViewModel.cs" Link="PresentationLayer\Models\MaxBasePersonViewModel.cs" />

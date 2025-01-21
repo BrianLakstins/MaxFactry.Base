@@ -150,6 +150,7 @@
     <Compile Include="DataLayer\Repository\Provider\MaxBaseWriteRepositoryDefaultProvider.cs" />
     <Compile Include="MaxResource.cs" />
     <Compile Include="MaxStartup.cs" />
+    <Compile Include="PresentationLayer\Models\MaxBaseGuidKeyViewModel.cs" />
     <Compile Include="PresentationLayer\Models\MaxBaseViewModel.cs" />
     <Compile Include="PresentationLayer\Models\MaxBaseIdFileViewModel.cs" />
     <Compile Include="PresentationLayer\Models\MaxBaseIdViewModel.cs" />

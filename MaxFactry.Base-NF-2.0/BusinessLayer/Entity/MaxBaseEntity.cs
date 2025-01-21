@@ -33,6 +33,7 @@
 // <change date="3/26/2024" author="Brian A. Lakstins" description="Check to see if Data names are being used before using them">
 // <change date="3/30/2024" author="Brian A. Lakstins" description="Use IsStored to determine if StorageKey needs set.">
 // <change date="7/16/2024" author="Brian A. Lakstins" description="Add a way to set an attribute.">
+// <change date="1/21/2025" author="Brian A. Lakstins" description="Added some type checking.">
 // </changelog>
 #endregion
 
@@ -134,14 +135,17 @@ namespace MaxFactry.Base.BusinessLayer
         {
             get
             {
-                MaxIndex loR = this.GetObject(this.MaxBaseDataModel.AttributeIndexText, typeof(MaxIndex)) as MaxIndex;
-                if (null != loR)
+                MaxIndex loR = new MaxIndex();
+                object loCurrent = this.GetObject(this.MaxBaseDataModel.AttributeIndexText, typeof(MaxIndex));
+                if (null != loCurrent && loCurrent is MaxIndex)
                 {
-                    return loR;
+                    loR = (MaxIndex)loCurrent;
+                }
+                else
+                {
+                    this.SetObject(this.MaxBaseDataModel.AttributeIndexText, loR);
                 }
 
-                loR = new MaxIndex();
-                this.SetObject(this.MaxBaseDataModel.AttributeIndexText, loR);
                 return loR;
             }
 

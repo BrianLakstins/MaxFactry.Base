@@ -36,20 +36,18 @@
 // <change date="11/29/2018" author="Brian A. Lakstins" description="Add support for AttributeIndex entity property.">
 // <change date="11/30/2018" author="Brian A. Lakstins" description="Update IsActive so it can be set with a bool and not just text.">
 // <change date="9/17/2020" author="Brian A. Lakstins" description="Return current value for IsActive if the text has been updated.">
+// <change date="1/21/2025" author="Brian A. Lakstins" description="Update for changed base entity.">
 // </changelog>
 #endregion
 
 namespace MaxFactry.Base.PresentationLayer
 {
-    using System;
-    using MaxFactry.Core;
     using MaxFactry.Base.BusinessLayer;
-    using MaxFactry.Base.PresentationLayer;
 
     /// <summary>
     /// View model base
     /// </summary>
-    public abstract class MaxBaseIdViewModel : MaxIdGuidViewModel
+    public abstract class MaxBaseIdViewModel : MaxBaseGuidKeyViewModel
     {
         /// <summary>
         /// Initializes a new instance of the MaxBaseIdViewModel class.
@@ -68,106 +66,17 @@ namespace MaxFactry.Base.PresentationLayer
         {
         }
 
-        public MaxBaseIdViewModel(string lsId)
+        public MaxBaseIdViewModel(string lsId): base(lsId)
         {
-            this.CreateEntity();
-            this.Load(lsId);
-        }
-
-        public virtual bool Load(string lsId)
-        {
-            bool lbR = false;
-            this.Id = lsId;
-            if (this.EntityLoad())
-            {
-                lbR = this.Load();
-            }
-
-            return lbR;
         }
 
         /// <summary>
-        /// Gets the date last updated.  Not changed through view model.
+        /// Gets or sets the alternate Id
         /// </summary>
-        public virtual DateTime LastUpdateDate
-        {
-            get
-            {
-                MaxBaseIdEntity loEntity = this.Entity as MaxBaseIdEntity;
-                if (null != loEntity)
-                {
-                    return MaxConvertLibrary.ConvertToDateTimeFromUtc(typeof(object), loEntity.LastUpdateDate);
-                }
-
-                return DateTime.MinValue;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether the current entity is active.
-        /// </summary>
-        public virtual string Active { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether the current entity is active.
-        /// </summary>
-        public virtual bool IsActive
-        {
-            get
-            {
-                object loR = this.Get("IsActive");
-                if (loR is bool)
-                {
-                    return (bool)loR;
-                }
-                else if (null != this.Active && string.Empty != this.Active)
-                {
-                    return MaxConvertLibrary.ConvertToBoolean(typeof(object), this.Active);
-                }
-
-                return false;
-            }
-
-            set
-            {
-                if (value)
-                {
-                    this.Active = "Yes";
-                    this.Set("IsActive", true);
-                }
-                else
-                {
-                    this.Active = "No";
-                    this.Set("IsActive", false);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the Attribute property to be stored.
-        /// </summary>
-        [MaxMeta(Name = "Attributes")]
-        public virtual string AttributeIndexText
+        public virtual string AlternateId
         {
             get;
             set;
-        }
-
-        /// <summary>
-        /// Gets the Attribute key value pair information for this entity
-        /// </summary>
-        public MaxIndex AttributeIndex
-        {
-            get
-            {
-                MaxBaseIdEntity loEntity = this.Entity as MaxBaseIdEntity;
-                if (null != loEntity)
-                {
-                    return loEntity.AttributeIndex;
-                }
-
-                return new MaxIndex();
-            }
         }
 
         /// <summary>
@@ -179,39 +88,10 @@ namespace MaxFactry.Base.PresentationLayer
         {
             if (base.MapToEntity())
             {
-                MaxBaseIdEntity loEntity = this.Entity as MaxBaseIdEntity;
-                if (null != loEntity)
+                if (this.Entity is MaxBaseIdEntity)
                 {
-                    if (null != this.Active && this.Active.Length > 0)
-                    {
-                        loEntity.IsActive = MaxConvertLibrary.ConvertToBoolean(typeof(object), this.Active);
-                    }
-
-                    string lsAttributeIndexText = this.AttributeIndexText;
-                    if (string.IsNullOrEmpty(lsAttributeIndexText))
-                    {
-                        lsAttributeIndexText = string.Empty;
-                    }
-
-                    loEntity.AttributeIndex.Clear();
-                    if (lsAttributeIndexText.Contains("="))
-                    { 
-                        string[] laAttributeIndexText = lsAttributeIndexText.Split('\n');
-                        foreach (string lsAttributeKeyValue in laAttributeIndexText)
-                        {
-                            if (lsAttributeKeyValue.IndexOf('=') > 0)
-                            {
-                                string lsKey = lsAttributeKeyValue.Substring(0, lsAttributeKeyValue.IndexOf('='));
-                                string lsValue = lsAttributeKeyValue.Substring(lsAttributeKeyValue.IndexOf('=') + 1);
-                                loEntity.AttributeIndex.Add(lsKey.Trim(), lsValue.Trim());
-                            }
-                        }
-                    }
-                    else if (lsAttributeIndexText.Length > 0)
-                    {
-                        loEntity.AttributeIndex.Add("all", lsAttributeIndexText);
-                    }
-
+                    MaxBaseIdEntity loEntity = (MaxBaseIdEntity)this.Entity;
+                    loEntity.AlternateId = this.AlternateId;                   
                     return true;
                 }
             }
@@ -227,23 +107,11 @@ namespace MaxFactry.Base.PresentationLayer
         {
             if (base.MapFromEntity())
             {
-                MaxBaseIdEntity loEntity = this.Entity as MaxBaseIdEntity;
-                if (null != loEntity)
+                if (this.Entity is MaxBaseIdEntity)
                 {
-                    if (loEntity.LastUpdateDate > DateTime.MinValue)
-                    {
-                        this.OriginalValues.Add("LastUpdateDate", this.LastUpdateDate);
-                    }
-
-                    this.OriginalValues.Add("IsActive", this.IsActive);
-                    this.IsActive = loEntity.IsActive;
-                    this.OriginalValues.Add("Active", this.Active);
-                    string[] laKey = loEntity.AttributeIndex.GetSortedKeyList();
-                    foreach (string lsKey in laKey)
-                    {
-                        this.AttributeIndexText += lsKey + "=" + loEntity.AttributeIndex[lsKey] + "\r\n";
-                    }
-
+                    MaxBaseIdEntity loEntity = (MaxBaseIdEntity)this.Entity;
+                    this.AlternateId = loEntity.AlternateId;
+                    this.OriginalValues.Add("AlternateId", this.AlternateId);
                     return true;
                 }
             }

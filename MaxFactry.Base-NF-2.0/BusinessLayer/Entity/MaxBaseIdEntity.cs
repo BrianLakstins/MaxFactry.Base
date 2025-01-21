@@ -66,6 +66,7 @@
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/22/2024" author="Brian A. Lakstins" description="Change parent class.  Remove unused field.  Remove properties that are in parent class.  Add archive properties that were in previous parent class.  Remove methods that are in parent class.">
 // <change date="3/24/2024" author="Brian A. Lakstins" description="Updated for changes namespaces">
+// <change date="1/21/2025" author="Brian A. Lakstins" description="Change base class">
 // </changelog>
 #endregion
 
@@ -80,7 +81,7 @@ namespace MaxFactry.Base.BusinessLayer
     /// <summary>
     /// Base Business Layer Entity.  Being deprecated in favor of MaxBaseGuidKeyEntity class which has only basic functionality.
     /// </summary>
-    public abstract class MaxBaseIdEntity : MaxBaseEntity
+    public abstract class MaxBaseIdEntity : MaxBaseGuidKeyEntity
     {
         /// <summary>
         /// Lock for thread safety
@@ -102,17 +103,6 @@ namespace MaxFactry.Base.BusinessLayer
         public MaxBaseIdEntity(Type loDataModelType)
             : base(loDataModelType)
         {
-        }
-
-        /// <summary>
-        /// Gets the unique Identifier for this entity
-        /// </summary>
-        public virtual Guid Id
-        {
-            get
-            {
-                return this.GetGuid(this.MaxBaseIdDataModel.Id);
-            }
         }
 
         /// <summary>
@@ -196,15 +186,6 @@ namespace MaxFactry.Base.BusinessLayer
             }
         }
 
-        /// <summary>
-        /// Sets the Id.
-        /// </summary>
-        /// <param name="loId">Id to use for this entity.</param>
-        public virtual void SetId(Guid loId)
-        {
-            this.Set(this.MaxBaseIdDataModel.Id, loId);
-        }
-
         public override MaxEntityList LoadAllCache(params string[] laPropertyNameList)
         {
             MaxEntityList loR = base.LoadAllCache(laPropertyNameList);
@@ -214,56 +195,6 @@ namespace MaxFactry.Base.BusinessLayer
             }
 
             return loR;
-        }
-
-        /// <summary>
-        /// Loads an entity based on the Id
-        /// </summary>
-        /// <param name="loId">The Id of the entity to load</param>
-        /// <returns>True if data was found, loaded, and not marked as deleted.  False could be not found, or deleted.</returns>
-        public virtual bool LoadByIdCache(Guid loId)
-        {
-            string lsCacheIdDataKey = this.GetCacheKey() + "LoadById/" + loId.ToString();
-            MaxData loData = MaxCacheRepository.Get(this.GetType(), lsCacheIdDataKey, typeof(MaxData)) as MaxData;
-            if (null == loData)
-            {
-                loData = MaxIdGuidRepository.SelectById(this.Data, loId);
-                if (null == loData)
-                {
-                    //// Try loading from archive
-                    if (!this.Data.DataModel.DataStorageName.EndsWith("MaxArchive"))
-                    {
-                        MaxDataModel loDataModel = MaxFactry.Core.MaxFactryLibrary.Create(this.Data.DataModel.GetType(), this.Data.DataModel.DataStorageName + "MaxArchive") as MaxDataModel;
-                        if (null != loDataModel)
-                        {
-                            MaxData loDataArchive = this.Data.Clone();
-                            loData = MaxIdGuidRepository.SelectById(loDataArchive, loId);
-                            if (null != loData)
-                            {
-                                MaxCacheRepository.Set(this.GetType(), lsCacheIdDataKey, loData);
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    MaxCacheRepository.Set(this.GetType(), lsCacheIdDataKey, loData);
-                }
-            }
-
-            if (this.Load(loData))
-            {
-                if (null == loData.Get(((MaxBaseIdDataModel)loData.DataModel).Id))
-                {
-                    return false;
-                }
-
-                return true;
-            }
-
-            this.Clear();
-            MaxCacheRepository.Set(this.GetType(), lsCacheIdDataKey, this.Data.Clone());
-            return false;
         }
 
         /// <summary>
@@ -310,53 +241,6 @@ namespace MaxFactry.Base.BusinessLayer
                         }
                     }
                 }
-            }
-
-            return lbR;
-        }
-
-        /// <summary>
-        /// Inserts a new record
-        /// </summary>
-        /// <param name="loId">Id for the new record</param>
-        /// <returns>true if inserted.  False if cannot be inserted.</returns>
-        public virtual bool Insert(Guid loId)
-        {
-            if (Guid.Empty.Equals(this.Id) && !Guid.Empty.Equals(loId))
-            {
-                this.Set(this.MaxBaseIdDataModel.Id, loId);
-            }
-
-            bool lbR = this.Insert();
-            return lbR;
-        }
-
-        protected bool InsertRetry(int lnRetryCount)
-        {
-            bool lbR = false;
-            if (lnRetryCount < 5)
-            {
-                this.Set(this.MaxBaseIdDataModel.Id, Guid.NewGuid());
-                lbR = base.Insert();
-                if (!lbR)
-                {
-                    lbR = this.InsertRetry(lnRetryCount + 1);
-                }
-            }
-
-            return lbR;
-        }
-
-        public override bool Insert()
-        {
-            bool lbR = false;
-            if (Guid.Empty.Equals(this.Id))
-            {
-                lbR = this.InsertRetry(1);
-            }
-            else
-            {
-                lbR = base.Insert();
             }
 
             return lbR;

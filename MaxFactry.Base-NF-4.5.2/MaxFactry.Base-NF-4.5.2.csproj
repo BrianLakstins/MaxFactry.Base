@@ -374,6 +374,9 @@
     <Compile Include="..\MaxFactry.Base-NF-2.0\PresentationLayer\Models\MaxBaseEntityViewModel.cs">
       <Link>PresentationLayer\Models\MaxBaseEntityViewModel.cs</Link>
     </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\PresentationLayer\Models\MaxBaseGuidKeyViewModel.cs">
+      <Link>PresentationLayer\Models\MaxBaseGuidKeyViewModel.cs</Link>
+    </Compile>
     <Compile Include="..\MaxFactry.Base-NF-2.0\PresentationLayer\Models\MaxBaseIdFileViewModel.cs">
       <Link>PresentationLayer\Models\MaxBaseIdFileViewModel.cs</Link>
     </Compile>
