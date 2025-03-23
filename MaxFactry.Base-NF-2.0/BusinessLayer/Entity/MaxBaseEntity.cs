@@ -34,6 +34,7 @@
 // <change date="3/30/2024" author="Brian A. Lakstins" description="Use IsStored to determine if StorageKey needs set.">
 // <change date="7/16/2024" author="Brian A. Lakstins" description="Add a way to set an attribute.">
 // <change date="1/21/2025" author="Brian A. Lakstins" description="Added some type checking.">
+// <change date="3/22/2025" author="Brian A. Lakstins" description="Integrate with changes to base insert.">
 // </changelog>
 #endregion
 
@@ -337,6 +338,11 @@ namespace MaxFactry.Base.BusinessLayer
 
         public override bool Insert()
         {
+            return this.Insert(5);
+        }
+
+        public override bool Insert(int lnRetry)
+        {
             if (this.Data.DataModel.IsStored(this.MaxBaseDataModel.LastUpdateDate))
             {
                 this.Set(this.MaxBaseDataModel.LastUpdateDate, DateTime.UtcNow);
@@ -347,7 +353,7 @@ namespace MaxFactry.Base.BusinessLayer
                 this.Set(this.MaxBaseDataModel.CreatedDate, DateTime.UtcNow);
             }
 
-            return base.Insert();
+            return base.Insert(lnRetry);
         }
 
         public override bool Update()

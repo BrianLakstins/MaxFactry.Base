@@ -38,6 +38,7 @@
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/23/2024" author="Brian A. Lakstins" description="Updated for change to dependency class.">
 // <change date="3/24/2024" author="Brian A. Lakstins" description="Updated for changes namespaces">
+// <change date="3/22/2025" author="Brian A. Lakstins" description="Don't make active when inserting.">
 // </changelog>
 #endregion
 
@@ -200,7 +201,6 @@ namespace MaxFactry.Base.BusinessLayer
         {
             //// Version property is readonly, so use the data setter
             this.Set(this.MaxBaseIdVersionedDataModel.Version, this.GetNextVersion());
-            this.Set(this.MaxBaseIdVersionedDataModel.IsActive, true);
             return base.Insert();
         }
     }

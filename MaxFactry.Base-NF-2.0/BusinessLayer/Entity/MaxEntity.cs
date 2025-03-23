@@ -82,6 +82,7 @@
 // <change date="9/16/2024" author="Brian A. Lakstins" description="Making sure Propertlist is not null.">
 // <change date="9/24/2024" author="Brian A. Lakstins" description="Update filtering for when there is not a value.">
 // <change date="10/23/2024" author="Brian A. Lakstins" description="Only include the condition if there is a next value.">
+// <change date="3/22/2025" author="Brian A. Lakstins" description="Make insert retry configurable.">
 // </changelog>
 #endregion
 
@@ -310,13 +311,23 @@ namespace MaxFactry.Base.BusinessLayer
         /// <returns>true if inserted.  False if cannot be inserted.</returns>
         public virtual bool Insert()
         {
+            return this.Insert(5);
+        }
+
+        /// <summary>
+        /// Inserts a new record and removes any lists from cache
+        /// </summary>
+        /// <param name="lnRetry">Number of times to retry if failure</param>
+        /// <returns>true if inserted.  False if cannot be inserted.</returns>
+        public virtual bool Insert(int lnRetry)
+        {
             OnInsertBefore();
             this.SetProperties();
-            int lnLimit = 5;
             int lnTry = 0;
             bool lbR = MaxBaseWriteRepository.Insert(this.Data);
-            while (!lbR && lnTry < lnLimit)
+            while (!lbR && lnTry <= lnRetry)
             {
+                MaxLogLibrary.Log(new MaxLogEntryStructure(this.GetType(), "Insert", MaxEnumGroup.LogError, "Insert attempt {0} failed.", lnTry + 1));
                 System.Threading.Thread.Sleep(100);
                 lbR = MaxBaseWriteRepository.Insert(this.Data);
                 lnTry++;
