@@ -47,6 +47,7 @@
 // <change date="3/22/2024" author="Brian A. Lakstins" description="Remove EntityPropertyKeyIndex because it will no longer be used.">
 // <change date="3/23/2024" author="Brian A. Lakstins" description="Updated for change to dependency class.">
 // <change date="3/24/2024" author="Brian A. Lakstins" description="Updated for changes namespaces">
+// <change date="4/9/2025" author="Brian A. Lakstins" description="Override SetInitial method insteading of altering Insert method.">
 // </changelog>
 #endregion
 
@@ -207,47 +208,14 @@ namespace MaxFactry.Base.BusinessLayer
             this.Set(this.MaxIdDataModel.Id, loId);
         }
 
-        /// <summary>
-        /// Inserts a new record
-        /// </summary>
-        /// <returns>true if inserted.  False if cannot be inserted.</returns>
-        public override bool Insert()
+        protected override void SetInitial()
         {
-            int lnLimit = 10;
-            int lnTry = 0;
-            bool lbR = false;
-            while (!lbR && lnTry < lnLimit)
+            if (this.Id == Guid.Empty)
             {
-                lbR = this.Insert(Guid.NewGuid());
-                lnTry++;
+                this.SetId(Guid.NewGuid());
             }
 
-            return lbR;
-        }
-
-        /// <summary>
-        /// Inserts a new record
-        /// </summary>
-        /// <param name="loId">Id for the new record</param>
-        /// <returns>true if inserted.  False if cannot be inserted.</returns>
-        public virtual bool Insert(Guid loId)
-        {
-            if (Guid.Empty.Equals(this.Id))
-            {
-                this.Set(this.MaxIdDataModel.Id, loId);
-            }
-
-            this.Set(this.MaxIdDataModel.CreatedDate, DateTime.UtcNow);
-            if (base.Insert())
-            {
-                string lsCacheKey = this.GetCacheKey() + "LoadById/" + MaxConvertLibrary.ConvertToString(typeof(object), this.Id);
-                MaxCacheRepository.Set(this.GetType(), lsCacheKey, this.Data);
-                lsCacheKey = this.GetCacheKey() + "LoadAll*";
-                MaxCacheRepository.Remove(this.GetType(), lsCacheKey);
-                return true;
-            }
-
-            return false;
+            base.SetInitial();
         }
 
         /// <summary>

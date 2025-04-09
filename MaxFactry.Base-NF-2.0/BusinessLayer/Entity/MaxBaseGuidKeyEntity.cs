@@ -33,6 +33,7 @@
 // <change date="3/30/2024" author="Brian A. Lakstins" description="Add method to load by Id.">
 // <change date="1/21/2025" author="Brian A. Lakstins" description="Add SetId method.">
 // <change date="3/22/2025" author="Brian A. Lakstins" description="Integrate with changes to base insert.">
+// <change date="4/9/2025" author="Brian A. Lakstins" description="Override SetInitial method insteading of altering Insert method.">
 // </changelog>
 #endregion
 
@@ -96,63 +97,13 @@ namespace MaxFactry.Base.BusinessLayer
             this.Set(this.MaxBaseGuidKeyDataModel.Id, loId);
         }
 
-        /// <summary>
-        /// Inserts a new record
-        /// </summary>
-        /// <param name="loId">Id for the new record</param>
-        /// <returns>true if inserted.  False if cannot be inserted.</returns>
-        public virtual bool Insert(int lnRetry, Guid loId)
+        protected override void SetInitial()
         {
-            if (!Guid.Empty.Equals(loId))
+            base.SetInitial();
+            if (Guid.Empty == this.Id)
             {
-                this.Set(this.MaxBaseGuidKeyDataModel.Id, loId);
+                this.SetId(Guid.NewGuid());
             }
-
-            bool lbR = this.Insert(lnRetry);
-            return lbR;
-        }
-
-        /// <summary>
-        /// Inserts a new record
-        /// </summary>
-        /// <param name="loId">Id for the new record</param>
-        /// <returns>true if inserted.  False if cannot be inserted.</returns>
-        public virtual bool Insert(Guid loId)
-        {
-            return this.Insert(5, loId);
-        }
-
-        protected bool InsertNewGuid(int lnRetry)
-        {
-            bool lbR = false;
-            int lnTry = 0;
-            Guid loId = Guid.NewGuid();
-            lbR = this.Insert(0, loId);
-            while (!lbR && lnTry <= lnRetry)
-            {                
-                MaxLogLibrary.Log(new MaxLogEntryStructure(this.GetType(), "InsertNewGuid", MaxEnumGroup.LogError, "Insert attempt {0} failed.", lnTry + 1));
-                System.Threading.Thread.Sleep(100);
-                loId = Guid.NewGuid();
-                lbR = this.Insert(0, loId);
-                lnTry++;
-            }
-
-            return lbR;
-        }
-
-        public override bool Insert()
-        {
-            bool lbR = false;
-            if (Guid.Empty.Equals(this.Id))
-            {
-                lbR = this.InsertNewGuid(5);
-            }
-            else
-            {
-                lbR = base.Insert();
-            }
-
-            return lbR;
         }
 
         public virtual bool LoadByIdCache(Guid loId)

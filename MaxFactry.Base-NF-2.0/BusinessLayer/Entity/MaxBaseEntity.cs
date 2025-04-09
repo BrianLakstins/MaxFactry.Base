@@ -35,6 +35,7 @@
 // <change date="7/16/2024" author="Brian A. Lakstins" description="Add a way to set an attribute.">
 // <change date="1/21/2025" author="Brian A. Lakstins" description="Added some type checking.">
 // <change date="3/22/2025" author="Brian A. Lakstins" description="Integrate with changes to base insert.">
+// <change date="4/9/2025" author="Brian A. Lakstins" description="Override SetInitial method insteading of altering Insert method.">
 // </changelog>
 #endregion
 
@@ -336,13 +337,12 @@ namespace MaxFactry.Base.BusinessLayer
             return lsR;
         }
 
-        public override bool Insert()
+        /// <summary>
+        /// Sets the initial values for the entity
+        /// </summary>
+        protected override void SetInitial()
         {
-            return this.Insert(5);
-        }
-
-        public override bool Insert(int lnRetry)
-        {
+            base.SetInitial();
             if (this.Data.DataModel.IsStored(this.MaxBaseDataModel.LastUpdateDate))
             {
                 this.Set(this.MaxBaseDataModel.LastUpdateDate, DateTime.UtcNow);
@@ -352,20 +352,12 @@ namespace MaxFactry.Base.BusinessLayer
             {
                 this.Set(this.MaxBaseDataModel.CreatedDate, DateTime.UtcNow);
             }
-
-            return base.Insert(lnRetry);
         }
 
-        public override bool Update()
-        {
-            if (this.Data.DataModel.IsStored(this.MaxBaseDataModel.LastUpdateDate))
-            {
-                this.Set(this.MaxBaseDataModel.LastUpdateDate, DateTime.UtcNow);
-            }
-
-            return base.Update();
-        }
-
+        /// <summary>
+        /// Sets IsDeleted to true if it's available.
+        /// </summary>
+        /// <returns></returns>
         public override bool Delete()
         {
             if (this.Data.DataModel.IsStored(this.MaxBaseDataModel.IsDeleted))
@@ -412,6 +404,11 @@ namespace MaxFactry.Base.BusinessLayer
             if (this.GetLong(this.MaxBaseDataModel.OptionFlagList) < 0)
             {
                 this.Set(this.MaxBaseDataModel.OptionFlagList, 0);
+            }
+
+            if (this.Data.DataModel.IsStored(this.MaxBaseDataModel.LastUpdateDate))
+            {
+                this.Set(this.MaxBaseDataModel.LastUpdateDate, DateTime.UtcNow);
             }
 
             base.SetProperties();

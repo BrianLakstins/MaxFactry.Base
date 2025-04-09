@@ -83,6 +83,7 @@
 // <change date="9/24/2024" author="Brian A. Lakstins" description="Update filtering for when there is not a value.">
 // <change date="10/23/2024" author="Brian A. Lakstins" description="Only include the condition if there is a next value.">
 // <change date="3/22/2025" author="Brian A. Lakstins" description="Make insert retry configurable.">
+// <change date="4/9/2025" author="Brian A. Lakstins" description="Add and integrate SetInitial method for setting initial values before inserting.">
 // </changelog>
 #endregion
 
@@ -311,7 +312,7 @@ namespace MaxFactry.Base.BusinessLayer
         /// <returns>true if inserted.  False if cannot be inserted.</returns>
         public virtual bool Insert()
         {
-            return this.Insert(5);
+            return this.InsertRetry(5);
         }
 
         /// <summary>
@@ -319,15 +320,16 @@ namespace MaxFactry.Base.BusinessLayer
         /// </summary>
         /// <param name="lnRetry">Number of times to retry if failure</param>
         /// <returns>true if inserted.  False if cannot be inserted.</returns>
-        public virtual bool Insert(int lnRetry)
+        public bool InsertRetry(int lnRetry)
         {
             OnInsertBefore();
+            this.SetInitial();
             this.SetProperties();
             int lnTry = 0;
             bool lbR = MaxBaseWriteRepository.Insert(this.Data);
             while (!lbR && lnTry <= lnRetry)
             {
-                MaxLogLibrary.Log(new MaxLogEntryStructure(this.GetType(), "Insert", MaxEnumGroup.LogError, "Insert attempt {0} failed.", lnTry + 1));
+                MaxLogLibrary.Log(new MaxLogEntryStructure(this.GetType(), "InsertRetry(Retry)", MaxEnumGroup.LogError, "Insert attempt {0} failed.", lnTry + 1));
                 System.Threading.Thread.Sleep(100);
                 lbR = MaxBaseWriteRepository.Insert(this.Data);
                 lnTry++;
@@ -1352,6 +1354,13 @@ namespace MaxFactry.Base.BusinessLayer
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Sets the datamodel properties for any initial data before attemping an insert
+        /// </summary>
+        protected virtual void SetInitial()
+        {
         }
 
         /// <summary>
