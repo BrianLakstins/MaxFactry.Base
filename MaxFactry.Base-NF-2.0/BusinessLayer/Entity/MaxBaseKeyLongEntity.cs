@@ -28,6 +28,7 @@
 #region Change Log
 // <changelog>
 // <change date="4/9/2025" author="Brian A. Lakstins" description="Initial creation">
+// <change date="4/9/2025" author="Brian A. Lakstins" description="Add ways to customize the number used for the Id">
 // </changelog>
 #endregion
 
@@ -36,6 +37,7 @@ namespace MaxFactry.Base.BusinessLayer
     using System;
     using MaxFactry.Base.DataLayer;
     using MaxFactry.Base.DataLayer.Library;
+    using MaxFactry.Core;
 
     /// <summary>
     /// Base Business Layer Entity using a long as the primary key
@@ -44,17 +46,20 @@ namespace MaxFactry.Base.BusinessLayer
     {
         private static object _oLock = new object();
 
-        private static long _nLastId = long.MinValue;
+        /// <summary>
+        /// Number of digits to use for daily Id
+        /// </summary>
+        private int _nIdDigits = 18;
 
         /// <summary>
-        /// Number of Id per day
+        /// Date to use for Id 
         /// </summary>
-        private int _nIdPerDay = 0;
+        private DateTime _dIdDate = DateTime.MinValue;
 
         /// <summary>
-        /// Number of Id per day
+        /// Field to use for date (default is CreatedDate)
         /// </summary>
-        private DateTime _nIdDate = DateTime.Now;
+        private string _sIdDateField = string.Empty;
 
         /// <summary>
         /// Initializes a new instance of the MaxBaseKeyLongEntity class
@@ -87,30 +92,45 @@ namespace MaxFactry.Base.BusinessLayer
         /// <summary>
         /// Gets or sets the length of the Id.
         /// </summary>
-        protected int IdPerDay
+        protected int IdDigits
         {
             get
             {
-                return this._nIdPerDay;
+                return this._nIdDigits;
             }
             set
             {
-                this._nIdPerDay = value;
+                this._nIdDigits = value;
             }
         }
 
         /// <summary>
-        /// Gets or sets the length of the Id.
+        /// Gets or sets the name of the field to use for the Id date.
         /// </summary>
         protected DateTime IdDate
         {
             get
             {
-                return this._nIdDate;
+                return this._dIdDate;
             }
             set
             {
-                this._nIdDate = value;
+                this._dIdDate = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the name of the field to use for the Id date.
+        /// </summary>
+        protected string IdDateField
+        {
+            get
+            {
+                return this._sIdDateField;
+            }
+            set
+            {
+                this._sIdDateField = value;
             }
         }
 
@@ -134,6 +154,13 @@ namespace MaxFactry.Base.BusinessLayer
             this.Set(this.MaxBaseKeyLongDataModel.Id, lnId);
         }
 
+        protected virtual string GetIdStart(DateTime ldIdDate)
+        {
+            //// Format of Id is YYMMDD#####. 
+            string lsR = ((ldIdDate.Year - 2000) * 10000 + ldIdDate.Month * 100 + ldIdDate.Day).ToString();
+            return lsR;
+        }
+
         protected override void SetInitial()
         {
             base.SetInitial();
@@ -141,41 +168,40 @@ namespace MaxFactry.Base.BusinessLayer
             {
                 lock (_oLock)
                 {
-                    //// Defaults to generate a 16 digit number base on the created date
-                    long lnId = this.IdDate.Ticks;
-                    if (this.IdPerDay > 0)
+                    //// Defaults to generate a 16 digit number base on now
+                    long lnId = DateTime.UtcNow.Ticks;
+                    DateTime ldIdDate = this.IdDate;
+
+                    if (!string.IsNullOrEmpty(this._sIdDateField))
                     {
-                        //// Format of Id is YYMMDD#####.  
-                        lnId = (this.IdDate.Year - 2000) * 10000
-                             + this.IdDate.Month * 100
-                             + this.IdDate.Day;
-                        if (this.IdPerDay > 1000000)
+                        ldIdDate = this.GetDateTime(this._sIdDateField);
+                    }
+
+                    if (ldIdDate > DateTime.MinValue) 
+                    {
+                        //9,223,372,036,854,775,807 is max long which is 19 digits long
+                        string lsStartId = this.GetIdStart(ldIdDate);
+                        string lsEndId = this.GetIdStart(ldIdDate.AddDays(1));
+                        long lnStartId = MaxConvertLibrary.ConvertToLong(typeof(object), lsStartId.PadRight(this.IdDigits, '0'));
+                        long lnEndId = MaxConvertLibrary.ConvertToLong(typeof(object), lsEndId.PadRight(this.IdDigits, '0'));
+
+                        MaxDataQuery loDataQuery = new MaxDataQuery();
+                        loDataQuery.StartGroup();
+                        loDataQuery.AddFilter(this.MaxBaseKeyLongDataModel.Id, ">=", lnStartId);
+                        loDataQuery.AddAnd();
+                        loDataQuery.AddFilter(this.MaxBaseKeyLongDataModel.Id, "<", lnEndId);
+                        loDataQuery.EndGroup();
+
+                        MaxDataList loList = MaxBaseReadRepository.Select(this.Data, loDataQuery, 1, 1, this.MaxBaseKeyLongDataModel.Id + " desc", this.MaxBaseKeyLongDataModel.Id);
+                        lnId = lnStartId;
+                        if (loList.Count > 0)
                         {
-                            //// Format of start Id Integer is YYDDD#####.
-                            lnId = (this.IdDate.Year - 2000) * 100000
-                            + this.IdDate.DayOfYear * 100;
+                            long lnLastIdOnDay = MaxFactry.Core.MaxConvertLibrary.ConvertToLong(typeof(object), loList[0].Get(this.MaxBaseKeyLongDataModel.Id));
+                            lnId = lnLastIdOnDay + 1;
                         }
-
-                        lnId = lnId * this.IdPerDay;
-                    }
-
-                    MaxDataQuery loDataQuery = new MaxDataQuery();
-                    loDataQuery.StartGroup();
-                    loDataQuery.AddFilter(this.MaxBaseKeyLongDataModel.Id, ">=", lnId);
-                    loDataQuery.EndGroup();
-                    MaxDataList loList = MaxBaseReadRepository.Select(this.Data, loDataQuery, 1, 1, this.MaxBaseKeyLongDataModel.Id + " desc", this.MaxBaseKeyLongDataModel.Id);
-                    if (loList.Count > 0)
-                    {
-                        lnId = MaxFactry.Core.MaxConvertLibrary.ConvertToLong(typeof(object), loList[0].Get(this.MaxBaseKeyLongDataModel.Id)) + 1;
-                    }
-
-                    if (lnId <= _nLastId)
-                    {
-                        lnId = _nLastId + 1;
                     }
 
                     this.SetId(lnId);
-                    _nLastId = lnId;
                 }
             }
         }
