@@ -42,6 +42,9 @@
   <ItemGroup>
     <Compile Include="BusinessLayer\Entity\MaxBaseEmailEntity.cs" />
     <Compile Include="BusinessLayer\Entity\MaxBaseEntity.cs" />
+    <Compile Include="BusinessLayer\Entity\MaxBaseKeyGuidEntity.cs" />
+    <Compile Include="BusinessLayer\Entity\MaxBaseKeyStringEntity.cs" />
+    <Compile Include="BusinessLayer\Entity\MaxBaseKeyLongEntity.cs" />
     <Compile Include="BusinessLayer\Entity\MaxBaseGuidKeyEntity.cs" />
     <Compile Include="BusinessLayer\Entity\MaxBaseIdEntity.cs" />
     <Compile Include="BusinessLayer\Entity\MaxBaseIdFileEntity.cs" />
@@ -66,6 +69,9 @@
     <Compile Include="DataLayer\DataModel\Interface\IMaxHttpDataModel.cs" />
     <Compile Include="DataLayer\DataModel\Interface\IMaxMessageDataModel.cs" />
     <Compile Include="DataLayer\DataModel\MaxBaseEmailDataModel.cs" />
+    <Compile Include="DataLayer\DataModel\MaxBaseKeyStringDataModel.cs" />
+    <Compile Include="DataLayer\DataModel\MaxBaseKeyLongDataModel.cs" />
+    <Compile Include="DataLayer\DataModel\MaxBaseKeyGuidDataModel.cs" />
     <Compile Include="DataLayer\DataModel\MaxBaseIdBranchDataModel.cs" />
     <Compile Include="DataLayer\DataModel\MaxBaseDataModel.cs" />
     <Compile Include="DataLayer\DataModel\MaxBaseIdDataModel.cs" />

@@ -63,6 +63,15 @@
     <Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxBaseIdVersionedEntity.cs">
       <Link>BusinessLayer\Entity\MaxBaseIdVersionedEntity.cs</Link>
     </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxBaseKeyGuidEntity.cs">
+      <Link>BusinessLayer\Entity\MaxBaseKeyGuidEntity.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxBaseKeyLongEntity.cs">
+      <Link>BusinessLayer\Entity\MaxBaseKeyLongEntity.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxBaseKeyStringEntity.cs">
+      <Link>BusinessLayer\Entity\MaxBaseKeyStringEntity.cs</Link>
+    </Compile>
     <Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxBasePersonEntity.cs">
       <Link>BusinessLayer\Entity\MaxBasePersonEntity.cs</Link>
     </Compile>
@@ -125,6 +134,15 @@
     </Compile>
     <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseIdVersionedDataModel.cs">
       <Link>DataLayer\DataModel\MaxBaseIdVersionedDataModel.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseKeyGuidDataModel.cs">
+      <Link>DataLayer\DataModel\MaxBaseKeyGuidDataModel.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseKeyLongDataModel.cs">
+      <Link>DataLayer\DataModel\MaxBaseKeyLongDataModel.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseKeyStringDataModel.cs">
+      <Link>DataLayer\DataModel\MaxBaseKeyStringDataModel.cs</Link>
     </Compile>
     <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBasePersonDataModel.cs">
       <Link>DataLayer\DataModel\MaxBasePersonDataModel.cs</Link>
