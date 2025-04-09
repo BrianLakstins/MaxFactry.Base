@@ -39,6 +39,7 @@
 // <change date="3/23/2024" author="Brian A. Lakstins" description="Updated for change to dependency class.">
 // <change date="3/24/2024" author="Brian A. Lakstins" description="Updated for changes namespaces">
 // <change date="3/22/2025" author="Brian A. Lakstins" description="Don't make active when inserting.">
+// <change date="4/9/2025" author="Brian A. Lakstins" description="Override SetInitial method instead of altering insert.">
 // </changelog>
 #endregion
 
@@ -193,15 +194,10 @@ namespace MaxFactry.Base.BusinessLayer
             return lnVersionCurrent + 1;
         }
 
-        /// <summary>
-        /// Inserts a new record using the next available version id.
-        /// </summary>
-        /// <returns>true if a record was inserted.</returns>
-        public override bool Insert()
+        protected override void SetInitial()
         {
-            //// Version property is readonly, so use the data setter
+            base.SetInitial();
             this.Set(this.MaxBaseIdVersionedDataModel.Version, this.GetNextVersion());
-            return base.Insert();
         }
     }
 }
