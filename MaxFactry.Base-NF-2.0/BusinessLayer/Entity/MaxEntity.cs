@@ -84,6 +84,7 @@
 // <change date="10/23/2024" author="Brian A. Lakstins" description="Only include the condition if there is a next value.">
 // <change date="3/22/2025" author="Brian A. Lakstins" description="Make insert retry configurable.">
 // <change date="4/9/2025" author="Brian A. Lakstins" description="Add and integrate SetInitial method for setting initial values before inserting.">
+// <change date="4/14/2025" author="Brian A. Lakstins" description="Only update streams when date has changed.">
 // </changelog>
 #endregion
 
@@ -1256,7 +1257,9 @@ namespace MaxFactry.Base.BusinessLayer
         /// <returns>Copy of data for this entity.</returns>
         public virtual MaxData GetData()
         {
-            return this.Data.Clone();
+            MaxData loR = this.Data.Clone();
+            loR.ClearChanged();
+            return loR;
         }
 
         /// <summary>
@@ -1374,21 +1377,31 @@ namespace MaxFactry.Base.BusinessLayer
                 this.SetObject(lsDataName, this._oUnSerializedObjectIndex[lsDataName]);
             }
 
-            foreach (string lsDataName in this.Data.DataModel.DataNameStreamList)
+            if (this.IsDataChanged)
             {
-                if (MaxBaseWriteRepository.StreamSave(this.Data, lsDataName))
+                foreach (string lsDataName in this.Data.DataModel.DataNameStreamList)
                 {
-                    //// Clear Cache
-                    string[] laStreamPath = this.Data.GetStreamPath();
-                    string lsStreamPath = laStreamPath[0];
-                    for (int lnP = 1; lnP < laStreamPath.Length; lnP++)
+                    try
                     {
-                        lsStreamPath += "/" + laStreamPath[lnP];
-                    }
+                        if (MaxBaseWriteRepository.StreamSave(this.Data, lsDataName))
+                        {
+                            //// Clear Cache
+                            string[] laStreamPath = this.Data.GetStreamPath();
+                            string lsStreamPath = laStreamPath[0];
+                            for (int lnP = 1; lnP < laStreamPath.Length; lnP++)
+                            {
+                                lsStreamPath += "/" + laStreamPath[lnP];
+                            }
 
-                    lsStreamPath += "/" + lsDataName;
-                    string lsCacheDataKey = this.GetCacheKey() + "GetString/" + lsStreamPath;
-                    MaxCacheRepository.Remove(this.GetType(), lsCacheDataKey);
+                            lsStreamPath += "/" + lsDataName;
+                            string lsCacheDataKey = this.GetCacheKey() + "GetString/" + lsStreamPath;
+                            MaxCacheRepository.Remove(this.GetType(), lsCacheDataKey);
+                        }
+                    }
+                    catch (Exception loE)
+                    {
+                        MaxLogLibrary.Log(new MaxLogEntryStructure(this.GetType(), "SetProperties", MaxEnumGroup.LogError, "Saving stream for {DataName}", loE, lsDataName));
+                    }
                 }
             }
         }

@@ -28,6 +28,7 @@
 #region Change Log
 // <changelog>
 // <change date="4/9/2025" author="Brian A. Lakstins" description="Initial creation">
+// <change date="4/14/2025" author="Brian A. Lakstins" description="Make the string short so it can be used as a key">
 // </changelog>
 #endregion
 
@@ -53,7 +54,7 @@ namespace MaxFactry.Base.DataLayer
         public MaxBaseKeyStringDataModel()
             : base()
         {
-            this.AddKey(this.Id, typeof(string));
+            this.AddKey(this.Id, typeof(MaxShortString));
         }
 
         public override string[] GetStreamPath(MaxData loData)
