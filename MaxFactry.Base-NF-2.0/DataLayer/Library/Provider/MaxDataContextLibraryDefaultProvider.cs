@@ -104,7 +104,7 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
         /// <returns>List of data elements with a base data model.</returns>
         public virtual MaxDataList SelectAll(MaxData loData, params string[] laDataNameList)
         {
-            string lsStorageKey = MaxDataLibrary.GetStorageKey(null);
+            string lsStorageKey = MaxDataLibrary.GetStorageKey(loData);
             if (!_oDataSetIndex.ContainsKey(lsStorageKey))
             {
                 _oDataSetIndex.Add(lsStorageKey, new DataSet());
