@@ -85,6 +85,7 @@
 // <change date="3/22/2025" author="Brian A. Lakstins" description="Make insert retry configurable.">
 // <change date="4/9/2025" author="Brian A. Lakstins" description="Add and integrate SetInitial method for setting initial values before inserting.">
 // <change date="4/14/2025" author="Brian A. Lakstins" description="Only update streams when date has changed.">
+// <change date="5/12/2025" author="Brian A. Lakstins" description="Make sure Guid type for DataKey filter is a Guid object.">
 // </changelog>
 #endregion
 
@@ -1230,7 +1231,13 @@ namespace MaxFactry.Base.BusinessLayer
                     loDataQuery.StartGroup();
                     for (int lnD = 0; lnD < this.Data.DataModel.DataNameKeyList.Length; lnD++)
                     {
-                        loDataQuery.AddFilter(this.Data.DataModel.DataNameKeyList[lnD], "=", laDataKey[lnD]);
+                        object loValue = laDataKey[lnD];
+                        if (this.Data.DataModel.GetValueType(this.Data.DataModel.DataNameKeyList[lnD]) == typeof(Guid))
+                        {
+                            loValue = Guid.Parse(loValue.ToString());
+                        }
+
+                        loDataQuery.AddFilter(this.Data.DataModel.DataNameKeyList[lnD], "=", loValue);
                         if (lnD < this.Data.DataModel.DataNameKeyList.Length - 1)
                         {
                             loDataQuery.AddAnd();
