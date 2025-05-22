@@ -30,6 +30,7 @@
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/22/2024" author="Brian A. Lakstins" description="Initial creation.  Based on IMaxStorageReadRepositoryProvider.">
 // <change date="3/25/2024" author="Brian A. Lakstins" description="Removing passing Total">
+// <change date="5/22/2025" author="Brian A. Lakstins" description="Remove stream handling.">
 // </changelog>
 #endregion
 
@@ -43,54 +44,38 @@ namespace MaxFactry.Base.DataLayer
     public interface IMaxBaseReadRepositoryProvider : IMaxRepositoryProvider
     {
         /// <summary>
-        /// Selects all data from the data storage name for the specified type.
+        /// Selects all data
         /// </summary>
-        /// <param name="loData">Data with a Data Model</param>
-        /// <param name="laDataNameList">list of fields to return from select</param>
-        /// <returns>List of data elements with a base data model.</returns>
+        /// <param name="loData">Data to use as definition</param>
+        /// <param name="laDataNameList">Names of fields to return</param>
+        /// <returns>List of data that is stored</returns>
         MaxDataList SelectAll(MaxData loData, params string[] laDataNameList);
 
         /// <summary>
-        /// Selects data from the database
+        /// Selects data
         /// </summary>
-        /// <param name="loData">Element with data used in the filter</param>
-        /// <param name="loDataQuery">Query information to filter results.</param>
-        /// <param name="lnPageIndex">Page to return</param>
-        /// <param name="lnPageSize">Items per page</param>
-        /// <param name="lsOrderBy">Sort information</param>
-        /// <param name="laDataNameList">list of fields to return from select</param>
-        /// <returns>List of data from select</returns>
+        /// <param name="loData">Data to use as definition</param>
+        /// <param name="loDataQuery">Filter for the query</param>
+        /// <param name="lnPageIndex">Page number of the data</param>
+        /// <param name="lnPageSize">Size of the page</param>
+        /// <param name="lsOrderBy">Data field used to sort</param>
+        /// <param name="laDataNameList">Names of fields to return</param>
+        /// <returns>List of data that matches the query parameters</returns>
         MaxDataList Select(MaxData loData, MaxDataQuery loDataQuery, int lnPageIndex, int lnPageSize, string lsOrderBy, params string[] laDataNameList);
 
         /// <summary>
-        /// Selects data from the database.
+        /// Selects a count of records
         /// </summary>
-        /// <param name="loData">Element with data used in the filter.</param>
-        /// <param name="loDataQuery">Query information to filter results.</param>
-        /// <returns>List of data from select.</returns>
+        /// <param name="loData">Data to use as definition</param>
+        /// <param name="loDataQuery">Filter for the query</param>
+        /// <returns>Count that matches the query parameters</returns>
         int SelectCount(MaxData loData, MaxDataQuery loDataQuery);
-
-        /// <summary>
-        /// Opens stream data in storage
-        /// </summary>
-        /// <param name="loData">The data index for the object</param>
-        /// <param name="lsKey">Data element name to write</param>
-        /// <returns>Stream that was opened.</returns>
-        Stream StreamOpen(MaxData loData, string lsKey);
-
-        /// <summary>
-        /// Gets a Url to a stream.
-        /// </summary>
-        /// <param name="loData">The data index for the object</param>
-        /// <param name="lsKey">Data element name</param>
-        /// <returns>Url to stream.</returns>
-        string GetStreamUrl(MaxData loData, string lsKey);
 
         /// <summary>
         /// Gets the mime-type of the file.
         /// </summary>
         /// <param name="lsName">File name</param>
-        /// <returns>Data updated based on sending of message.</returns>
+        /// <returns>mime type of the file</returns>
         string GetMimeType(string lsName);
     }
 }

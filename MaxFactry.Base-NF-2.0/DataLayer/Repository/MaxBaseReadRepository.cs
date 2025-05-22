@@ -30,13 +30,13 @@
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/22/2024" author="Brian A. Lakstins" description="Initial creation.  Based on MaxStorageReadRepository.">
 // <change date="3/25/2024" author="Brian A. Lakstins" description="Removing passing Total">
+// <change date="5/22/2025" author="Brian A. Lakstins" description="Remove stream handling.">
 // </changelog>
 #endregion
 
 namespace MaxFactry.Base.DataLayer
 {
 	using System;
-    using System.IO;
     using MaxFactry.Core;
 
     /// <summary>
@@ -77,11 +77,11 @@ namespace MaxFactry.Base.DataLayer
         }
 
         /// <summary>
-        /// Selects all not marked as deleted
+        /// Selects all data
         /// </summary>
-        /// <param name="loData">Element with data used to determine the provider.</param>
-        /// <param name="laDataNameList">list of fields to return from select</param>
-        /// <returns>List of data from select</returns>
+        /// <param name="loData">Data to use to determine the provider</param>
+        /// <param name="laDataNameList">Names of fields to return</param>
+        /// <returns>List of data that is stored</returns>
         public static MaxDataList SelectAll(MaxData loData, params string[] laDataNameList)
         {
             IMaxBaseReadRepositoryProvider loProvider = Instance.GetRepositoryProvider(loData);
@@ -90,15 +90,15 @@ namespace MaxFactry.Base.DataLayer
         }
 
         /// <summary>
-        /// Selects data from the database
+        /// Selects data
         /// </summary>
-        /// <param name="loData">Element with data used to determine the provider and used for basic filtering</param>
-        /// <param name="loDataQuery">Query information to use for advanced filter results.</param>
-        /// <param name="lnPageIndex">Page to return</param>
-        /// <param name="lnPageSize">Items per page</param>
-        /// <param name="lsOrderBy">Sort information</param>
-        /// <param name="laDataNameList">list of fields to return from select</param>
-        /// <returns>List of data from select</returns>
+        /// <param name="loData">Data to use to determine the provider</param>
+        /// <param name="loDataQuery">Filter for the query</param>
+        /// <param name="lnPageIndex">Page number of the data</param>
+        /// <param name="lnPageSize">Size of the page</param>
+        /// <param name="lsOrderBy">Data field used to sort</param>
+        /// <param name="laDataNameList">Names of fields to return</param>
+        /// <returns>List of data that matches the query parameters</returns>
         public static MaxDataList Select(MaxData loData, MaxDataQuery loDataQuery, int lnPageIndex, int lnPageSize, string lsOrderBy, params string[] laDataNameList)
         {
             IMaxBaseReadRepositoryProvider loProvider = Instance.GetRepositoryProvider(loData);
@@ -107,11 +107,11 @@ namespace MaxFactry.Base.DataLayer
         }
 
         /// <summary>
-        /// Selects data from the database
+        /// Selects a count of records
         /// </summary>
-        /// <param name="loData">Element with data used to determine the provider and used for basic filtering</param>
-        /// <param name="loDataQuery">Query information to use for advanced filter results.</param>
-        /// <returns>Number of records that matches the data query</returns>
+        /// <param name="loData">Data to use to determine the provider</param>
+        /// <param name="loDataQuery">Filter for the query</param>
+        /// <returns>Count that matches the query parameters</returns>
         public static int SelectCount(MaxData loData, MaxDataQuery loDataQuery)
         {
             IMaxBaseReadRepositoryProvider loProvider = Instance.GetRepositoryProvider(loData);
@@ -120,37 +120,11 @@ namespace MaxFactry.Base.DataLayer
         }
 
         /// <summary>
-        /// Opens stream data in storage
-        /// </summary>
-        /// <param name="loData">The data index for the object</param>
-        /// <param name="lsKey">Data element name to write</param>
-        /// <returns>Stream that was opened.</returns>
-        public static Stream StreamOpen(MaxData loData, string lsKey)
-        {
-            IMaxBaseReadRepositoryProvider loProvider = Instance.GetRepositoryProvider(loData);
-            Stream loR = loProvider.StreamOpen(loData, lsKey);
-            return loR;
-        }
-
-        /// <summary>
-        /// Gets a Url to a stream.
-        /// </summary>
-        /// <param name="loData">The data index for the object</param>
-        /// <param name="lsKey">Data element name</param>
-        /// <returns>Url to stream.</returns>
-        public static string GetStreamUrl(MaxData loData, string lsKey)
-        {
-            IMaxBaseReadRepositoryProvider loProvider = Instance.GetRepositoryProvider(loData);
-            string lsR = loProvider.GetStreamUrl(loData, lsKey);
-            return lsR;
-        }
-
-        /// <summary>
         /// Gets the mime-type of the file.
         /// </summary>
-        /// <param name="loData">The data index for the object</param>
+        /// <param name="loData">Data to use to determine the provider</param>
         /// <param name="lsName">File name</param>
-        /// <returns>Data updated based on sending of message.</returns>
+        /// <returns>mime type of the file</returns>
         public static string GetMimeType(MaxData loData, string lsName)
         {
             IMaxBaseReadRepositoryProvider loProvider = Instance.GetRepositoryProvider(loData);
