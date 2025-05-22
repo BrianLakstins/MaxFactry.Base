@@ -29,6 +29,7 @@
 // <changelog>
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/25/2024" author="Brian A. Lakstins" description="Initial creation.">
+// <change date="5/21/2025" author="Brian A. Lakstins" description="Remove stream handling.  Return flag based status codes. Always handle a list.  Review and update for consistency.">
 // </changelog>
 #endregion
 
@@ -58,8 +59,14 @@ namespace MaxFactry.Base.DataLayer.Library
         /// </summary>
         private static object _oLock = new object();
 
+        /// <summary>
+        /// Name of the configuration element for the default context provider
+        /// </summary>
         public const string DefaultContextProviderConfigName = "DefaultContextProviderName";
 
+        /// <summary>
+        /// Name of the configuration element for the context provider
+        /// </summary>
         public const string ContextProviderConfigName = "ContextProviderName";
 
         /// <summary>
@@ -84,6 +91,13 @@ namespace MaxFactry.Base.DataLayer.Library
             }
         }
 
+        /// <summary>
+        /// Selects all data
+        /// </summary>
+        /// <param name="loRepositoryProvider">The repository provider used to determine the context provider</param>
+        /// <param name="loData">Data to use as definition</param>
+        /// <param name="laDataNameList">Names of fields to return</param>
+        /// <returns>List of data that is stored</returns>
         public static MaxDataList SelectAll(IMaxRepositoryProvider loRepositoryProvider, MaxData loData, params string[] laDataNameList)
         {
             IMaxDataContextLibraryProvider loProvider = Instance.GetContextProvider(loRepositoryProvider, loData);
@@ -92,6 +106,17 @@ namespace MaxFactry.Base.DataLayer.Library
             return loDataList;
         }
 
+        /// <summary>
+        /// Selects data
+        /// </summary>
+        /// <param name="loRepositoryProvider">The repository provider used to determine the context provider</param>
+        /// <param name="loData">Data to use as definition</param>
+        /// <param name="loDataQuery">Filter for the query</param>
+        /// <param name="lnPageIndex">Page number of the data</param>
+        /// <param name="lnPageSize">Size of the page</param>
+        /// <param name="lsOrderBy">Data field used to sort</param>
+        /// <param name="laDataNameList">Names of fields to return</param>
+        /// <returns>List of data that matches the query parameters</returns>
         public static MaxDataList Select(IMaxRepositoryProvider loRepositoryProvider, MaxData loData, MaxDataQuery loDataQuery, int lnPageIndex, int lnPageSize, string lsOrderBy, params string[] laDataNameList)
         {
             IMaxDataContextLibraryProvider loProvider = Instance.GetContextProvider(loRepositoryProvider, loData);
@@ -101,11 +126,12 @@ namespace MaxFactry.Base.DataLayer.Library
         }
 
         /// <summary>
-        /// Selects data from the database
+        /// Selects a count of records
         /// </summary>
-        /// <param name="loData">Element with data used to determine the provider and used for basic filtering</param>
-        /// <param name="loDataQuery">Query information to use for advanced filter results.</param>
-        /// <returns>Number of records that matches the data query</returns>
+        /// <param name="loRepositoryProvider">The repository provider used to determine the context provider</param>
+        /// <param name="loData">Data to use as definition</param>
+        /// <param name="loDataQuery">Filter for the query</param>
+        /// <returns>Count that matches the query parameters</returns>
         public static int SelectCount(IMaxRepositoryProvider loRepositoryProvider, MaxData loData, MaxDataQuery loDataQuery)
         {
             IMaxDataContextLibraryProvider loProvider = Instance.GetContextProvider(loRepositoryProvider, loData);
@@ -114,110 +140,76 @@ namespace MaxFactry.Base.DataLayer.Library
         }
 
         /// <summary>
-        /// Opens stream data in storage
+        /// Inserts a new list of elements
         /// </summary>
-        /// <param name="loData">The data index for the object</param>
-        /// <param name="lsKey">Data element name to write</param>
-        /// <returns>Stream that was opened.</returns>
-        public static Stream StreamOpen(IMaxRepositoryProvider loRepositoryProvider, MaxData loData, string lsKey)
+        /// <param name="loRepositoryProvider">The repository provider used to determine the context provider</param>
+        /// <param name="loDataList">The list of elements</param>
+        /// <returns>Flag based status code indicating level of success.</returns>
+        public static int Insert(IMaxRepositoryProvider loRepositoryProvider, MaxDataList loDataList)
         {
-            IMaxDataContextLibraryProvider loProvider = Instance.GetContextProvider(loRepositoryProvider, loData);
-            Stream loR = loProvider.StreamOpen(loData, lsKey);
-            return loR;
-        }
-
-        /// <summary>
-        /// Gets a Url to a stream.
-        /// </summary>
-        /// <param name="loData">The data index for the object</param>
-        /// <param name="lsKey">Data element name</param>
-        /// <returns>Url to stream.</returns>
-        public static string GetStreamUrl(IMaxRepositoryProvider loRepositoryProvider, MaxData loData, string lsKey)
-        {
-            IMaxDataContextLibraryProvider loProvider = Instance.GetContextProvider(loRepositoryProvider, loData);
-            string lsR = loProvider.GetStreamUrl(loData, lsKey);
-            return lsR;
-        }
-
-        /// <summary>
-        /// Inserts a new element of the specified type
-        /// </summary>
-        /// <param name="loData">The data index for the object</param>
-        /// <returns>true if inserted</returns>
-        public static bool Insert(IMaxRepositoryProvider loRepositoryProvider, MaxDataList loDataList)
-        {
-            IMaxDataContextLibraryProvider loProvider = Instance.GetContextProvider(loRepositoryProvider, loDataList);
-            int lnTotal = loProvider.Insert(loDataList);
-            if (lnTotal == loDataList.Count)
+            int lnR = 0;
+            if (loDataList.Count > 0)
             {
-                return true;
+                IMaxDataContextLibraryProvider loProvider = Instance.GetContextProvider(loRepositoryProvider, loDataList[0]);
+                lnR = loProvider.Insert(loDataList);
+            }
+            else
+            {
+                lnR |= 2;
+                MaxLogLibrary.Log(new MaxLogEntryStructure(typeof(MaxDataContextLibrary), "Insert", MaxEnumGroup.LogInfo, "No data to insert."));
             }
 
-            return false;
+            return lnR;
         }
 
         /// <summary>
-        /// Updates an element of the specified type
+        /// Updates a list of elements
         /// </summary>
-        /// <param name="loData">The data index for the object</param>
-        /// <returns>true if updated element</returns>
-        public static bool Update(IMaxRepositoryProvider loRepositoryProvider, MaxDataList loDataList)
+        /// <param name="loRepositoryProvider">The repository provider used to determine the context provider</param>
+        /// <param name="loDataList">The list of elements</param>
+        /// <returns>Flag based status code indicating level of success.</returns>
+        public static int Update(IMaxRepositoryProvider loRepositoryProvider, MaxDataList loDataList)            
         {
-            IMaxDataContextLibraryProvider loProvider = Instance.GetContextProvider(loRepositoryProvider, loDataList);
-            int lnTotal = loProvider.Update(loDataList);
-            if (lnTotal == loDataList.Count)
+            int lnR = 0;
+            if (loDataList.Count > 0)
             {
-                return true;
+                IMaxDataContextLibraryProvider loProvider = Instance.GetContextProvider(loRepositoryProvider, loDataList[0]);
+                lnR = loProvider.Update(loDataList);
+            }
+            else
+            {
+                lnR |= 2;
+                MaxLogLibrary.Log(new MaxLogEntryStructure(typeof(MaxDataContextLibrary), "Update", MaxEnumGroup.LogInfo, "No data to update."));
+            }
+            
+            return lnR;
+        }
+
+        /// <summary>
+        /// Deletes a list of elements
+        /// </summary>
+        /// <param name="loRepositoryProvider">The repository provider used to determine the context provider</param>
+        /// <param name="loDataList">The list of elements</param>
+        /// <returns>Flag based status code indicating level of success.</returns>
+        public static int Delete(IMaxRepositoryProvider loRepositoryProvider, MaxDataList loDataList)
+        {
+            int lnR = 0;
+            if (loDataList.Count > 0)
+            {
+                IMaxDataContextLibraryProvider loProvider = Instance.GetContextProvider(loRepositoryProvider, loDataList[0]);
+                lnR = loProvider.Delete(loDataList);
+            }
+            else
+            {
+                lnR |= 2;
+                MaxLogLibrary.Log(new MaxLogEntryStructure(typeof(MaxDataContextLibrary), "Delete", MaxEnumGroup.LogInfo, "No data to delete."));
             }
 
-            return false;
+            return lnR;
         }
 
         /// <summary>
-        /// Deletes an element of the specified type
-        /// </summary>
-        /// <param name="loData">The data index for the object</param>
-        /// <returns>true if deleted.  False if cannot be deleted.</returns>
-        public static bool Delete(IMaxRepositoryProvider loRepositoryProvider, MaxDataList loDataList)
-        {
-            IMaxDataContextLibraryProvider loProvider = Instance.GetContextProvider(loRepositoryProvider, loDataList);
-            int lnTotal = loProvider.Delete(loDataList);
-            if (lnTotal == loDataList.Count)
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Saves stream data to storage.
-        /// </summary>
-        /// <param name="loData">The data index for the object</param>
-        /// <param name="lsKey">Data element name to write</param>
-        /// <returns>Number of bytes written to storage.</returns>
-        public static bool StreamSave(IMaxRepositoryProvider loRepositoryProvider, MaxData loData, string lsKey)
-        {
-            IMaxDataContextLibraryProvider loProvider = Instance.GetContextProvider(loRepositoryProvider, loData);
-            bool lbR = loProvider.StreamSave(loData, lsKey);
-            return lbR;
-        }
-
-        /// <summary>
-        /// Removes stream from storage.
-        /// </summary>
-        /// <param name="loData">The data index for the object</param>
-        /// <param name="lsKey">Data element name to remove</param>
-        /// <returns>true if successful.</returns>
-        public static bool StreamDelete(IMaxRepositoryProvider loRepositoryProvider, MaxData loData, string lsKey)
-        {
-            IMaxDataContextLibraryProvider loProvider = Instance.GetContextProvider(loRepositoryProvider, loData);
-            bool lbR = loProvider.StreamDelete(loData, lsKey);
-            return lbR;
-        }
-
-        /// <summary>
-        /// Maps a class that uses a specific provider to that provider
+        /// Registers a class that uses a specific provider to that provider
         /// </summary>
         /// <param name="loType">Class that uses a provider</param>
         /// <param name="loProviderType">The provider to use</param>
@@ -263,11 +255,6 @@ namespace MaxFactry.Base.DataLayer.Library
 
             IMaxDataContextLibraryProvider loR = MaxFactryLibrary.CreateProvider(lsName, loProviderType) as IMaxDataContextLibraryProvider;
             return loR;
-        }
-
-        public virtual IMaxDataContextLibraryProvider GetContextProvider(IMaxRepositoryProvider loRepositoryProvider, MaxDataList loDataList)
-        {
-            return GetContextProvider(loRepositoryProvider, loDataList[0]);
         }
     }
 }

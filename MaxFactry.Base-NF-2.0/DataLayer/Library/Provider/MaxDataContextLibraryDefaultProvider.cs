@@ -37,6 +37,7 @@
 // <change date="3/24/2024" author="Brian A. Lakstins" description="Updated for changes namespaces">
 // <change date="3/25/2024" author="Brian A. Lakstins" description="Moved from MaxFactry.Base.DataLayer namespace and renamed from MaxDataContextDefaultProvider">
 // <change date="3/30/2024" author="Brian A. Lakstins" description="Updated for changes to MaxData.  Changed variable names to be consistent.">
+// <change date="5/21/2025" author="Brian A. Lakstins" description="Remove stream handling methods and integrate stream handling using StreamLibrary">
 // </changelog>
 #endregion
 
@@ -56,6 +57,8 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
     /// </summary>
     public class MaxDataContextLibraryDefaultProvider : MaxProvider, IMaxDataContextLibraryProvider
 	{
+
+        protected int _nMaxParameterCount = 900;
 
 #if net2 || netcore2
         /// <summary>
@@ -97,11 +100,11 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
         }
 
         /// <summary>
-        /// Selects all data from the data storage name for the specified type.
+        /// Selects all data
         /// </summary>
-        /// <param name="loData">Used for return data</param>
-        /// <param name="laDataNameList">list of fields to return from select</param>
-        /// <returns>List of data elements with a base data model.</returns>
+        /// <param name="loData">Data to use as definition</param>
+        /// <param name="laDataNameList">Names of fields to return</param>
+        /// <returns>List of data that is stored</returns>
         public virtual MaxDataList SelectAll(MaxData loData, params string[] laDataNameList)
         {
             string lsStorageKey = MaxDataLibrary.GetStorageKey(loData);
@@ -130,17 +133,17 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
             return loDataList;
         }
 
+
         /// <summary>
-        /// Selects data from the database.
+        /// Selects data
         /// </summary>
-        /// <param name="loData">Element with data used in the filter.</param>
-        /// <param name="loDataQuery">Query information to filter results.</param>
-        /// <param name="lnPageIndex">Page to return.</param>
-        /// <param name="lnPageSize">Items per page.</param>
-        /// <param name="lsOrderBy">Sort information.</param>
-        /// <param name="lnTotal">Total items found.</param>
-        /// <param name="laDataNameList">list of fields to return from select.</param>
-        /// <returns>List of data from select.</returns>
+        /// <param name="loData">Data to use as definition</param>
+        /// <param name="loDataQuery">Filter for the query</param>
+        /// <param name="lnPageIndex">Page number of the data</param>
+        /// <param name="lnPageSize">Size of the page</param>
+        /// <param name="lsOrderBy">Data field used to sort</param>
+        /// <param name="laDataNameList">Names of fields to return</param>
+        /// <returns>List of data that matches the query parameters</returns>
         public virtual MaxDataList Select(MaxData loData, MaxDataQuery loDataQuery, int lnPageIndex, int lnPageSize, string lsOrderBy, out int lnTotal, params string[] laDataNameList)
         {
             this.CreateTable(loData);
@@ -251,229 +254,244 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
         }
 
         /// <summary>
-        /// Gets the number of records that match the filter.
+        /// Selects a count of records
         /// </summary>
-        /// <param name="loData">Element with data used in the filter.</param>
-        /// <param name="loDataQuery">Query information to filter results.</param>
-        /// <returns>number of records that match.</returns>
+        /// <param name="loData">Data to use as definition</param>
+        /// <param name="loDataQuery">Filter for the query</param>
+        /// <returns>Count that matches the query parameters</returns>
         public virtual int SelectCount(MaxData loData, MaxDataQuery loDataQuery)
         {
             throw new NotImplementedException();
         }
 
         /// <summary>
-        /// Inserts a new data element.
+        /// Inserts a new list of elements
         /// </summary>
-        /// <param name="loDataList">The list of data objects to insert.</param>
-        /// <returns>The data that was inserted.</returns>
+        /// <param name="loDataList">The list of elements</param>
+        /// <returns>Flag based status code indicating level of success.</returns>
         public virtual int Insert(MaxDataList loDataList)
         {
             int lnR = 0;
             lock (_oLock)
             {
-                for (int lnD = 0; lnD < loDataList.Count; lnD++)
+                try
                 {
-                    MaxData loData = loDataList[lnD];
-                    this.CreateTable(loData);
-                    DataSet loDataSet = this.GetDataSet(loData);
-                    DataRow loRow = loDataSet.Tables[loDataList.DataModel.DataStorageName].NewRow();
-                    foreach (string lsDataName in loData.DataModel.DataNameList)
+                    for (int lnD = 0; lnD < loDataList.Count && lnR == 0; lnD++)
                     {
-                        if (loData.DataModel.IsStored(lsDataName))
+                        MaxData loData = loDataList[lnD];
+                        foreach (string lsDataName in loData.DataModel.DataNameStreamList)
                         {
-                            object loValue = loData.Get(lsDataName);
-                            if (null != loValue)
+                            int lnReturn = MaxStreamLibrary.StreamSave(loData, lsDataName);
+                            if ((lnReturn & 1) != 0)
                             {
-                                loRow[lsDataName] = loValue;
+                                lnR |= 2; //// Error saving stream
                             }
-                            else if (loData.DataModel.GetValueType(lsDataName) == typeof(bool))
+                        }
+
+                        if (lnR == 0)
+                        {
+                            this.CreateTable(loData);
+                            DataSet loDataSet = this.GetDataSet(loData);
+                            DataRow loRow = loDataSet.Tables[loDataList.DataModel.DataStorageName].NewRow();
+                            foreach (string lsDataName in loData.DataModel.DataNameList)
                             {
-                                loRow[lsDataName] = false;
+                                if (loData.DataModel.IsStored(lsDataName))
+                                {
+                                    object loValue = loData.Get(lsDataName);
+                                    if (null != loValue)
+                                    {
+                                        loRow[lsDataName] = loValue;
+                                    }
+                                    else if (loData.DataModel.GetValueType(lsDataName) == typeof(bool))
+                                    {
+                                        loRow[lsDataName] = false;
+                                    }
+                                }
                             }
+
+                            loDataSet.Tables[loDataList.DataModel.DataStorageName].Rows.Add(loRow);
                         }
                     }
 
-                    loDataSet.Tables[loDataList.DataModel.DataStorageName].Rows.Add(loRow);
-                    lnR++;
+                    this.SaveToFile();
                 }
-
-                this.SaveToFile();
+                catch (Exception loE)
+                {
+                    MaxLogLibrary.Log(new MaxLogEntryStructure(this.GetType(), "Insert", MaxEnumGroup.LogError, "Exception inserting {Count} data elements", loE, loDataList.Count));
+                    lnR |= 1; //// Exception inserting
+                }
             }
 
             return lnR;
         }
 
         /// <summary>
-        /// Updates an existing data element.
+        /// Updates a list of elements
         /// </summary>
-        /// <param name="loDataList">The list of data objects to insert.</param>
-        /// <returns>The data that was updated.</returns>
+        /// <param name="loDataList">The list of elements</param>
+        /// <returns>Flag based status code indicating level of success.</returns>
         public virtual int Update(MaxDataList loDataList)
         {
             int lnR = 0;
             lock (_oLock)
             {
-                for (int lnD = 0; lnD < loDataList.Count; lnD++)
+                try
                 {
-                    MaxData loData = loDataList[lnD];
-                    this.CreateTable(loData);
-                    DataSet loDataSet = this.GetDataSet(loData);
-                    List<string> loPrimaryKeyList = new List<string>();
-                    foreach (string lsDataName in loDataList.DataModel.DataNameList)
+                    for (int lnD = 0; lnD < loDataList.Count && lnR == 0; lnD++)
                     {
-                        if (loDataList.DataModel.IsStored(lsDataName))
+                        MaxData loData = loDataList[lnD];
+                        foreach (string lsDataName in loData.DataModel.DataNameStreamList)
                         {
-                            bool lbIsPrimaryKey = loDataList.DataModel.GetAttributeSetting(lsDataName, "IsPrimaryKey");
-                            if (lbIsPrimaryKey)
+                            int lnReturn = MaxStreamLibrary.StreamSave(loData, lsDataName);
+                            if ((lnReturn & 1) != 0 && (lnR & 2) != 0)
                             {
-                                if (null != loData.Get(lsDataName))
-                                {
-                                    loPrimaryKeyList.Add(lsDataName);
-                                }
+                                lnR |= 2; //// Error saving stream
                             }
                         }
-                    }
-
-                    foreach (DataRow loRow in loDataSet.Tables[loData.DataModel.DataStorageName].Rows)
-                    {
-                        bool lbIsMatch = true;
-                        foreach (string lsKey in loPrimaryKeyList)
+                        if (lnR == 0)
                         {
-                            if (loData.DataModel.GetValueType(lsKey) == typeof(Guid))
-                            {
-                                if ((Guid)loRow[lsKey] != MaxConvertLibrary.ConvertToGuid(loData.DataModel.GetType(), loData.Get(lsKey)))
-                                {
-                                    lbIsMatch = false;
-                                }
-                            }
-                            else if (loRow[lsKey] != loData.Get(lsKey))
-                            {
-                                lbIsMatch = false;
-                            }
-                        }
-
-                        if (lbIsMatch)
-                        {
+                            this.CreateTable(loData);
+                            DataSet loDataSet = this.GetDataSet(loData);
+                            List<string> loPrimaryKeyList = new List<string>();
                             foreach (string lsDataName in loDataList.DataModel.DataNameList)
                             {
                                 if (loDataList.DataModel.IsStored(lsDataName))
                                 {
-                                    if (loData.GetIsChanged(lsDataName))
+                                    bool lbIsPrimaryKey = loDataList.DataModel.GetAttributeSetting(lsDataName, "IsPrimaryKey");
+                                    if (lbIsPrimaryKey)
                                     {
-                                        object loValue = loData.Get(lsDataName);
-                                        if (null == loValue)
+                                        if (null != loData.Get(lsDataName))
                                         {
-                                            loRow[lsDataName] = DBNull.Value;
-                                        }
-                                        else
-                                        {
-                                            loRow[lsDataName] = loValue;
+                                            loPrimaryKeyList.Add(lsDataName);
                                         }
                                     }
                                 }
                             }
 
-                            lnR++;
+                            foreach (DataRow loRow in loDataSet.Tables[loData.DataModel.DataStorageName].Rows)
+                            {
+                                bool lbIsMatch = true;
+                                foreach (string lsKey in loPrimaryKeyList)
+                                {
+                                    if (loData.DataModel.GetValueType(lsKey) == typeof(Guid))
+                                    {
+                                        if ((Guid)loRow[lsKey] != MaxConvertLibrary.ConvertToGuid(loData.DataModel.GetType(), loData.Get(lsKey)))
+                                        {
+                                            lbIsMatch = false;
+                                        }
+                                    }
+                                    else if (loRow[lsKey] != loData.Get(lsKey))
+                                    {
+                                        lbIsMatch = false;
+                                    }
+                                }
+
+                                if (lbIsMatch)
+                                {
+                                    foreach (string lsDataName in loDataList.DataModel.DataNameList)
+                                    {
+                                        if (loDataList.DataModel.IsStored(lsDataName))
+                                        {
+                                            if (loData.GetIsChanged(lsDataName))
+                                            {
+                                                object loValue = loData.Get(lsDataName);
+                                                if (null == loValue)
+                                                {
+                                                    loRow[lsDataName] = DBNull.Value;
+                                                }
+                                                else
+                                                {
+                                                    loRow[lsDataName] = loValue;
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    lnR++;
+                                }
+                            }
                         }
                     }
-                }
 
-                this.SaveToFile();
+                    this.SaveToFile();
+                }
+                catch (Exception loE)
+                {
+                    MaxLogLibrary.Log(new MaxLogEntryStructure(this.GetType(), "Update", MaxEnumGroup.LogError, "Exception updating {Count} data elements", loE, loDataList.Count));
+                    lnR |= 1; //// Exception updating
+                }
             }
 
             return lnR;
         }
 
+
         /// <summary>
-        /// Deletes an existing data element.
+        /// Deletes a list of elements
         /// </summary>
-        /// <param name="loDataList">The list of data objects to insert.</param>
-        /// <returns>true if deleted.</returns>
+        /// <param name="loDataList">The list of elements</param>
+        /// <returns>Flag based status code indicating level of success.</returns>
         public virtual int Delete(MaxDataList loDataList)
         {
             int lnR = 0;
             lock (_oLock)
             {
-                for (int lnD = 0; lnD < loDataList.Count; lnD++)
+                try
                 {
-                    MaxData loData = loDataList[lnD];
-                    this.CreateTable(loData);
-                    DataSet loDataSet = this.GetDataSet(loData);
-                    List<string> loPrimaryKeyList = new List<string>(loDataList.DataModel.DataNameKeyList);
-                    for (int lnRow = loDataSet.Tables[loData.DataModel.DataStorageName].Rows.Count - 1; lnRow >= 0; lnRow--)
+                    for (int lnD = 0; lnD < loDataList.Count; lnD++)
                     {
-                        bool lbIsMatch = true;
-                        DataRow loRow = loDataSet.Tables[loData.DataModel.DataStorageName].Rows[lnRow];
-                        foreach (string lsKey in loPrimaryKeyList)
+                        MaxData loData = loDataList[lnD];
+                        foreach (string lsDataName in loData.DataModel.DataNameStreamList)
                         {
-                            if (loData.DataModel.GetValueType(lsKey) == typeof(Guid))
+                            int lnReturn = MaxStreamLibrary.StreamDelete(loData, lsDataName);
+                            if ((lnReturn & 1) != 0)
                             {
-                                if ((Guid)loRow[lsKey] != MaxConvertLibrary.ConvertToGuid(loData.DataModel.GetType(), loData.Get(lsKey)))
+                                lnR |= 2; //// Error deleting stream
+                            }
+                        }
+
+                        if (lnR == 0)
+                        {
+                            this.CreateTable(loData);
+                            DataSet loDataSet = this.GetDataSet(loData);
+                            List<string> loPrimaryKeyList = new List<string>(loDataList.DataModel.DataNameKeyList);
+                            for (int lnRow = loDataSet.Tables[loData.DataModel.DataStorageName].Rows.Count - 1; lnRow >= 0; lnRow--)
+                            {
+                                bool lbIsMatch = true;
+                                DataRow loRow = loDataSet.Tables[loData.DataModel.DataStorageName].Rows[lnRow];
+                                foreach (string lsKey in loPrimaryKeyList)
                                 {
-                                    lbIsMatch = false;
+                                    if (loData.DataModel.GetValueType(lsKey) == typeof(Guid))
+                                    {
+                                        if ((Guid)loRow[lsKey] != MaxConvertLibrary.ConvertToGuid(loData.DataModel.GetType(), loData.Get(lsKey)))
+                                        {
+                                            lbIsMatch = false;
+                                        }
+                                    }
+                                    else if (loRow[lsKey] != loData.Get(lsKey))
+                                    {
+                                        lbIsMatch = false;
+                                    }
+                                }
+
+                                if (lbIsMatch)
+                                {
+                                    loDataSet.Tables[loData.DataModel.DataStorageName].Rows.RemoveAt(lnRow);
                                 }
                             }
-                            else if (loRow[lsKey] != loData.Get(lsKey))
-                            {
-                                lbIsMatch = false;
-                            }
-                        }
-
-                        if (lbIsMatch)
-                        {
-                            loDataSet.Tables[loData.DataModel.DataStorageName].Rows.RemoveAt(lnRow);
                         }
                     }
-                }
 
-                this.SaveToFile();
+                    this.SaveToFile();
+                }
+                catch (Exception loE)
+                {
+                    MaxLogLibrary.Log(new MaxLogEntryStructure(this.GetType(), "Delete", MaxEnumGroup.LogError, "Exception deleting {Count} data elements", loE, loDataList.Count));
+                    lnR |= 1; //// Exception deleting
+                }
             }
 
             return lnR;
-        }
-
-        /// <summary>
-        /// Writes stream data to storage.
-        /// </summary>
-        /// <param name="loData">The data index for the object</param>
-        /// <param name="lsKey">Data element name to write</param>
-        /// <returns>Number of bytes written to storage.</returns>
-        public virtual bool StreamSave(MaxData loData, string lsKey)
-        {
-            return MaxStreamLibrary.StreamSave(loData, lsKey);
-        }
-
-        /// <summary>
-        /// Opens stream data in storage
-        /// </summary>
-        /// <param name="loData">The data index for the object</param>
-        /// <param name="lsKey">Data element name to write</param>
-        /// <returns>Stream that was opened.</returns>
-        public virtual Stream StreamOpen(MaxData loData, string lsKey)
-        {
-            return MaxStreamLibrary.StreamOpen(loData, lsKey);
-        }
-
-        /// <summary>
-        /// Deletes stream data in storage
-        /// </summary>
-        /// <param name="loData">The data index for the object</param>
-        /// <param name="lsKey">Data element name to write</param>
-        /// <returns>Stream that was opened.</returns>
-        public virtual bool StreamDelete(MaxData loData, string lsKey)
-        {
-            return MaxStreamLibrary.StreamDelete(loData, lsKey);
-        }
-
-        /// <summary>
-        /// Gets the Url of a saved stream.
-        /// </summary>
-        /// <param name="loData">The data index for the object</param>
-        /// <param name="lsKey">Data element name</param>
-        /// <returns>Url of stream if one can be provided.</returns>
-        public virtual string GetStreamUrl(MaxData loData, string lsKey)
-        {
-            return MaxStreamLibrary.GetStreamUrl(loData, lsKey);
         }
 
         private void SaveToFile()
@@ -658,50 +676,6 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
         /// <param name="loDataList">The list of data objects to insert.</param>
         /// <returns>The count affected.</returns>
         public int Delete(MaxDataList loDataList)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Writes stream data to storage.
-        /// </summary>
-        /// <param name="loData">The data index for the object</param>
-        /// <param name="lsKey">Data element name to write</param>
-        /// <returns>True if stream saved.</returns>
-        public bool StreamSave(MaxData loData, string lsKey)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Opens stream data in storage
-        /// </summary>
-        /// <param name="loData">The data index for the object</param>
-        /// <param name="lsKey">Data element name to write</param>
-        /// <returns>Stream that was opened.</returns>
-        public Stream StreamOpen(MaxData loData, string lsKey)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Removes stream from storage.
-        /// </summary>
-        /// <param name="loData">The data index for the object</param>
-        /// <param name="lsKey">Data element name to remove</param>
-        /// <returns>true if successful.</returns>
-        public bool StreamDelete(MaxData loData, string lsKey)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Gets the Url of a saved stream.
-        /// </summary>
-        /// <param name="loData">The data index for the object</param>
-        /// <param name="lsKey">Data element name</param>
-        /// <returns>Url of stream if one can be provided.</returns>
-        public string GetStreamUrl(MaxData loData, string lsKey)
         {
             throw new NotImplementedException();
         }

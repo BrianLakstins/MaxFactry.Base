@@ -34,6 +34,7 @@
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/23/2024" author="Brian A. Lakstins" description="Updated SelectAll to use information from MaxData">
 // <change date="3/25/2024" author="Brian A. Lakstins" description="Moved from MaxFactry.Base.DataLayer namespace and renamed from IMaxDataContextProvider">
+// <change date="5/21/2025" author="Brian A. Lakstins" description="Remove stream handling.  Return flag based status codes. Always handle a list.  Review and update for consistency.">
 // </changelog>
 #endregion
 
@@ -49,85 +50,52 @@ namespace MaxFactry.Base.DataLayer.Library
     public interface IMaxDataContextLibraryProvider : IMaxProvider
 	{
         /// <summary>
-        /// Selects all data from the data storage name for the specified type.
+        /// Selects all data
         /// </summary>
-        /// <param name="loData">Data used for return format</param>
-        /// <param name="laFields">list of fields to return from select</param>
-        /// <returns>List of data elements with a base data model.</returns>
-        MaxDataList SelectAll(MaxData loData, params string[] laFields);
+        /// <param name="loData">Data to use as definition</param>
+        /// <param name="laDataNameList">Names of fields to return</param>
+        /// <returns>List of data that is stored</returns>
+        MaxDataList SelectAll(MaxData loData, params string[] laDataNameList);
 
         /// <summary>
-        /// Selects data from the database
+        /// Selects data
         /// </summary>
-        /// <param name="loData">Element with data used in the filter</param>
-        /// <param name="loDataQuery">Query information to filter results.</param>
-        /// <param name="lnPageIndex">Page to return</param>
-        /// <param name="lnPageSize">Items per page</param>
-        /// <param name="lsOrderBy">Sorting information</param>
-        /// <param name="lnTotal">Total items found</param>
-        /// <param name="laDataNameList">list of fields to return from select</param>
-        /// <returns>List of data from select</returns>
+        /// <param name="loData">Data to use as definition</param>
+        /// <param name="loDataQuery">Filter for the query</param>
+        /// <param name="lnPageIndex">Page number of the data</param>
+        /// <param name="lnPageSize">Size of the page</param>
+        /// <param name="lsOrderBy">Data field used to sort</param>
+        /// <param name="laDataNameList">Names of fields to return</param>
+        /// <returns>List of data that matches the query parameters</returns>
         MaxDataList Select(MaxData loData, MaxDataQuery loDataQuery, int lnPageIndex, int lnPageSize, string lsOrderBy, out int lnTotal, params string[] laDataNameList);
 
         /// <summary>
-        /// Gets the number of records that match the filter.
+        /// Selects a count of records
         /// </summary>
-        /// <param name="loData">Element with data used in the filter.</param>
-        /// <param name="loDataQuery">Query information to filter results.</param>
-        /// <returns>number of records that match.</returns>
+        /// <param name="loData">Data to use as definition</param>
+        /// <param name="loDataQuery">Filter for the query</param>
+        /// <returns>Count that matches the query parameters</returns>
         int SelectCount(MaxData loData, MaxDataQuery loDataQuery);
 
         /// <summary>
-        /// Opens stream data in storage
+        /// Inserts a new list of elements
         /// </summary>
-        /// <param name="loData">The data index for the object</param>
-        /// <param name="lsKey">Data element name to write</param>
-        /// <returns>Stream that was opened.</returns>
-        Stream StreamOpen(MaxData loData, string lsKey);
-
-        /// <summary>
-        /// Gets the Url of a saved stream.
-        /// </summary>
-        /// <param name="loData">The data index for the object</param>
-        /// <param name="lsKey">Data element name</param>
-        /// <returns>Url of stream if one can be provided.</returns>
-        string GetStreamUrl(MaxData loData, string lsKey);
-
-        /// <summary>
-        /// Inserts a list of data objects.
-        /// </summary>
-        /// <param name="loDataList">The list of data objects to insert.</param>
-        /// <returns>The count affected.</returns>
+        /// <param name="loDataList">The list of elements</param>
+        /// <returns>Flag based status code indicating level of success.</returns>
         int Insert(MaxDataList loDataList);
 
-		/// <summary>
-		/// Updates a list of data objects.
-		/// </summary>
-		/// <param name="loDataList">The list of data objects to insert.</param>
-		/// <returns>The count affected.</returns>
+        /// <summary>
+        /// Updates a list of elements
+        /// </summary>
+        /// <param name="loDataList">The list of elements</param>
+        /// <returns>Flag based status code indicating level of success.</returns>
 		int Update(MaxDataList loDataList);
 
-		/// <summary>
-		/// Deletes a list of data objects.
-		/// </summary>
-		/// <param name="loDataList">The list of data objects to insert.</param>
-		/// <returns>The count affected.</returns>
+        /// <summary>
+        /// Deletes a list of elements
+        /// </summary>
+        /// <param name="loDataList">The list of elements</param>
+        /// <returns>Flag based status code indicating level of success.</returns>
 		int Delete(MaxDataList loDataList);
-
-        /// <summary>
-        /// Writes stream data to storage.
-        /// </summary>
-        /// <param name="loData">The data index for the object</param>
-        /// <param name="lsKey">Data element name to write</param>
-        /// <returns>True if stream saved.</returns>
-        bool StreamSave(MaxData loData, string lsKey);
-
-        /// <summary>
-        /// Removes stream from storage.
-        /// </summary>
-        /// <param name="loData">The data index for the object</param>
-        /// <param name="lsKey">Data element name to remove</param>
-        /// <returns>true if successful.</returns>
-        bool StreamDelete(MaxData loData, string lsKey);
-	}
+    }
 }
