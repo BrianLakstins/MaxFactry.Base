@@ -33,13 +33,13 @@
 // <change date="4/22/2016" author="Brian A. Lakstins" description="Addition of altering a table.">
 // <change date="5/10/2016" author="Brian A. Lakstins" description="Fix issue when table names have spaces that end up in parameter names.">
 // <change date="5/18/2016" author="Brian A. Lakstins" description="Fix issue when table names has underscore in it which should be fine, but was being removed.">
+// <change date="5/22/2025" author="Brian A. Lakstins" description="Review and update for consistency">
 // </changelog>
 #endregion
 
 namespace MaxFactry.Base.DataLayer.Library
 {
 	using System;
-	using System.Text;
     using MaxFactry.Core;
 
     /// <summary>
@@ -201,7 +201,7 @@ namespace MaxFactry.Base.DataLayer.Library
         /// <param name="lsName">The Name used to determine the provider</param>
         /// <param name="loType">The Type used to determine the provider</param>
 		/// <param name="lsDatabase">Name of the database</param>
-		/// <returns>Sql to create a database</returns>
+		/// <returns>Sql to create a user</returns>
         public static string GetCreateDboUser(string lsName, Type loType, string lsDatabase)
 		{
             IMaxProvider loProvider = Instance.GetProviderByName(lsName, loType);
@@ -214,14 +214,14 @@ namespace MaxFactry.Base.DataLayer.Library
             return null;
         }
 
-		/// <summary>
-		/// Gets Sql to give read only access to a user
-		/// </summary>
+        /// <summary>
+        /// Gets Sql to give read only access to a user
+        /// </summary>
         /// <param name="lsName">The Name used to determine the provider</param>
         /// <param name="loType">The Type used to determine the provider</param>
-		/// <param name="lsDatabase">Name of the database</param>
-		/// <param name="lsUsername">Name of the user to grant read only access</param>
-		/// <returns>Sql to create a database</returns>
+        /// <param name="lsDatabase">Name of the database</param>
+        /// <param name="lsUsername">Name of the user to grant read only access</param>
+        /// <returns>Sql to create a user</returns>
         public static string GetAddReadOnlyUser(string lsName, Type loType, string lsDatabase, string lsUsername)
 		{
             IMaxProvider loProvider = Instance.GetProviderByName(lsName, loType);
@@ -258,8 +258,8 @@ namespace MaxFactry.Base.DataLayer.Library
         /// </summary>
         /// <param name="lsName">The Name used to determine the provider</param>
         /// <param name="loType">The Type used to determine the provider</param>
-        /// <param name="loDataModel">DataModel information used for select</param>
-        /// <param name="loDataList">results of query of current table structure</param>
+        /// <param name="loDataModel">DataModel information used for definition</param>
+        /// <param name="loDataList">List of data to use to make sure table matches definition</param>
         /// <returns>Sql to alter a table</returns>
         public static string GetTableAlter(string lsName, Type loType, MaxDataModel loDataModel, MaxDataList loDataList)
         {
@@ -273,57 +273,57 @@ namespace MaxFactry.Base.DataLayer.Library
             return null;
         }
 
-		/// <summary>
-		/// Gets Sql to insert records into a table
-		/// </summary>
+        /// <summary>
+        /// Gets Sql to insert records into a table
+        /// </summary>
         /// <param name="lsName">The Name used to determine the provider</param>
         /// <param name="loType">The Type used to determine the provider</param>
-		/// <param name="loIndexList">table of data to use for record inserts</param>
-		/// <returns>Sql to insert records</returns>
-        public static string GetInsert(string lsName, Type loType, MaxDataList loIndexList)
+        /// <param name="loDataList">List of data to insert</param>
+        /// <returns>Sql to insert records</returns>
+        public static string GetInsert(string lsName, Type loType, MaxDataList loDataList)
 		{
             IMaxProvider loProvider = Instance.GetProviderByName(lsName, loType);
             if (loProvider is IMaxSqlGenerationLibraryProvider)
             {
-                return ((IMaxSqlGenerationLibraryProvider)loProvider).GetInsert(loIndexList);
+                return ((IMaxSqlGenerationLibraryProvider)loProvider).GetInsert(loDataList);
             }
 
             MaxByMethodFactory.HandleInterfaceNotImplemented(loType, loProvider, "MaxSqlGenerationLibrary", "IMaxSqlGenerationLibraryProvider");
             return null;
         }
 
-		/// <summary>
-		/// Get Sql to update records
-		/// </summary>
+        /// <summary>
+        /// Get Sql to update records
+        /// </summary>
         /// <param name="lsName">The Name used to determine the provider</param>
         /// <param name="loType">The Type used to determine the provider</param>
-		/// <param name="loIndexList">table of data to use for record updates</param>
-		/// <returns>Sql to perform updates</returns>
-        public static string GetUpdate(string lsName, Type loType, MaxDataList loIndexList)
+        /// <param name="loDataList">List of data to use for updates</param>
+        /// <returns>Sql to perform updates</returns>
+        public static string GetUpdate(string lsName, Type loType, MaxDataList loDataList)
 		{
             IMaxProvider loProvider = Instance.GetProviderByName(lsName, loType);
             if (loProvider is IMaxSqlGenerationLibraryProvider)
             {
-                return ((IMaxSqlGenerationLibraryProvider)loProvider).GetUpdate(loIndexList);
+                return ((IMaxSqlGenerationLibraryProvider)loProvider).GetUpdate(loDataList);
             }
 
             MaxByMethodFactory.HandleInterfaceNotImplemented(loType, loProvider, "MaxSqlGenerationLibrary", "IMaxSqlGenerationLibraryProvider");
             return null;
         }
 
-		/// <summary>
-		/// Get Sql to delete records
-		/// </summary>
+        /// <summary>
+        /// Get Sql to delete records
+        /// </summary>
         /// <param name="lsName">The Name used to determine the provider</param>
         /// <param name="loType">The Type used to determine the provider</param>
-		/// <param name="loIndexList">table of data to use to delete records</param>
-		/// <returns>Sql to perform delete</returns>
-        public static string GetDelete(string lsName, Type loType, MaxDataList loIndexList)
+        /// <param name="loDataList">List of data to use to delete</param>
+        /// <returns>Sql to perform delete</returns>
+        public static string GetDelete(string lsName, Type loType, MaxDataList loDataList)
 		{
             IMaxProvider loProvider = Instance.GetProviderByName(lsName, loType);
             if (loProvider is IMaxSqlGenerationLibraryProvider)
             {
-                return ((IMaxSqlGenerationLibraryProvider)loProvider).GetDelete(loIndexList);
+                return ((IMaxSqlGenerationLibraryProvider)loProvider).GetDelete(loDataList);
             }
 
             MaxByMethodFactory.HandleInterfaceNotImplemented(loType, loProvider, "MaxSqlGenerationLibrary", "IMaxSqlGenerationLibraryProvider");
@@ -338,7 +338,7 @@ namespace MaxFactry.Base.DataLayer.Library
         /// <param name="loData">Element with data used in the filter.</param>
         /// <param name="loDataQuery">Query information to filter results.</param>
         /// <param name="laDataNameList">list of fields to return from select.</param>
-        /// <returns>List of data from select.</returns>
+        /// <returns>Sql to perform select</returns>
         public static string GetSelect(string lsName, Type loType, MaxData loData, MaxDataQuery loDataQuery, params string[] laDataNameList)
 		{
             IMaxProvider loProvider = Instance.GetProviderByName(lsName, loType);
@@ -358,7 +358,7 @@ namespace MaxFactry.Base.DataLayer.Library
         /// <param name="loType">The Type used to determine the provider</param>
         /// <param name="lsDataStorageName">Data storage to get results from.</param>
         /// <param name="laDataNameList">list of fields to return from select.</param>
-        /// <returns>List of data from select.</returns>
+        /// <returns>Sql to perform select</returns>
         public static string GetSelect(string lsName, Type loType, string lsDataStorageName, params string[] laDataNameList)
         {
             IMaxProvider loProvider = Instance.GetProviderByName(lsName, loType);
@@ -371,14 +371,14 @@ namespace MaxFactry.Base.DataLayer.Library
             return null;
         }
 
-		/// <summary>
-		/// Get Sql used to query the database to get a count of matching records
-		/// </summary>
+        /// <summary>
+        /// Get Sql used to query the database to get a count of matching records
+        /// </summary>
         /// <param name="lsName">The Name used to determine the provider</param>
         /// <param name="loType">The Type used to determine the provider</param>
-		/// <param name="loData">Data used to create Sql</param>
+        /// <param name="loData">Data used to create Sql</param>
         /// <param name="loDataQuery">Query information to filter results.</param>
-        /// <returns>Sql to perform query</returns>
+        /// <returns>Sql to perform select</returns>
         public static string GetSelectCount(string lsName, Type loType, MaxData loData, MaxDataQuery loDataQuery)
 		{
             IMaxProvider loProvider = Instance.GetProviderByName(lsName, loType);

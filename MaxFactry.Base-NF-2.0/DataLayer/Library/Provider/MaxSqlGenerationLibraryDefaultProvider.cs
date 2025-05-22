@@ -41,13 +41,15 @@
 // <change date="5/18/2016" author="Brian A. Lakstins" description="Add support for server generated id (autoincrement).">
 // <change date="8/11/2020" author="Brian A. Lakstins" description="Add default queries for SQL server for adding columns to tables">
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Updated for changes to DataModel.">
+// <change date="5/22/2025" author="Brian A. Lakstins" description="Optimize replacement of sql specific variables in generated sql statements. Review and update for consistency.">
 // </changelog>
 #endregion
 
 namespace MaxFactry.Base.DataLayer.Library.Provider
 {
 	using System;
-	using System.Text;
+    using System.Collections.Generic;
+    using System.Text;
     using MaxFactry.Core;
 
     /// <summary>
@@ -87,6 +89,26 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
         }
 
         /// <summary>
+        /// Parses the command text and makes it provider specific
+        /// </summary>
+        /// <param name="lsBaseCommandText">Generic Sql Command text to parse</param>
+        /// <returns>Sql specific for current provider</returns>
+        public virtual string GetCommandText(string lsBaseCommandText)
+        {
+            string lsR = string.Empty;
+            StringBuilder loCommandText = new StringBuilder(lsBaseCommandText);
+            string[] laKeyList = this._oReplacementOrderIndex.GetSortedKeyList();
+            foreach (string lsKeyId in laKeyList)
+            {
+                string lsKey = _oReplacementOrderIndex[lsKeyId].ToString();
+                loCommandText.Replace(lsKey, this._oReplacementIndex[lsKey].ToString());
+            }
+
+            lsR = loCommandText.ToString();
+            return lsR;
+        }
+
+        /// <summary>
         /// Gets Sql to initialize database
         /// </summary>
         /// <returns>Sql to initialize database</returns>
@@ -95,70 +117,70 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
             return string.Empty;
         }
 
-		/// <summary>
-		/// Gets Sql to check if a table exists
-		/// </summary>
-		/// <returns>Sql to check if a table exists</returns>
+        /// <summary>
+        /// Gets Sql to check if a table exists
+        /// </summary>
+        /// <returns>Sql to check if a table exists</returns>
 		public virtual string GetTableExists()
 		{
 			return "SELECT COUNT(*) AS [RecordCount] FROM #SchemaTable WHERE #TableNameField = @TableName #TableExistFilter";
 		}
 
         /// <summary>
-        /// Gets Sql to get a list of columns in a table
+        /// Gets Sql to get a list of columns in the table
         /// </summary>
-        /// <param name="lsTable">The table</param>
-        /// <returns>Sql to list columns in a table</returns>
+        /// <param name="lsTable">The name of the table to get columns for</param>
+        /// <returns>Sql to get a list of columns for a table</returns>
         public virtual string GetColumnList(string lsTable)
         {
             return "select COLUMN_NAME as name from information_schema.columns where table_name = '" + lsTable + "'";
         }
 
-		/// <summary>
-		/// Gets Sql to list all databases
-		/// </summary>
-		/// <returns>Sql to list all databases</returns>
+        /// <summary>
+        /// Gets Sql to list all databases
+        /// </summary>
+        /// <returns>Sql to list all databases</returns>
         public virtual string GetDatabaseList()
 		{
 			return "#DatabaseList";
 		}
 
-		/// <summary>
-		/// Gets Sql to create a database
-		/// </summary>
-		/// <param name="lsDatabase">Name of the database</param>
-		/// <returns>Sql to create a database</returns>
+        /// <summary>
+        /// Gets Sql to create a database
+        /// </summary>
+        /// <param name="lsDatabase">Name of the database to create</param>
+        /// <returns>Sql to create a database</returns>
         public virtual string GetCreateDatabase(string lsDatabase)
 		{
 			return string.Concat("CREATE DATABASE [", lsDatabase, "]");
 		}
 
-		/// <summary>
-		/// Gets Sql to create a user
-		/// </summary>
-		/// <param name="lsDatabase">Name of the database</param>
-		/// <returns>Sql to create a database</returns>
+        /// <summary>
+        /// Gets Sql to create a user
+        /// </summary>
+        /// <param name="lsDatabase">Name of the database</param>
+        /// <returns>Sql to create a user</returns>
         public virtual string GetCreateDboUser(string lsDatabase)
 		{
 			return string.Concat("CREATE LOGIN [", lsDatabase, "] WITH PASSWORD = @Password;USE [", lsDatabase, "];CREATE USER [", lsDatabase, "] FOR LOGIN [", lsDatabase, "]; EXEC sp_addrolemember N'db_owner', N'", lsDatabase, "';");
 		}
 
-		/// <summary>
-		/// Gets Sql to give read only access to a user
-		/// </summary>
-		/// <param name="lsDatabase">Name of the database</param>
-		/// <param name="lsUsername">Name of the user to grant read only access</param>
-		/// <returns>Sql to add user access</returns>
+        /// <summary>
+        /// Gets Sql to give read only access to a user
+        /// </summary>
+        /// <param name="lsDatabase">Name of the database</param>
+        /// <param name="lsUsername">Name of the user to grant read only access</param>
+        /// <returns>Sql to create a user</returns>
         public virtual string GetAddReadOnlyUser(string lsDatabase, string lsUsername)
 		{
 			return string.Concat("USE [", lsDatabase, "];CREATE USER [", lsUsername, "] FOR LOGIN [", lsUsername, "]; EXEC sp_addrolemember N'db_datareader', N'", lsUsername, "';");
 		}
 
-		/// <summary>
-		/// Gets Sql to create a table
-		/// </summary>
-		/// <param name="loDataModel">DataModel information used for select</param>
-		/// <returns>Sql to create a table</returns>
+        /// <summary>
+        /// Gets Sql to create a table
+        /// </summary>
+        /// <param name="loDataModel">DataModel information used for select</param>
+        /// <returns>Sql to create a table</returns>
         public virtual string GetTableCreate(MaxDataModel loDataModel)
 		{
 			StringBuilder loCommandText = new StringBuilder("CREATE TABLE [" + loDataModel.DataStorageName + "] (");
@@ -200,8 +222,8 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
         /// <summary>
         /// Gets Sql to alter a table
         /// </summary>
-        /// <param name="loDataModel">DataModel information</param>
-        /// <param name="loDataList">Column information of current table structure</param>
+        /// <param name="loDataModel">DataModel information used for definition</param>
+        /// <param name="loDataList">List of data to use to make sure table matches definition</param>
         /// <returns>Sql to alter a table</returns>
         public virtual string GetTableAlter(MaxDataModel loDataModel, MaxDataList loDataList)
         {
@@ -238,37 +260,11 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
             return string.Empty;
         }
 
-		/// <summary>
-		/// Parses the command text and makes it provider specific
-		/// </summary>
-		/// <param name="lsBaseCommandText">Generic Sql Command text to parse</param>
-		/// <returns>Sql specific for current provider</returns>
-        public virtual string GetCommandText(string lsBaseCommandText)
-		{
-			string lsCommandText = lsBaseCommandText;
-			string[] laKeyList = this._oReplacementOrderIndex.GetSortedKeyList();
-			foreach (string lsKeyId in laKeyList)
-			{
-				string lsKey = this._oReplacementOrderIndex[lsKeyId].ToString();
-				while (lsCommandText.IndexOf(lsKey) > -1)
-				{
-					int lnStart = lsCommandText.IndexOf(lsKey);
-					int lnEnd = lnStart + lsKey.Length;
-					lsCommandText = string.Concat(
-						lsCommandText.Substring(0, lnStart),
-						this._oReplacementIndex[lsKey].ToString(),
-						lsCommandText.Substring(lnEnd, lsCommandText.Length - lnEnd));
-				}
-			}
-
-			return lsCommandText;
-		}
-
-		/// <summary>
-		/// Gets Sql to insert records into a table
-		/// </summary>
-		/// <param name="loDataList">table of data to use for record inserts</param>
-		/// <returns>Sql to insert records</returns>
+        /// <summary>
+        /// Gets Sql to insert records into a table
+        /// </summary>
+        /// <param name="loDataList">List of data to insert</param>
+        /// <returns>Sql to insert records</returns>
         public virtual string GetInsert(MaxDataList loDataList)
 		{
 			if (!this.IsGoodIndexList(loDataList))
@@ -355,11 +351,11 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
 			return loSqlQuery.ToString();
 		}
 
-		/// <summary>
-		/// Get Sql to update records
-		/// </summary>
-		/// <param name="loDataList">table of data to use for record updates</param>
-		/// <returns>Sql to perform updates</returns>
+        /// <summary>
+        /// Get Sql to update records
+        /// </summary>
+        /// <param name="loDataList">List of data to use for updates</param>
+        /// <returns>Sql to perform updates</returns>
         public virtual string GetUpdate(MaxDataList loDataList)
 		{
 			if (!this.IsGoodIndexList(loDataList))
@@ -423,11 +419,11 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
 			return lsSql;
 		}
 
-		/// <summary>
-		/// Get Sql to delete records
-		/// </summary>
-		/// <param name="loDataList">table of data to use to delete records</param>
-		/// <returns>Sql to perform delete</returns>
+        /// <summary>
+        /// Get Sql to delete records
+        /// </summary>
+        /// <param name="loDataList">List of data to use to delete</param>
+        /// <returns>Sql to perform delete</returns>
         public virtual string GetDelete(MaxDataList loDataList)
 		{
 			if (!this.IsGoodIndexList(loDataList))
@@ -460,13 +456,13 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
 			return loSqlDeleteClause.ToString();
 		}
 
-		/// <summary>
-		/// Get Sql used to query the database
-		/// </summary>
-		/// <param name="loData">Data used to create Sql</param>
+        /// <summary>
+        /// Selects data from the database.
+        /// </summary>
+        /// <param name="loData">Element with data used in the filter.</param>
         /// <param name="loDataQuery">Query information to filter results.</param>
-		/// <param name="laDataNameList">List of fields to pull from database</param>
-		/// <returns>Sql to perform query</returns>
+        /// <param name="laDataNameList">list of fields to return from select.</param>
+        /// <returns>Sql to perform select</returns>
         public virtual string GetSelect(MaxData loData, MaxDataQuery loDataQuery, params string[] laDataNameList)
         {
             if (!this.IsGoodIndex(loData))
@@ -543,26 +539,11 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
         }
 
         /// <summary>
-        /// Checks a requested field to determine if it's a function
-        /// </summary>
-        /// <param name="lsFunction"></param>
-        /// <returns></returns>
-        private bool IsFunction(string lsFunction)
-        {
-            if (lsFunction.Contains("(") && lsFunction.Contains(")"))
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Get Sql used to query the database
+        /// Selects data from the database.
         /// </summary>
         /// <param name="lsDataStorageName">Data storage to get results from.</param>
-        /// <param name="laDataNameList">List of fields to pull from database</param>
-        /// <returns>Sql to perform query</returns>
+        /// <param name="laDataNameList">list of fields to return from select.</param>
+        /// <returns>Sql to perform select</returns>
         public virtual string GetSelect(string lsDataStorageName, params string[] laDataNameList)
         {
             string lsR = string.Empty;
@@ -615,50 +596,50 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
             return lsR;
         }
 
-		/// <summary>
-		/// Get Sql used to query the database to get a count of matching records
-		/// </summary>
-		/// <param name="loData">Data used to create Sql</param>
+        /// <summary>
+        /// Get Sql used to query the database to get a count of matching records
+        /// </summary>
+        /// <param name="loData">Data used to create Sql</param>
         /// <param name="loDataQuery">Query information to filter results.</param>
-        /// <returns>Sql to perform query</returns>
+        /// <returns>Sql to perform select</returns>
         public virtual string GetSelectCount(MaxData loData, MaxDataQuery loDataQuery)
-		{
-			if (!this.IsGoodIndex(loData))
-			{
-				return string.Empty;
-			}
+        {
+            if (!this.IsGoodIndex(loData))
+            {
+                return string.Empty;
+            }
 
             string lsSqlWhere = this.GetWhere(loData, loDataQuery);
 
             return string.Concat("SELECT #COUNT FROM ", loData.DataModel.DataStorageName, " ", lsSqlWhere);
-		}
+        }
 
-		/// <summary>
-		/// Parses data to create the "WHERE" clause
-		/// </summary>
-		/// <param name="loData">Data index with table definition</param>
+        /// <summary>
+        /// Parses data to create the "WHERE" clause
+        /// </summary>
+        /// <param name="loData">Data index with table definition</param>
         /// <param name="loDataQuery">Query information to filter results.</param>
         /// <returns>Sql for Where clause</returns>
         protected virtual string GetWhere(MaxData loData, MaxDataQuery loDataQuery)
-		{
-			StringBuilder loSqlWhereClause = new StringBuilder();
+        {
+            StringBuilder loSqlWhereClause = new StringBuilder();
             //// Check the data to see if parts of the primary key are provided
-			foreach (string lsDataName in loData.DataModel.DataNameKeyList)
-			{
-				if (null != loData.Get(lsDataName))
-				{
-					if (0 == loSqlWhereClause.Length)
-					{
-						loSqlWhereClause.Append(" WHERE ");
-					}
-					else
-					{
-						loSqlWhereClause.Append(" AND ");
-					}
+            foreach (string lsDataName in loData.DataModel.DataNameKeyList)
+            {
+                if (null != loData.Get(lsDataName))
+                {
+                    if (0 == loSqlWhereClause.Length)
+                    {
+                        loSqlWhereClause.Append(" WHERE ");
+                    }
+                    else
+                    {
+                        loSqlWhereClause.Append(" AND ");
+                    }
 
-					loSqlWhereClause.Append(this.GetField(lsDataName));
-				}
-			}
+                    loSqlWhereClause.Append(this.GetField(lsDataName));
+                }
+            }
 
             //// Add anything in a data query
             if (null != loDataQuery)
@@ -710,19 +691,34 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
                 }
             }
 
-			return loSqlWhereClause.ToString();
-		}
+            return loSqlWhereClause.ToString();
+        }
 
-		/// <summary>
-		/// Adds to the dictionary
-		/// </summary>
-		/// <param name="lsName">Sql to replace</param>
-		/// <param name="lsReplacement">New Sql to use</param>
-		protected void AddReplacement(string lsName, string lsReplacement)
-		{
-			this._oReplacementIndex.Add(lsName, lsReplacement);
-			this._oReplacementOrderIndex.Add(lsName);
-		}
+        /// <summary>
+        /// Adds to the dictionary
+        /// </summary>
+        /// <param name="lsName">Sql to replace</param>
+        /// <param name="lsReplacement">New Sql to use</param>
+        protected void AddReplacement(string lsName, string lsReplacement)
+        {
+            this._oReplacementIndex.Add(lsName, lsReplacement);
+            this._oReplacementOrderIndex.Add(lsName);
+        }
+        
+        /// <summary>
+        /// Checks a requested field to determine if it's a function
+        /// </summary>
+        /// <param name="lsFunction"></param>
+        /// <returns></returns>
+        private bool IsFunction(string lsFunction)
+        {
+            if (lsFunction.Contains("(") && lsFunction.Contains(")"))
+            {
+                return true;
+            }
+
+            return false;
+        }
 
 		/// <summary>
 		/// Gets a field and operator in a filter format
