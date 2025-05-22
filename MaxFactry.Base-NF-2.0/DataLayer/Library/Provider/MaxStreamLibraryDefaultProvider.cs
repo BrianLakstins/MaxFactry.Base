@@ -32,6 +32,7 @@
 // <change date="3/24/2024" author="Brian A. Lakstins" description="Rename to MaxSteamLibrary to not indicate some dependency on MaxDataContextProvider">
 // <change date="4/1/2024" author="Brian A. Lakstins" description="Make sure a stream can be read before being processed.">
 // <change date="4/14/2025" author="Brian A. Lakstins" description="Open the file stream for reading in a way that other processes can open the same strem.">
+// <change date="5/21/2025" author="Brian A. Lakstins" description="Update to handle one field of one element at a time and send flag based return codes">
 // </changelog>
 #endregion
 
@@ -43,7 +44,7 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
     using System;
 
     /// <summary>
-    /// Provides static methods to manipulate storage of data
+    /// Provides methods to manipulate storage of streams
     /// </summary>
     public class MaxStreamLibraryDefaultProvider : MaxProvider, IMaxStreamLibraryProvider
     {
@@ -76,140 +77,157 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
         }
 
         /// <summary>
-        /// Writes stream data to storage.
+        /// Saves a single field in a data element to storage.
         /// </summary>
-        /// <param name="loData">The data index for the object</param>
-        /// <param name="lsDataName">Data element name to write</param>
-        /// <returns>Number of bytes written to storage.</returns>
-        public virtual bool StreamSave(MaxData loData, string lsDataName)
+        /// <param name="loData">The data element</param>
+        /// <param name="lsDataName">Name of data element to save</param>
+        /// <returns>Flag based status code indicating level of success.</returns>
+        public virtual int StreamSave(MaxData loData, string lsDataName)
         {
-            bool lbR = false;
+            int lnR = 0;
             object loValueType = loData.DataModel.GetValueType(lsDataName);
             if (loData.GetIsChanged(lsDataName))
             {
-                //// Check defined storage type
-                if (typeof(MaxLongString).Equals(loValueType) || typeof(byte[]).Equals(loValueType) || typeof(Stream).Equals(loValueType))
+                try
                 {
-                    object loValue = loData.Get(lsDataName);
-                    if (null != loValue && (loValue is Stream || loValue is string || loValue is byte[]))
+                    //// Check defined storage type
+                    if (typeof(MaxLongString).Equals(loValueType) || typeof(byte[]).Equals(loValueType) || typeof(Stream).Equals(loValueType))
                     {
-                        Stream loStream = null;
-                        if (loValue is string && ((string)loValue).Length > 2000)
+                        object loValue = loData.Get(lsDataName);
+                        if (null != loValue && (loValue is Stream || loValue is string || loValue is byte[]))
                         {
-                            //// Store as stream if over 2K in length
-                            loData.Set(lsDataName, MaxDataModel.StreamStringIndicator);
-                            loStream = new MemoryStream(System.Text.UTF8Encoding.UTF8.GetBytes(((string)loValue)));
-                        }
-                        else if (loValue is byte[] && ((byte[])loValue).Length > 2000)
-                        {
-                            //// Store as stream if over 2K in length
-                            loData.Set(lsDataName, MaxDataModel.StreamByteIndicator);
-                            loStream = new MemoryStream((byte[])loValue);
-                        }
-                        else if (loValue is Stream)
-                        {
-                            loStream = (Stream)loValue;
-                        }
-
-                        if (null != loStream && loStream.CanRead)
-                        {
-                            string[] laStreamPath = loData.GetStreamPath();
-                            string lsStreamPath = string.Empty;
-                            for (int lnP = 0; lnP < laStreamPath.Length; lnP++)
+                            Stream loStream = null;
+                            if (loValue is string && ((string)loValue).Length > 2000)
                             {
-                                lsStreamPath = Path.Combine(lsStreamPath, laStreamPath[lnP]);
+                                //// Store as stream if over 2K in length
+                                loData.Set(lsDataName, MaxDataModel.StreamStringIndicator);
+                                loStream = new MemoryStream(System.Text.UTF8Encoding.UTF8.GetBytes(((string)loValue)));
+                            }
+                            else if (loValue is byte[] && ((byte[])loValue).Length > 2000)
+                            {
+                                //// Store as stream if over 2K in length
+                                loData.Set(lsDataName, MaxDataModel.StreamByteIndicator);
+                                loStream = new MemoryStream((byte[])loValue);
+                            }
+                            else if (loValue is Stream)
+                            {
+                                loStream = (Stream)loValue;
                             }
 
-                            string lsStorageLocation = Path.Combine(this.DataFolder, lsStreamPath);
-                            if (!Directory.Exists(lsStorageLocation))
+                            if (null != loStream && loStream.CanRead)
                             {
-                                Directory.CreateDirectory(lsStorageLocation);
-                            }
-
-                            string lsFullPath = Path.Combine(lsStorageLocation, lsDataName);
-                            bool lbIsChanged = true;
-                            if (File.Exists(lsFullPath))
-                            {
-                                lbIsChanged = false;
-                                if (loStream.CanSeek)
+                                string[] laStreamPath = loData.GetStreamPath();
+                                string lsStreamPath = string.Empty;
+                                for (int lnP = 0; lnP < laStreamPath.Length; lnP++)
                                 {
-                                    loStream.Seek(0, SeekOrigin.Begin);
+                                    lsStreamPath = Path.Combine(lsStreamPath, laStreamPath[lnP]);
                                 }
 
-                                using (FileStream loFileStream = File.OpenRead(lsFullPath))
+                                string lsStorageLocation = Path.Combine(this.DataFolder, lsStreamPath);
+                                if (!Directory.Exists(lsStorageLocation))
                                 {
-                                    //// 50K chunks.
-                                    int lnBufferSize = 50 * 1024;
-                                    byte[] laBufferCurrent = new byte[lnBufferSize];
-                                    byte[] laBufferNew = new byte[lnBufferSize];
-                                    int lnReadNew = loStream.Read(laBufferNew, 0, lnBufferSize);
-                                    int lnReadCurrent = loFileStream.Read(laBufferCurrent, 0, lnBufferSize);
-                                    if (lnReadNew != lnReadCurrent)
+                                    Directory.CreateDirectory(lsStorageLocation);
+                                }
+
+                                string lsFullPath = Path.Combine(lsStorageLocation, lsDataName);
+                                bool lbIsChanged = true;
+                                if (File.Exists(lsFullPath))
+                                {
+                                    lbIsChanged = false;
+                                    if (loStream.CanSeek)
                                     {
-                                        lbIsChanged = true;
+                                        loStream.Seek(0, SeekOrigin.Begin);
                                     }
 
-                                    while (lnReadNew > 0 && lnReadCurrent > 0 && !lbIsChanged)
+                                    using (FileStream loFileStream = File.OpenRead(lsFullPath))
                                     {
-                                        for (int lnR = 0; lnR < lnReadCurrent; lnR++)
+                                        //// 50K chunks.
+                                        int lnBufferSize = 50 * 1024;
+                                        byte[] laBufferCurrent = new byte[lnBufferSize];
+                                        byte[] laBufferNew = new byte[lnBufferSize];
+                                        int lnReadNew = loStream.Read(laBufferNew, 0, lnBufferSize);
+                                        int lnReadCurrent = loFileStream.Read(laBufferCurrent, 0, lnBufferSize);
+                                        if (lnReadNew != lnReadCurrent)
                                         {
-                                            if (laBufferCurrent[lnR] != laBufferNew[lnR])
-                                            {
-                                                lbIsChanged = true;
-                                            }
+                                            lbIsChanged = true;
                                         }
 
-                                        if (!lbIsChanged)
+                                        while (lnReadNew > 0 && lnReadCurrent > 0 && !lbIsChanged)
                                         {
-                                            lnReadNew = loStream.Read(laBufferNew, 0, lnBufferSize);
-                                            lnReadCurrent = loFileStream.Read(laBufferCurrent, 0, lnBufferSize);
-                                            if (lnReadNew != lnReadCurrent)
+                                            for (int lnC = 0; lnC < lnReadCurrent; lnC++)
                                             {
-                                                lbIsChanged = true;
+                                                if (laBufferCurrent[lnC] != laBufferNew[lnC])
+                                                {
+                                                    lbIsChanged = true;
+                                                }
+                                            }
+
+                                            if (!lbIsChanged)
+                                            {
+                                                lnReadNew = loStream.Read(laBufferNew, 0, lnBufferSize);
+                                                lnReadCurrent = loFileStream.Read(laBufferCurrent, 0, lnBufferSize);
+                                                if (lnReadNew != lnReadCurrent)
+                                                {
+                                                    lbIsChanged = true;
+                                                }
                                             }
                                         }
+                                    }
+
+                                    if (lbIsChanged)
+                                    {
+                                        File.Move(lsFullPath, lsFullPath + "-" + DateTime.UtcNow.Ticks.ToString());
                                     }
                                 }
 
                                 if (lbIsChanged)
                                 {
-                                    File.Move(lsFullPath, lsFullPath + "-" + DateTime.UtcNow.Ticks.ToString());
-                                }
-                            }
-
-                            if (lbIsChanged)
-                            {
-                                if (loStream.CanSeek)
-                                {
-                                    loStream.Seek(0, SeekOrigin.Begin);
-                                }
-
-                                //// 50K chunks.
-                                int lnBufferSize = 50 * 1024;
-                                byte[] laBuffer = new byte[lnBufferSize];
-                                using (FileStream loFile = File.Create(lsFullPath, lnBufferSize))
-                                {
-                                    int lnRead = loStream.Read(laBuffer, 0, lnBufferSize);
-                                    while (lnRead > 0)
+                                    if (loStream.CanSeek)
                                     {
-                                        loFile.Write(laBuffer, 0, lnRead);
-                                        lnRead = loStream.Read(laBuffer, 0, lnBufferSize);
+                                        loStream.Seek(0, SeekOrigin.Begin);
                                     }
 
-                                    loFile.Close();
-                                    return true;
+                                    //// 50K chunks.
+                                    int lnBufferSize = 50 * 1024;
+                                    byte[] laBuffer = new byte[lnBufferSize];
+                                    using (FileStream loFile = File.Create(lsFullPath, lnBufferSize))
+                                    {
+                                        int lnRead = loStream.Read(laBuffer, 0, lnBufferSize);
+                                        while (lnRead > 0)
+                                        {
+                                            loFile.Write(laBuffer, 0, lnRead);
+                                            lnRead = loStream.Read(laBuffer, 0, lnBufferSize);
+                                        }
+
+                                        loFile.Close();
+                                    }
+                                }
+                                else
+                                {
+                                    loData.ClearChanged(lsDataName);
+                                    lnR = lnR + 2; //// Data is not changed
                                 }
                             }
-                            else
-                            {
-                                loData.ClearChanged(lsDataName);
-                            }
+                        }
+                        else
+                        {
+                            lnR = lnR + 8; //// Value is null or not a stream type
                         }
                     }
+                    else
+                    {
+                        lnR = lnR + 4; //// Defined type of value is not a stream type
+                    }
+                }
+                catch (Exception loE)
+                {
+                    MaxLogLibrary.Log(new MaxLogEntryStructure(this.GetType(), "StreamSave", MaxEnumGroup.LogError, "Exception saving stream for {DataName}", loE, lsDataName));
+                    lnR += 1; //// Exception saving stream
                 }
             }
             else if (typeof(MaxLongString).Equals(loValueType) || typeof(byte[]).Equals(loValueType) || typeof(Stream).Equals(loValueType))
             {
+                lnR = lnR + 2; //// Data is not changed
                 object loValue = loData.Get(lsDataName);
                 if (null != loValue && (loValue is Stream || loValue is string || loValue is byte[]))
                 {
@@ -224,18 +242,18 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
                         loData.Set(lsDataName, MaxDataModel.StreamByteIndicator);
                     }
                 }
-            }
+            }            
 
-            return lbR;
+            return lnR;
         }
 
         /// <summary>
         /// Opens stream data in storage
         /// </summary>
-        /// <param name="loData">The data index for the object</param>
-        /// <param name="lsKey">Data element name to write</param>
+        /// <param name="loData">The data element</param>
+        /// <param name="lsDataName">Name of data element to save</param>
         /// <returns>Stream that was opened.</returns>
-        public virtual Stream StreamOpen(MaxData loData, string lsKey)
+        public virtual Stream StreamOpen(MaxData loData, string lsDataName)
         {
             string[] laStreamPath = loData.GetStreamPath();
             string lsStreamPath = string.Empty;
@@ -245,7 +263,7 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
             }
 
             string lsStorageLocation = Path.Combine(this.DataFolder, lsStreamPath);
-            string lsFullPath = Path.Combine(lsStorageLocation, lsKey);
+            string lsFullPath = Path.Combine(lsStorageLocation, lsDataName);
             if (File.Exists(lsFullPath))
             {
                 FileStream loStream = File.Open(lsFullPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
@@ -256,38 +274,50 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
         }
 
         /// <summary>
-        /// Deletes stream data in storage
+        /// Deletes a single field in a data element from storage
         /// </summary>
-        /// <param name="loData">The data index for the object</param>
-        /// <param name="lsKey">Data element name to write</param>
-        /// <returns>Stream that was opened.</returns>
-        public virtual bool StreamDelete(MaxData loData, string lsKey)
+        /// <param name="loData">The data element</param>
+        /// <param name="lsDataName">Name of data element to delete</param>
+        /// <returns>Flag based status code indicating level of success.</returns>
+        public virtual int StreamDelete(MaxData loData, string lsDataName)
         {
+            int lnR = 0;
             string[] laStreamPath = loData.GetStreamPath();
             string lsStreamPath = string.Empty;
-            for (int lnP = 0; lnP < laStreamPath.Length; lnP++)
+            try
             {
-                lsStreamPath = Path.Combine(lsStreamPath, laStreamPath[lnP]);
+                for (int lnP = 0; lnP < laStreamPath.Length; lnP++)
+                {
+                    lsStreamPath = Path.Combine(lsStreamPath, laStreamPath[lnP]);
+                }
+
+                string lsStorageLocation = Path.Combine(this.DataFolder, lsStreamPath);
+                string lsFullPath = Path.Combine(lsStorageLocation, lsDataName);
+                if (File.Exists(lsFullPath))
+                {
+                    File.Delete(lsFullPath);
+                }
+                else
+                {
+                    lnR = lnR + 2; //// File does not exist
+                }
+            }
+            catch (Exception loE)
+            {
+                MaxLogLibrary.Log(new MaxLogEntryStructure(this.GetType(), "StreamDelete", MaxEnumGroup.LogError, "Exception deleting stream for {DataName}", loE, lsDataName));
+                lnR += 1; //// Exception deleting stream
             }
 
-            string lsStorageLocation = Path.Combine(this.DataFolder, lsStreamPath);
-            string lsFullPath = Path.Combine(lsStorageLocation, lsKey);
-            if (File.Exists(lsFullPath))
-            {
-                File.Delete(lsFullPath);
-                return true;
-            }
-
-            return false;
+            return lnR;
         }
 
         /// <summary>
         /// Gets the Url of a saved stream.
         /// </summary>
-        /// <param name="loData">The data index for the object</param>
-        /// <param name="lsKey">Data element name</param>
+        /// <param name="loData">The data element</param>
+        /// <param name="lsDataName">Name of data element get stream for</param>
         /// <returns>Url of stream if one can be provided.</returns>
-        public virtual string GetStreamUrl(MaxData loData, string lsKey)
+        public virtual string GetStreamUrl(MaxData loData, string lsDataName)
         {
             return string.Empty;
         }

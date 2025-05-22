@@ -30,6 +30,7 @@
 // <change date="9/20/2023" author="Brian A. Lakstins" description="Initial creation">
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/24/2024" author="Brian A. Lakstins" description="Rename to MaxSteamLibrary to not indicate some dependency on MaxDataContextProvider">
+// <change date="5/21/2025" author="Brian A. Lakstins" description="Update to handle one field of one element at a time and send flag based return codes">
 // </changelog>
 #endregion
 
@@ -39,40 +40,40 @@ namespace MaxFactry.Base.DataLayer.Library
     using MaxFactry.Core;
 
     /// <summary>
-    /// Provides methods to manipulate storage of data
+    /// Provides methods to manipulate storage of streams
     /// </summary>
     public interface IMaxStreamLibraryProvider : IMaxProvider
     {
         /// <summary>
-        /// Writes stream data to storage.
+        /// Saves a single field in a data element to storage.
         /// </summary>
-        /// <param name="loData">The data index for the object</param>
-        /// <param name="lsKey">Data element name to write</param>
-        /// <returns>True if stream saved.</returns>
-        bool StreamSave(MaxData loData, string lsKey);
+        /// <param name="loData">The data element</param>
+        /// <param name="lsDataName">Name of data element to save</param>
+        /// <returns>Flag based status code indicating level of success.</returns>
+        int StreamSave(MaxData loData, string lsDataName);
 
         /// <summary>
         /// Opens stream data in storage
         /// </summary>
-        /// <param name="loData">The data index for the object</param>
-        /// <param name="lsKey">Data element name to write</param>
+        /// <param name="loData">The data element</param>
+        /// <param name="lsDataName">Name of data element to save</param>
         /// <returns>Stream that was opened.</returns>
-        Stream StreamOpen(MaxData loData, string lsKey);
+        Stream StreamOpen(MaxData loData, string lsDataName);
 
         /// <summary>
-        /// Removes stream from storage.
+        /// Deletes a single field in a data element from storage
         /// </summary>
-        /// <param name="loData">The data index for the object</param>
-        /// <param name="lsKey">Data element name to remove</param>
-        /// <returns>true if successful.</returns>
-        bool StreamDelete(MaxData loData, string lsKey);
+        /// <param name="loData">The data element</param>
+        /// <param name="lsDataName">Name of data element to delete</param>
+        /// <returns>Flag based status code indicating level of success.</returns>
+        int StreamDelete(MaxData loData, string lsDataName);
 
         /// <summary>
         /// Gets the Url of a saved stream.
         /// </summary>
-        /// <param name="loData">The data index for the object</param>
-        /// <param name="lsKey">Data element name</param>
+        /// <param name="loData">The data element</param>
+        /// <param name="lsDataName">Name of data element to delete</param>
         /// <returns>Url of stream if one can be provided.</returns>
-        string GetStreamUrl(MaxData loData, string lsKey);
+        string GetStreamUrl(MaxData loData, string lsDataName);
     }
 }
