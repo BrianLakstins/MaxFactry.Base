@@ -29,6 +29,7 @@
 // <changelog>
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/22/2024" author="Brian A. Lakstins" description="Initial creation.  Based on MaxStorageWriteRepository.">
+// <change date="5/21/2025" author="Brian A. Lakstins" description="Remove stream handling.  Return flag based status codes. Always handle a list.">
 // </changelog>
 #endregion
 
@@ -73,65 +74,127 @@ namespace MaxFactry.Base.DataLayer
             }
         }
 
-		/// <summary>
-		/// Inserts a new element of the specified type
-		/// </summary>
-		/// <param name="loData">The data index for the object</param>
-		/// <returns>true if inserted</returns>
+        /// <summary>
+        /// Inserts a new list of elements
+        /// </summary>
+        /// <param name="loDataList">The list of elements</param>
+        /// <returns>Flag based status code indicating level of success.</returns>
+        public static int Insert(MaxDataList loDataList)
+        {
+            int lnR = 0;
+            if (loDataList.Count > 0)
+            {
+                IMaxBaseWriteRepositoryProvider loProvider = (IMaxBaseWriteRepositoryProvider)Instance.GetRepositoryProvider(loDataList[0]);
+                lnR = loProvider.Insert(loDataList);
+            }
+            else
+            {
+                lnR |= 2;
+            }
+
+            return lnR;
+        }
+
+        /// <summary>
+        /// Inserts a new element
+        /// </summary>
+        /// <param name="loData">The element data</param>
+        /// <returns>true if success and false if any issues</returns>
         public static bool Insert(MaxData loData)
-		{
-            loData.SetChanged();
-            IMaxBaseWriteRepositoryProvider loProvider = (IMaxBaseWriteRepositoryProvider)Instance.GetRepositoryProvider(loData);
-            return loProvider.Insert(loData);
+        {
+            MaxDataList loDataList = new MaxDataList(loData.DataModel);
+            loDataList.Add(loData);
+            int lnReturn = Insert(loDataList);
+            if (lnReturn == 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
-		/// <summary>
-		/// Updates an element of the specified type
-		/// </summary>
-		/// <param name="loData">The data index for the object</param>
-		/// <returns>true if updated element</returns>
+        /// <summary>
+        /// Updates a list of elements
+        /// </summary>
+        /// <param name="loDataList">The list of elements</param>
+        /// <returns>Flag based status code indicating level of success.</returns>
+        public static int Update(MaxDataList loDataList)
+        {
+            int lnR = 0;
+            if (loDataList.Count > 0)
+            {
+                IMaxBaseWriteRepositoryProvider loProvider = (IMaxBaseWriteRepositoryProvider)Instance.GetRepositoryProvider(loDataList[0]);
+                lnR = loProvider.Update(loDataList);
+            }
+            else
+            {
+                lnR |= 2;
+            }
+
+            return lnR;
+        }
+
+        /// <summary>
+        /// Updates an element
+        /// </summary>
+        /// <param name="loData">The element data</param>
+        /// <returns>true if success and false if any issues</returns>
         public static bool Update(MaxData loData)
-		{
-            IMaxBaseWriteRepositoryProvider loProvider = (IMaxBaseWriteRepositoryProvider)Instance.GetRepositoryProvider(loData);
-            return loProvider.Update(loData);
+        {
+            MaxDataList loDataList = new MaxDataList(loData.DataModel);
+            loDataList.Add(loData);
+            int lnReturn = Update(loDataList);
+            if (lnReturn == 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
-		/// <summary>
-		/// Deletes an element of the specified type
-		/// </summary>
-		/// <param name="loData">The data index for the object</param>
-		/// <returns>true if deleted.  False if cannot be deleted.</returns>
+        /// <summary>
+        /// Deletes a list of elements
+        /// </summary>
+        /// <param name="loDataList">The list of elements</param>
+        /// <returns>Flag based status code indicating level of success.</returns>
+        public static int Delete(MaxDataList loDataList)
+        {
+            int lnR = 0;
+            if (loDataList.Count > 0)
+            {
+                IMaxBaseWriteRepositoryProvider loProvider = (IMaxBaseWriteRepositoryProvider)Instance.GetRepositoryProvider(loDataList[0]);
+                lnR = loProvider.Delete(loDataList);
+            }
+            else
+            {
+                lnR |= 2;
+            }
+
+            return lnR;
+        }
+
+        /// <summary>
+        /// Deletes an element
+        /// </summary>
+        /// <param name="loData">The element data</param>
+        /// <returns>true if success and false if any issues</returns>
         public static bool Delete(MaxData loData)
-		{
-            IMaxBaseWriteRepositoryProvider loProvider = (IMaxBaseWriteRepositoryProvider)Instance.GetRepositoryProvider(loData);
-            bool lbR = loProvider.Delete(loData);
-            return lbR;
-        }
-
-        /// <summary>
-        /// Saves stream data to storage.
-        /// </summary>
-        /// <param name="loData">The data index for the object</param>
-        /// <param name="lsKey">Data element name to write</param>
-        /// <returns>Number of bytes written to storage.</returns>
-        public static bool StreamSave(MaxData loData, string lsKey)
         {
-            IMaxBaseWriteRepositoryProvider loProvider = (IMaxBaseWriteRepositoryProvider)Instance.GetRepositoryProvider(loData);
-            bool lbR = loProvider.StreamSave(loData, lsKey);
-            return lbR;
-        }
-
-        /// <summary>
-        /// Removes stream from storage.
-        /// </summary>
-        /// <param name="loData">The data index for the object</param>
-        /// <param name="lsKey">Data element name to remove</param>
-        /// <returns>true if successful.</returns>
-        public static bool StreamDelete(MaxData loData, string lsKey)
-        {
-            IMaxBaseWriteRepositoryProvider loProvider = (IMaxBaseWriteRepositoryProvider)Instance.GetRepositoryProvider(loData);
-            bool lbR = loProvider.StreamDelete(loData, lsKey);
-            return lbR;
+            MaxDataList loDataList = new MaxDataList();
+            loDataList.Add(loData);
+            int lnReturn = Delete(loDataList);
+            if (lnReturn == 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         public override IMaxBaseReadRepositoryProvider GetRepositoryProvider(MaxData loData)

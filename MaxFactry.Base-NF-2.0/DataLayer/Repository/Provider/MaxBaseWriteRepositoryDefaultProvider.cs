@@ -31,6 +31,7 @@
 // <change date="3/22/2024" author="Brian A. Lakstins" description="Initial creation.  Based on MaxStorageWriteRepositoryDefaultProvider.">
 // <change date="3/24/2024" author="Brian A. Lakstins" description="Updated for changes namespaces">
 // <change date="3/25/2024" author="Brian A. Lakstins" description="Use DataContextLibrary">
+// <change date="5/21/2025" author="Brian A. Lakstins" description="Remove stream handling.  Return flag based status codes. Always handle a list.">
 // </changelog>
 #endregion
 
@@ -44,64 +45,37 @@ namespace MaxFactry.Base.DataLayer.Provider
     /// </summary>
     public class MaxBaseWriteRepositoryDefaultProvider : MaxBaseReadRepositoryDefaultProvider, IMaxBaseWriteRepositoryProvider
 	{
-        private static object _oLock = new object();
-
         /// <summary>
-        /// Inserts a new data element.
+        /// Inserts a new list of elements
         /// </summary>
-        /// <param name="loData">The data for the element.</param>
-        /// <returns>true if inserted.</returns>
-        public virtual bool Insert(MaxData loData)
+        /// <param name="loDataList">The list of elements</param>
+        /// <returns>Flag based status code indicating level of success.</returns>
+        public virtual int Insert(MaxDataList loDataList)
         {
-            MaxDataList loDataList = new MaxDataList(loData.DataModel);
-            loDataList.Add(loData);
-            return MaxDataContextLibrary.Insert(this, loDataList);
-        }
-
-		/// <summary>
-		/// Updates an existing data element.
-		/// </summary>
-		/// <param name="loData">the data for the element.</param>
-		/// <returns>true if updated.</returns>
-        public virtual bool Update(MaxData loData)
-        {
-            MaxDataList loDataList = new MaxDataList(loData.DataModel);
-            loDataList.Add(loData);
-            return MaxDataContextLibrary.Update(this, loDataList);
-        }
-
-		/// <summary>
-		/// Deletes an existing data element.
-		/// </summary>
-		/// <param name="loData">the data for the element.</param>
-		/// <returns>true if deleted.</returns>
-        public virtual bool Delete(MaxData loData)
-        {
-            MaxDataList loDataList = new MaxDataList(loData.DataModel);
-            loDataList.Add(loData);
-            return MaxDataContextLibrary.Delete(this, loDataList);
+            int lnR = MaxDataContextLibrary.Insert(this, loDataList);
+            return lnR;
         }
 
         /// <summary>
-        /// Writes stream data to storage.
+        /// Updates a list of elements
         /// </summary>
-        /// <param name="loData">The data index for the object</param>
-        /// <param name="lsKey">Data element name to write</param>
-        /// <returns>Number of bytes written to storage.</returns>
-        public virtual bool StreamSave(MaxData loData, string lsKey)
+        /// <param name="loDataList">The list of elements</param>
+        /// <returns>Flag based status code indicating level of success.</returns>
+		public virtual int Update(MaxDataList loDataList)
         {
-            return MaxDataContextLibrary.StreamSave(this, loData, lsKey);
+            int lnR = MaxDataContextLibrary.Update(this, loDataList);
+            return lnR;
         }
 
         /// <summary>
-        /// Removes stream from storage.
+        /// Deletes a list of elements
         /// </summary>
-        /// <param name="loData">The data index for the object</param>
-        /// <param name="lsKey">Data element name to remove</param>
-        /// <returns>true if successful.</returns>
-        public virtual bool StreamDelete(MaxData loData, string lsKey)
+        /// <param name="loDataList">The list of elements</param>
+        /// <returns>Flag based status code indicating level of success.</returns>
+		public virtual int Delete(MaxDataList loDataList)
         {
-            return MaxDataContextLibrary.StreamDelete(this, loData, lsKey);
+            int lnR = MaxDataContextLibrary.Delete(this, loDataList);
+            return lnR;
         }
     }
 }
