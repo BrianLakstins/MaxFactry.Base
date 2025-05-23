@@ -42,6 +42,7 @@
 // <change date="3/22/2024" author="Brian A. Lakstins" description="Updated repository reference.">
 // <change date="3/24/2024" author="Brian A. Lakstins" description="Updated for changes namespaces">
 // <change date="3/30/2024" author="Brian A. Lakstins" description="Get file indicated in FromFileName when saving.">
+// <change date="5/23/2025" author="Brian A. Lakstins" description="Use StreamLibrary directly.">
 // </changelog>
 #endregion
 
@@ -211,7 +212,7 @@ namespace MaxFactry.Base.BusinessLayer
 
         public string GetContentUrl()
         {
-            return MaxBaseIdRepository.GetStreamUrl(this.Data, this.MaxBaseIdFileDataModel.Content);
+            return MaxStreamLibrary.GetStreamUrl(this.Data, this.MaxBaseIdFileDataModel.Content);
         }
 
         /// <summary>

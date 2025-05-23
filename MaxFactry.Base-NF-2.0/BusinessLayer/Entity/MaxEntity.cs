@@ -86,6 +86,7 @@
 // <change date="4/9/2025" author="Brian A. Lakstins" description="Add and integrate SetInitial method for setting initial values before inserting.">
 // <change date="4/14/2025" author="Brian A. Lakstins" description="Only update streams when date has changed.">
 // <change date="5/12/2025" author="Brian A. Lakstins" description="Make sure Guid type for DataKey filter is a Guid object.">
+// <change date="5/23/2025" author="Brian A. Lakstins" description="Remove stream handling.  Should be part of DataContextLibraryProvider  Add multi record insert method.">
 // </changelog>
 #endregion
 
@@ -474,14 +475,6 @@ namespace MaxFactry.Base.BusinessLayer
                 lbR = MaxBaseWriteRepository.Delete(this.Data);
                 if (lbR)
                 {
-                    foreach (string lsDataName in this.Data.DataModel.DataNameList)
-                    {
-                        if (this.Data.DataModel.GetValueType(lsDataName).Equals(typeof(Stream)))
-                        {
-                            MaxBaseWriteRepository.StreamDelete(this.Data, lsDataName);
-                        }
-                    }
-
                     string lsCacheKey = this.GetCacheKey() + "LoadAll*";
                     MaxCacheRepository.Remove(this.GetType(), lsCacheKey);
                     OnDeleteAfter();
@@ -1229,18 +1222,24 @@ namespace MaxFactry.Base.BusinessLayer
                 if (laDataKey.Length == this.Data.DataModel.DataNameKeyList.Length)
                 {
                     loDataQuery.StartGroup();
+                    bool lbValueFound = false;
                     for (int lnD = 0; lnD < this.Data.DataModel.DataNameKeyList.Length; lnD++)
                     {
                         object loValue = laDataKey[lnD];
-                        if (this.Data.DataModel.GetValueType(this.Data.DataModel.DataNameKeyList[lnD]) == typeof(Guid))
+                        if (null != loValue)
                         {
-                            loValue = Guid.Parse(loValue.ToString());
-                        }
+                            if (lbValueFound)
+                            {
+                                loDataQuery.AddAnd();
+                            }
 
-                        loDataQuery.AddFilter(this.Data.DataModel.DataNameKeyList[lnD], "=", loValue);
-                        if (lnD < this.Data.DataModel.DataNameKeyList.Length - 1)
-                        {
-                            loDataQuery.AddAnd();
+                            if (this.Data.DataModel.GetValueType(this.Data.DataModel.DataNameKeyList[lnD]) == typeof(Guid) && loValue is string)
+                            {
+                                loValue = new Guid((string)loValue);
+                            }
+
+                            loDataQuery.AddFilter(this.Data.DataModel.DataNameKeyList[lnD], "=", loValue);
+                            lbValueFound = true;
                         }
                     }
 
@@ -1390,24 +1389,21 @@ namespace MaxFactry.Base.BusinessLayer
                 {
                     try
                     {
-                        if (MaxBaseWriteRepository.StreamSave(this.Data, lsDataName))
+                        //// Clear Cache
+                        string[] laStreamPath = this.Data.GetStreamPath();
+                        string lsStreamPath = laStreamPath[0];
+                        for (int lnP = 1; lnP < laStreamPath.Length; lnP++)
                         {
-                            //// Clear Cache
-                            string[] laStreamPath = this.Data.GetStreamPath();
-                            string lsStreamPath = laStreamPath[0];
-                            for (int lnP = 1; lnP < laStreamPath.Length; lnP++)
-                            {
-                                lsStreamPath += "/" + laStreamPath[lnP];
-                            }
-
-                            lsStreamPath += "/" + lsDataName;
-                            string lsCacheDataKey = this.GetCacheKey() + "GetString/" + lsStreamPath;
-                            MaxCacheRepository.Remove(this.GetType(), lsCacheDataKey);
+                            lsStreamPath += "/" + laStreamPath[lnP];
                         }
+
+                        lsStreamPath += "/" + lsDataName;
+                        string lsCacheDataKey = this.GetCacheKey() + "GetString/" + lsStreamPath;
+                        MaxCacheRepository.Remove(this.GetType(), lsCacheDataKey);
                     }
                     catch (Exception loE)
                     {
-                        MaxLogLibrary.Log(new MaxLogEntryStructure(this.GetType(), "SetProperties", MaxEnumGroup.LogError, "Saving stream for {DataName}", loE, lsDataName));
+                        MaxLogLibrary.Log(new MaxLogEntryStructure(this.GetType(), "SetProperties", MaxEnumGroup.LogError, "Clearing cache stream for {DataName}", loE, lsDataName));
                     }
                 }
             }
@@ -1554,7 +1550,7 @@ namespace MaxFactry.Base.BusinessLayer
                 loValue = MaxCacheRepository.Get(this.GetType(), lsCacheDataKey, typeof(string)) as string;
                 if (null == loValue)
                 {
-                    Stream loStream = MaxBaseReadRepository.StreamOpen(this.Data, lsDataName);
+                    Stream loStream = MaxStreamLibrary.StreamOpen(this.Data, lsDataName);
                     try
                     {
                         if (null != loStream)
@@ -1710,7 +1706,7 @@ namespace MaxFactry.Base.BusinessLayer
 
             if (null == loR || !loR.CanRead)
             {
-                loR = MaxBaseReadRepository.StreamOpen(this.Data, lsDataName);
+                loR = MaxStreamLibrary.StreamOpen(this.Data, lsDataName);
                 if (null != loR)
                 {
                     this.Data.Set(lsDataName, loR);
@@ -1742,7 +1738,7 @@ namespace MaxFactry.Base.BusinessLayer
 
                 if (lbIsMatch)
                 {
-                    loValue = MaxBaseReadRepository.StreamOpen(this.Data, lsDataName);
+                    loValue = MaxStreamLibrary.StreamOpen(this.Data, lsDataName);
                 }
             }
 
@@ -1876,6 +1872,36 @@ namespace MaxFactry.Base.BusinessLayer
             {
                 this.Set(lsDataName, loValue);
             }
+        }
+
+        public static int Insert(MaxEntityList loEntityList)
+        {
+            int lnR = 0;
+            try
+            {
+                if (loEntityList.Count > 0)
+                {
+                    MaxData loData = loEntityList[0].GetData();
+                    MaxDataList loDataList = new MaxDataList(loData.DataModel);
+                    for (int lnE = 0; lnE < loEntityList.Count; lnE++)
+                    {
+                        MaxEntity loEntity = loEntityList[lnE];
+                        loEntity.SetInitial();
+                        loEntity.SetProperties();
+                        loData = loEntity.GetData();
+                        loDataList.Add(loData);
+                    }
+
+                    lnR = MaxBaseWriteRepository.Insert(loDataList);
+                }
+            }
+            catch (Exception loE)
+            {
+                MaxLogLibrary.Log(new MaxLogEntryStructure(typeof(MaxEntity), "Insert", MaxEnumGroup.LogError, "Error inserting List: {Message}", loE.Message));
+                lnR = lnR |= 1;
+            }
+
+            return lnR;
         }
     }
 }
