@@ -86,7 +86,7 @@ namespace MaxFactry.Base.DataLayer
         /// </summary>
         public MaxBaseDataModel() : base()
         {
-            this.AddKey(this.StorageKey, typeof(MaxShortString));
+            this.AddStorageKey(this.StorageKey, typeof(MaxShortString));
             this.AddType(this.CreatedDate, typeof(DateTime));
             this.AddType(this.LastUpdateDate, typeof(DateTime));
             this.AddType(this.IsActive, typeof(bool));

@@ -53,6 +53,10 @@ namespace MaxFactry.Base.BusinessLayer
     {
         private string[] _aBaseKeyPropertyNameList = null;
 
+        private static object _oLock = new object();
+
+        private static long _nUniqueCreatedDateLast = 0;
+
         /// <summary>
         /// Initializes a new instance of the MaxBaseIdEntity class
         /// </summary>
@@ -338,6 +342,27 @@ namespace MaxFactry.Base.BusinessLayer
         }
 
         /// <summary>
+        /// Gets a unique time to use for a log entry so that no two events are logged at exactly the same time.
+        /// </summary>
+        /// <returns></returns>
+        private static DateTime GetUniqueCreatedDate()
+        {
+            DateTime ldR = DateTime.MinValue;
+            lock (_oLock)
+            {
+                ldR = DateTime.UtcNow;
+                if (ldR.Ticks <= _nUniqueCreatedDateLast)
+                {
+                    ldR = new DateTime(_nUniqueCreatedDateLast + 1, DateTimeKind.Utc);
+                }
+
+                _nUniqueCreatedDateLast = ldR.Ticks;
+            }
+
+            return ldR;
+        }
+
+        /// <summary>
         /// Sets the initial values for the entity
         /// </summary>
         protected override void SetInitial()
@@ -350,7 +375,7 @@ namespace MaxFactry.Base.BusinessLayer
 
             if (this.Data.DataModel.IsStored(this.MaxBaseDataModel.CreatedDate))
             {
-                this.Set(this.MaxBaseDataModel.CreatedDate, DateTime.UtcNow);
+                this.Set(this.MaxBaseDataModel.CreatedDate, GetUniqueCreatedDate());
             }
         }
 

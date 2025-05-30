@@ -70,8 +70,8 @@ namespace MaxFactry.Base.DataLayer
 		{
             this.RepositoryProviderType = typeof(MaxFactry.Base.DataLayer.Provider.MaxBaseIdIndexRepositoryDefaultProvider);
             this.RepositoryType = typeof(MaxBaseIdIndexRepository);
-            this.AddKey(this.IndexId, typeof(Guid));
-            this.AddKey(this.Name, typeof(MaxShortString));
+            this.AddDataKey(this.IndexId, typeof(Guid));
+            this.AddDataKey(this.Name, typeof(MaxShortString));
             this.AddType(this.Value, typeof(string));
 		}
 	}

@@ -57,7 +57,7 @@ namespace MaxFactry.Base.DataLayer
 		public MaxBaseRelationDateDataModel()
 			: base()
 		{
-            this.AddKey(this.StartDate, typeof(DateTime));
+            this.AddDataKey(this.StartDate, typeof(DateTime));
             this.AddNullable(this.EndDate, typeof(DateTime));
         }
 	}

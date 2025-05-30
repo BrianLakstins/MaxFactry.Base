@@ -204,7 +204,7 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
                         loCommandText.Append(" AUTOINCREMENT");
                     }
 
-                    bool lbIsAllowDBNull = loDataModel.GetAttributeSetting(lsDataName, "IsAllowDBNull");
+                    bool lbIsAllowDBNull = loDataModel.GetAttributeSetting(lsDataName, MaxDataModel.AttributeIsAllowDBNull);
 
                     if (!lbIsAllowDBNull)
                     {
@@ -374,7 +374,7 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
 				{
                     if (loData.DataModel.IsStored(lsDataName))
                     {
-                        if (loDataList.DataModel.IsPrimaryKey(lsDataName))
+                        if (loDataList.DataModel.GetAttributeSetting(lsDataName, MaxDataModel.AttributeIsDataKey))
                         {
                             if (0 == loSqlWhereClause.Length)
                             {
@@ -435,21 +435,18 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
 			for (int lnL = 0; lnL < loDataList.Count; lnL++)
 			{
 				MaxData loData = loDataList[lnL];
-				foreach (string lsDataName in loDataList.DataModel.DataNameList)
+				foreach (string lsDataName in loDataList.DataModel.DataNameKeyList)
 				{
-					if (loData.DataModel.IsStored(lsDataName) && loDataList.DataModel.IsPrimaryKey(lsDataName))
+					if (0 == loSqlDeleteClause.Length)
 					{
-						if (0 == loSqlDeleteClause.Length)
-						{
-							loSqlDeleteClause.Append(string.Concat("DELETE FROM [", loDataList.DataStorageName, "] WHERE "));
-						}
-						else
-						{
-							loSqlDeleteClause.Append(" AND ");
-						}
-
-						loSqlDeleteClause.Append(string.Concat("[", lsDataName, "] = @", lsDataName, "$", lnL.ToString()));
+						loSqlDeleteClause.Append(string.Concat("DELETE FROM [", loDataList.DataStorageName, "] WHERE "));
 					}
+					else
+					{
+						loSqlDeleteClause.Append(" AND ");
+					}
+
+					loSqlDeleteClause.Append(string.Concat("[", lsDataName, "] = @", lsDataName, "$", lnL.ToString()));
 				}
 			}
 

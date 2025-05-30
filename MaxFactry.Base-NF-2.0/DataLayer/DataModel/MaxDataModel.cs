@@ -60,7 +60,9 @@ namespace MaxFactry.Base.DataLayer
     /// </summary>
     public class MaxDataModel
     {
-        public const string AttributeIsPrimaryKey = "IsPrimaryKey";
+        public const string AttributeIsStorageKey = "IsStorageKey";
+
+        public const string AttributeIsDataKey = "IsDataKey";
 
         public const string AttributeIsAllowDBNull = "IsAllowDBNull";
         
@@ -283,7 +285,7 @@ namespace MaxFactry.Base.DataLayer
                     MaxIndex loR = new MaxIndex();
                     foreach (string lsDataName in this.DataNameList)
                     {
-                        if (this.IsPrimaryKey(lsDataName))
+                        if (this.GetAttributeSetting(lsDataName, AttributeIsDataKey))
                         {
                             loR.Add(lsDataName, true);
                         }
@@ -444,16 +446,6 @@ namespace MaxFactry.Base.DataLayer
         }
 
         /// <summary>
-        /// Checks to see if this data name is part of the primary key
-        /// </summary>
-        /// <param name="lsDataName"></param>
-        /// <returns></returns>
-        public bool IsPrimaryKey(string lsDataName)
-        {
-            return this.GetAttributeSetting(lsDataName, AttributeIsPrimaryKey);
-        }
-
-        /// <summary>
         /// Maps data that does not already match the data model to the data model
         /// </summary>
         /// <param name="loIndex">Data to map</param>
@@ -509,12 +501,30 @@ namespace MaxFactry.Base.DataLayer
         /// <param name="lsDataName">Name of the data name</param>
         /// <param name="loType">Type of the value matching the data name</param>
         /// <returns>true if added.  False if already exists.</returns>
-        protected bool AddKey(string lsDataName, Type loType)
+        protected bool AddDataKey(string lsDataName, Type loType)
         {
             if (!this._oDataNameIndex.Contains(lsDataName))
             {
                 this._oDataNameIndex.Add(lsDataName, loType);
-                this.AddAttribute(lsDataName, AttributeIsPrimaryKey, "true");
+                this.AddAttribute(lsDataName, AttributeIsDataKey, "true");
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Adds a type to the definition
+        /// </summary>
+        /// <param name="lsDataName">Name of the data name</param>
+        /// <param name="loType">Type of the value matching the data name</param>
+        /// <returns>true if added.  False if already exists.</returns>
+        protected bool AddStorageKey(string lsDataName, Type loType)
+        {
+            if (!this._oDataNameIndex.Contains(lsDataName))
+            {
+                this._oDataNameIndex.Add(lsDataName, loType);
+                this.AddAttribute(lsDataName, AttributeIsStorageKey, "true");
                 return true;
             }
 

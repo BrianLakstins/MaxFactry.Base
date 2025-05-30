@@ -65,7 +65,7 @@ namespace MaxFactry.Base.DataLayer
         public MaxIdStringDataModel()
             : base()
         {
-            this.AddKey(this.Id, typeof(MaxShortString));
+            this.AddDataKey(this.Id, typeof(MaxShortString));
             this.AddNullable(this.AlternateId, typeof(MaxShortString));
             this.AddType(this.CreatedDate, typeof(DateTime));
         }

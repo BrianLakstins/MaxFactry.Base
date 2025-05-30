@@ -71,8 +71,8 @@ namespace MaxFactry.Base.DataLayer
         public MaxBaseRelationDataModel()
 			: base()
 		{
-            this.AddKey(this.ParentId, typeof(Guid));
-            this.AddKey(this.ChildId, typeof(Guid));
+            this.AddDataKey(this.ParentId, typeof(Guid));
+            this.AddDataKey(this.ChildId, typeof(Guid));
             this.AddNullable(this.Name, typeof(string));
             this.AddNullable(this.RelativeOrder, typeof(int));
             this.AddNullable(this.RelationType, typeof(MaxShortString));

@@ -158,22 +158,6 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
                 lnEnd = lnStart + lnPageSize;
             }
 
-            List<string> loPrimaryKeyList = new List<string>();
-            foreach (string lsDataName in loData.DataModel.DataNameList)
-            {
-                if (loData.DataModel.IsStored(lsDataName))
-                {
-                    bool lbIsPrimaryKey = loDataList.DataModel.GetAttributeSetting(lsDataName, "IsPrimaryKey");
-                    if (lbIsPrimaryKey)
-                    {
-                        if (null != loData.Get(lsDataName))
-                        {
-                            loPrimaryKeyList.Add(lsDataName);
-                        }
-                    }
-                }
-            }
-
             object[] laDataQuery = loDataQuery.GetQuery();
             string lsDataQuery = string.Empty;
             if (laDataQuery.Length > 0)
@@ -208,16 +192,17 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
             foreach (DataRowView loRow in loView)
             {
                 bool lbIsMatch = true;
-                foreach (string lsKey in loPrimaryKeyList)
+                //// Checking for matching row based on Data Key
+                foreach (string lsDataName in loData.DataModel.DataNameKeyList)
                 {
-                    if (loData.DataModel.GetValueType(lsKey) == typeof(Guid))
+                    if (loData.DataModel.GetValueType(lsDataName) == typeof(Guid))
                     {
-                        if ((Guid)loRow[lsKey] != MaxConvertLibrary.ConvertToGuid(loData.DataModel.GetType(), loData.Get(lsKey)))
+                        if ((Guid)loRow[lsDataName] != MaxConvertLibrary.ConvertToGuid(loData.DataModel.GetType(), loData.Get(lsDataName)))
                         {
                             lbIsMatch = false;
                         }
                     }
-                    else if (loRow[lsKey] != loData.Get(lsKey))
+                    else if (loRow[lsDataName] != loData.Get(lsDataName))
                     {
                         lbIsMatch = false;
                     }
@@ -352,26 +337,10 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
                         {
                             this.CreateTable(loData);
                             DataSet loDataSet = this.GetDataSet(loData);
-                            List<string> loPrimaryKeyList = new List<string>();
-                            foreach (string lsDataName in loDataList.DataModel.DataNameList)
-                            {
-                                if (loDataList.DataModel.IsStored(lsDataName))
-                                {
-                                    bool lbIsPrimaryKey = loDataList.DataModel.GetAttributeSetting(lsDataName, "IsPrimaryKey");
-                                    if (lbIsPrimaryKey)
-                                    {
-                                        if (null != loData.Get(lsDataName))
-                                        {
-                                            loPrimaryKeyList.Add(lsDataName);
-                                        }
-                                    }
-                                }
-                            }
-
                             foreach (DataRow loRow in loDataSet.Tables[loData.DataModel.DataStorageName].Rows)
                             {
                                 bool lbIsMatch = true;
-                                foreach (string lsKey in loPrimaryKeyList)
+                                foreach (string lsKey in loData.DataModel.DataNameKeyList)
                                 {
                                     if (loData.DataModel.GetValueType(lsKey) == typeof(Guid))
                                     {
@@ -565,12 +534,12 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
                             }
 
                             DataColumn loColumn = new DataColumn(lsColumName, loType);
-                            if (loData.DataModel.GetAttributeSetting(lsColumName, "IsAllowDBNull"))
+                            if (loData.DataModel.GetAttributeSetting(lsColumName, MaxDataModel.AttributeIsAllowDBNull))
                             {
                                 loColumn.AllowDBNull = true;
                             }
 
-                            if (loData.DataModel.GetAttributeSetting(lsColumName, "IsPrimaryKey"))
+                            if (loData.DataModel.GetAttributeSetting(lsColumName, MaxDataModel.AttributeIsDataKey))
                             {
                                 loPrimaryKeyList.Add(loColumn);
                             }

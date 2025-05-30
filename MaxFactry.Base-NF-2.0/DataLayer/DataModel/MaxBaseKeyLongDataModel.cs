@@ -53,7 +53,7 @@ namespace MaxFactry.Base.DataLayer
         public MaxBaseKeyLongDataModel()
             : base()
         {
-            this.AddKey(this.Id, typeof(long));
+            this.AddDataKey(this.Id, typeof(long));
         }
 
         public override string[] GetStreamPath(MaxData loData)

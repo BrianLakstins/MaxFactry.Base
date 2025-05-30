@@ -54,7 +54,7 @@ namespace MaxFactry.Base.DataLayer
         public MaxBaseKeyStringDataModel()
             : base()
         {
-            this.AddKey(this.Id, typeof(MaxShortString));
+            this.AddDataKey(this.Id, typeof(MaxShortString));
         }
 
         public override string[] GetStreamPath(MaxData loData)
