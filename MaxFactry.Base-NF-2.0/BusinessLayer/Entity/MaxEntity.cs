@@ -87,7 +87,8 @@
 // <change date="4/14/2025" author="Brian A. Lakstins" description="Only update streams when date has changed.">
 // <change date="5/12/2025" author="Brian A. Lakstins" description="Make sure Guid type for DataKey filter is a Guid object.">
 // <change date="5/23/2025" author="Brian A. Lakstins" description="Remove stream handling.  Should be part of DataContextLibraryProvider  Add multi record insert method.">
-// <change date="6/3/2025" author="Brian A. Lakstins" description="Fix LoadAll methods to not include any key filtering data. Add method to define default DataQuery. ">
+// <change date="6/3/2025" author="Brian A. Lakstins" description="Fix LoadAll methods to not include any key filtering data. Add method to define default DataQuery.">
+// <change date="6/3/2025" author="Brian A. Lakstins" description="Clear changed data after successful insert.">
 // </changelog>
 #endregion
 
@@ -341,6 +342,7 @@ namespace MaxFactry.Base.BusinessLayer
 
             if (lbR)
             {
+                this.Data.ClearChanged();
                 string lsCacheKey = this.GetCacheKey() + "LoadByKey/" + this.DataKey;
                 MaxCacheRepository.Set(this.GetType(), lsCacheKey, this.Data);
                 lsCacheKey = this.GetCacheKey() + "LoadAll*";
