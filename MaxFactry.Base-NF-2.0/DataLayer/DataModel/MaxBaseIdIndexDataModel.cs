@@ -34,6 +34,7 @@
 // <change date="12/21/2016" author="Brian A. Lakstins" description="Updated to use AddKey method.  Added override for GetPrimaryKeySuffix.">
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/22/2024" author="Brian A. Lakstins" description="Remove unused method.">
+// <change date="6/3/2025" author="Brian A. Lakstins" description="Update for DataKey and PartitionKey">
 // </changelog>
 #endregion
 
@@ -42,10 +43,10 @@ namespace MaxFactry.Base.DataLayer
 	using System;
     using MaxFactry.Base.DataLayer;
 
-	/// <summary>
-	/// Defines base data model for hash table like data with a unique identifier
-	/// </summary>
-    public abstract class MaxBaseIdIndexDataModel : MaxBaseIdDataModel
+    /// <summary>
+    /// Defines base data model for a name/value pair that is related to other data by IndexId
+    /// </summary>
+    public abstract class MaxBaseIdIndexDataModel : MaxBaseDataModel
 	{
         /// <summary>
         /// IndexId for the Index
@@ -68,10 +69,9 @@ namespace MaxFactry.Base.DataLayer
         public MaxBaseIdIndexDataModel()
             : base()
 		{
-            this.RepositoryProviderType = typeof(MaxFactry.Base.DataLayer.Provider.MaxBaseIdIndexRepositoryDefaultProvider);
-            this.RepositoryType = typeof(MaxBaseIdIndexRepository);
-            this.AddKey(this.IndexId, typeof(Guid));
-            this.AddKey(this.Name, typeof(MaxShortString));
+            this.AddDataKey(this.IndexId, typeof(Guid));
+            this.AddAttribute(this.IndexId, AttributeIsStorageKey, "true");
+            this.AddDataKey(this.Name, typeof(MaxShortString));
             this.AddType(this.Value, typeof(string));
 		}
 	}

@@ -32,18 +32,18 @@
 // <change date="3/24/2024" author="Brian A. Lakstins" description="Updated for changes namespaces">
 // <change date="3/25/2024" author="Brian A. Lakstins" description="Removing passing Total">
 // <change date="6/3/2025" author="Brian A. Lakstins" description="Remove filtering of IsDeleted and StorageKey to be included in a different way.">
+// <change date="6/3/2025" author="Brian A. Lakstins" description="Remove abstract to the Provider can be used.">
 // </changelog>
 #endregion
 
 namespace MaxFactry.Base.DataLayer.Provider
 {
     using MaxFactry.Base.DataLayer;
-    using MaxFactry.Base.DataLayer.Library;
 
     /// <summary>
     /// Provider for MaxBaseRepository
     /// </summary>
-    public abstract class MaxBaseRepositoryDefaultProvider : MaxBaseWriteRepositoryDefaultProvider, IMaxBaseRepositoryProvider
+    public class MaxBaseRepositoryDefaultProvider : MaxBaseWriteRepositoryDefaultProvider, IMaxBaseRepositoryProvider
 	{
 	}
 }

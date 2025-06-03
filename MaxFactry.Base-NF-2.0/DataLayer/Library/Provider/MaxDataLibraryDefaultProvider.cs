@@ -57,6 +57,7 @@
 // <change date="3/24/2024" author="Brian A. Lakstins" description="Update to namespace.">
 // <change date="3/25/2024" author="Brian A. Lakstins" description="Remove handling of DataContext">
 // <change date="6/3/2025" author="Brian A. Lakstins" description="Get StorageKey from DataModel definition">
+// <change date="6/3/2025" author="Brian A. Lakstins" description="Update getting StorageKey">
 // </changelog>
 #endregion
 
@@ -118,16 +119,36 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
         public virtual string GetStorageKey(MaxData loData)
         {
             string lsR = this.GetStorageKeyFromProcess();
-            string lsDataStorageKey = loData.DataModel.GetStorageKey(loData);
-            if (!string.IsNullOrEmpty(lsDataStorageKey))
-            {
-                lsR = lsDataStorageKey;
-            }
-
             if (null == lsR || lsR.Length.Equals(0))
             {
                 lsR = this.GetStorageKeyFromConfiguration();
             }
+
+            if (loData.DataModel.HasStorageKey)
+            {
+                if (loData.DataModel is MaxBaseDataModel && !string.IsNullOrEmpty(lsR))
+                {
+                    MaxBaseDataModel loDataModel = loData.DataModel as MaxBaseDataModel;
+                    foreach (string lsDataName in loDataModel.DataNameList)
+                    {
+                        if (loDataModel.IsStored(lsDataName) &&
+                            loDataModel.GetAttributeSetting(lsDataName, MaxDataModel.AttributeIsStorageKey) &&
+                            loDataModel.StorageKey == lsDataName &&
+                            null == loData.Get(lsDataName))
+                        {
+                            loData.Set(lsDataName, lsR);
+                        }
+                    }
+                }
+
+                string lsDataStorageKey = loData.DataModel.GetStorageKey(loData);
+                if (!string.IsNullOrEmpty(lsDataStorageKey))
+                {
+                    lsR = lsDataStorageKey;
+                }
+            }
+
+
 
             if (lsR.Length == 0)
             {

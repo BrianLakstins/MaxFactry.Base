@@ -39,6 +39,7 @@
 // <change date="3/30/2024" author="Brian A. Lakstins" description="Updated for changes to MaxData.  Changed variable names to be consistent.">
 // <change date="5/21/2025" author="Brian A. Lakstins" description="Remove stream handling methods and integrate stream handling using StreamLibrary">
 // <change date="6/3/2025" author="Brian A. Lakstins" description="Have default folder configuration.  Updated to work with DataKey and StorageKey.">
+// <change date="6/3/2025" author="Brian A. Lakstins" description="Clean out separator so it works as a file name">
 // </changelog>
 #endregion
 
@@ -494,7 +495,7 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
                         Directory.CreateDirectory(this.DataSetFolder);
                     }
 
-                    string lsFile = Path.Combine(this.DataSetFolder, "DataSet-" + lsKey + ".txt");
+                    string lsFile = Path.Combine(this.DataSetFolder, "DataSet-" + lsKey.Replace(new MaxDataModel().KeySeparator, string.Empty) + ".txt");
                     File.WriteAllText(lsFile, lsText);
                 }
             }
@@ -502,7 +503,7 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
 
         private void LoadFromFile(string lsKey)
         {
-            string lsFile = Path.Combine(this.DataSetFolder, "DataSet-" + lsKey + ".txt");
+            string lsFile = Path.Combine(this.DataSetFolder, "DataSet-" + lsKey.Replace(new MaxDataModel().KeySeparator, string.Empty) + ".txt");
             if (File.Exists(lsFile))
             {
                 string lsText = File.ReadAllText(lsFile);

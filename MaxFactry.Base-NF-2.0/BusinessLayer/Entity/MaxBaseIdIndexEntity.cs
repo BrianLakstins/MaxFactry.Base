@@ -39,6 +39,7 @@
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/22/2024" author="Brian A. Lakstins" description="Updated for change to MaxData">
 // <change date="3/24/2024" author="Brian A. Lakstins" description="Updated for changes namespaces">
+// <change date="6/3/2025" author="Brian A. Lakstins" description="Update to use base methods for managing data">
 // </changelog>
 #endregion
 
@@ -51,7 +52,7 @@ namespace MaxFactry.Base.BusinessLayer
     /// <summary>
     /// Base Business Layer Entity
     /// </summary>
-    public abstract class MaxBaseIdIndexEntity : MaxBaseIdEntity
+    public abstract class MaxBaseIdIndexEntity : MaxBaseEntity
 	{
 		/// <summary>
         /// Initializes a new instance of the MaxBaseIdIndexEntity class
@@ -139,27 +140,26 @@ namespace MaxFactry.Base.BusinessLayer
         /// <param name="lsValue">Value for the parameter</param>
         public virtual void SaveValue(Guid loIndexId, string lsName, string lsValue)
         {
-            if (!Guid.Empty.Equals(loIndexId))
+            if (!Guid.Empty.Equals(loIndexId) && !string.IsNullOrEmpty(lsName))
             {
-                MaxDataList loDataList = this.SelectAllByIndexIdCache(loIndexId);
                 bool lbFound = false;
-                if (loDataList.Count > 0)
+                MaxEntityList loList = this.LoadAllActiveByIndexIdNameCache(loIndexId, lsName);
+                if (loList.Count > 0)
                 {
-                    for (int lnD = 0; lnD < loDataList.Count; lnD++)
+                    MaxBaseIdIndexEntity loEntity = loList[loList.Count - 1] as MaxBaseIdIndexEntity;
+                    if (loEntity.Value != lsValue)
                     {
-                        if (this.Load(loDataList[lnD]))
-                        {
-                            if (!this.IsDeleted && this.Name.Equals(lsName))
-                            {
-                                if (!this.IsActive || this.Value != lsValue)
-                                {
-                                    this.IsActive = true;
-                                    this.Value = lsValue;
-                                    this.Update();
-                                }
+                        loEntity.Value = lsValue;
+                        loEntity.Update();
+                    }
 
-                                lbFound = true;
-                            }
+                    if (loList.Count > 1)
+                    {
+                        for (int lnE = 0; lnE < loList.Count - 1; lnE++)
+                        {
+                            loEntity = loList[lnE] as MaxBaseIdIndexEntity;
+                            loEntity.IsActive = false;
+                            loEntity.Update();
                         }
                     }
                 }
@@ -170,6 +170,7 @@ namespace MaxFactry.Base.BusinessLayer
                     this.IndexId = loIndexId;
                     this.Name = lsName;
                     this.Value = lsValue;
+                    this.IsActive = true;
                     this.Insert();
                 }
             }
@@ -184,20 +185,20 @@ namespace MaxFactry.Base.BusinessLayer
         public virtual string GetValue(Guid loIndexId, string lsName)
         {
             string lsR = null;
-            if (!Guid.Empty.Equals(loIndexId))
+            if (!Guid.Empty.Equals(loIndexId) && !string.IsNullOrEmpty(lsName))
             {
-                MaxDataList loDataList = this.SelectAllByIndexIdCache(loIndexId);
-                if (loDataList.Count > 0)
+                MaxEntityList loList = this.LoadAllActiveByIndexIdNameCache(loIndexId, lsName);
+                if (loList.Count > 0)
                 {
-                    lsR = string.Empty;
-                    for (int lnD = 0; lnD < loDataList.Count; lnD++)
+                    MaxBaseIdIndexEntity loEntity = loList[loList.Count - 1] as MaxBaseIdIndexEntity;
+                    lsR = loEntity.Value;
+                    if (loList.Count > 1)
                     {
-                        if (this.Load(loDataList[lnD]))
+                        for (int lnE = 0; lnE < loList.Count - 1; lnE++)
                         {
-                            if (this.Name.ToLower() == lsName.ToLower())
-                            {
-                                return this.Value;
-                            }
+                            loEntity = loList[lnE] as MaxBaseIdIndexEntity;
+                            loEntity.IsActive = false;
+                            loEntity.Update();
                         }
                     }
                 }
@@ -206,23 +207,16 @@ namespace MaxFactry.Base.BusinessLayer
             return lsR;
         }
 
-        /// <summary>
-        /// Same as SelectAllByIndexId, but caches results.
-        /// </summary>
-        /// <param name="loIndexId">Id of Index to user for lookup</param>
-        /// <returns>List of matching records</returns>
-        protected MaxDataList SelectAllByIndexIdCache(Guid loIndexId)
+        protected MaxEntityList LoadAllActiveByIndexIdNameCache(Guid loIndexId, string lsName)
         {
-            this.IndexId = loIndexId;
-            string lsCacheDataKey = this.GetCacheKey() + "LoadAllByIndexId/" + loIndexId;
-            MaxDataList loDataList = MaxCacheRepository.Get(this.GetType(), lsCacheDataKey, typeof(MaxDataList)) as MaxDataList;
-            if (null == loDataList)
-            {
-                loDataList = MaxBaseIdIndexRepository.SelectAllByIndexId(this.Data, loIndexId);
-                MaxCacheRepository.Set(this.GetType(), lsCacheDataKey, loDataList);
-            }
-
-            return loDataList;
+            MaxData loData = new MaxData(this.Data.DataModel);
+            loData.Set(this.MaxBaseIdIndexDataModel.Name, lsName);
+            loData.Set(this.MaxBaseIdIndexDataModel.IndexId, loIndexId);
+            MaxDataQuery loDataQuery = this.GetDataQuery();
+            loDataQuery.StartGroup();
+            loDataQuery.AddFilter(new MaxDataFilter(this.MaxBaseDataModel.IsActive, "=", true));
+            loDataQuery.EndGroup();
+            return this.LoadAllByPageCache(loData, 0, 0, this.MaxBaseDataModel.CreatedDate, loDataQuery);
         }
 	}
 }
