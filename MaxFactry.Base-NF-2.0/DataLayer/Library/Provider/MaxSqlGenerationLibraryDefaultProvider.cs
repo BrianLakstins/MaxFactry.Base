@@ -42,6 +42,7 @@
 // <change date="8/11/2020" author="Brian A. Lakstins" description="Add default queries for SQL server for adding columns to tables">
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Updated for changes to DataModel.">
 // <change date="5/22/2025" author="Brian A. Lakstins" description="Optimize replacement of sql specific variables in generated sql statements. Review and update for consistency.">
+// <change date="6/3/2025" author="Brian A. Lakstins" description="Use static names instead of strings for attributes">
 // </changelog>
 #endregion
 
@@ -204,7 +205,7 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
                         loCommandText.Append(" AUTOINCREMENT");
                     }
 
-                    bool lbIsAllowDBNull = loDataModel.GetAttributeSetting(lsDataName, "IsAllowDBNull");
+                    bool lbIsAllowDBNull = loDataModel.GetAttributeSetting(lsDataName, MaxDataModel.AttributeIsAllowDBNull);
 
                     if (!lbIsAllowDBNull)
                     {
@@ -374,7 +375,7 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
 				{
                     if (loData.DataModel.IsStored(lsDataName))
                     {
-                        if (loDataList.DataModel.IsPrimaryKey(lsDataName))
+                        if (loDataList.DataModel.GetAttributeSetting(lsDataName, MaxDataModel.AttributeIsDataKey))
                         {
                             if (0 == loSqlWhereClause.Length)
                             {
@@ -435,21 +436,18 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
 			for (int lnL = 0; lnL < loDataList.Count; lnL++)
 			{
 				MaxData loData = loDataList[lnL];
-				foreach (string lsDataName in loDataList.DataModel.DataNameList)
+				foreach (string lsDataName in loDataList.DataModel.DataNameKeyList)
 				{
-					if (loData.DataModel.IsStored(lsDataName) && loDataList.DataModel.IsPrimaryKey(lsDataName))
+					if (0 == loSqlDeleteClause.Length)
 					{
-						if (0 == loSqlDeleteClause.Length)
-						{
-							loSqlDeleteClause.Append(string.Concat("DELETE FROM [", loDataList.DataStorageName, "] WHERE "));
-						}
-						else
-						{
-							loSqlDeleteClause.Append(" AND ");
-						}
-
-						loSqlDeleteClause.Append(string.Concat("[", lsDataName, "] = @", lsDataName, "$", lnL.ToString()));
+						loSqlDeleteClause.Append(string.Concat("DELETE FROM [", loDataList.DataStorageName, "] WHERE "));
 					}
+					else
+					{
+						loSqlDeleteClause.Append(" AND ");
+					}
+
+					loSqlDeleteClause.Append(string.Concat("[", lsDataName, "] = @", lsDataName, "$", lnL.ToString()));
 				}
 			}
 

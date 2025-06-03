@@ -56,6 +56,7 @@
 // <change date="3/22/2024" author="Brian A. Lakstins" description="Add some methods that were in Repository proviers.  Remove some unused methods.">
 // <change date="3/24/2024" author="Brian A. Lakstins" description="Update to namespace.">
 // <change date="3/25/2024" author="Brian A. Lakstins" description="Remove handling of DataContext">
+// <change date="6/3/2025" author="Brian A. Lakstins" description="Get StorageKey from DataModel definition">
 // </changelog>
 #endregion
 
@@ -117,12 +118,13 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
         public virtual string GetStorageKey(MaxData loData)
         {
             string lsR = this.GetStorageKeyFromProcess();
-            MaxBaseDataModel loBaseDataModel = loData.DataModel as MaxBaseDataModel;
-            if (null != loBaseDataModel && null != loData.Get(loBaseDataModel.StorageKey))
+            string lsDataStorageKey = loData.DataModel.GetStorageKey(loData);
+            if (!string.IsNullOrEmpty(lsDataStorageKey))
             {
-                lsR = MaxConvertLibrary.ConvertToString(typeof(object), loData.Get(loBaseDataModel.StorageKey));   
+                lsR = lsDataStorageKey;
             }
-            else if (null == lsR || lsR.Length.Equals(0))
+
+            if (null == lsR || lsR.Length.Equals(0))
             {
                 lsR = this.GetStorageKeyFromConfiguration();
             }

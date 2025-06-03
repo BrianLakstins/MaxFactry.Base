@@ -36,6 +36,7 @@
 // <change date="1/21/2025" author="Brian A. Lakstins" description="Added some type checking.">
 // <change date="3/22/2025" author="Brian A. Lakstins" description="Integrate with changes to base insert.">
 // <change date="4/9/2025" author="Brian A. Lakstins" description="Override SetInitial method insteading of altering Insert method.">
+// <change date="6/3/2025" author="Brian A. Lakstins" description="Remove special handling of StorageKey. Make sure CreatedDate is unique.  Override GetDataQuery to filter out deleted records.">
 // </changelog>
 #endregion
 
@@ -52,6 +53,10 @@ namespace MaxFactry.Base.BusinessLayer
     public abstract class MaxBaseEntity : MaxEntity
     {
         private string[] _aBaseKeyPropertyNameList = null;
+
+        private static object _oLock = new object();
+
+        private static long _nUniqueCreatedDateLast = 0;
 
         /// <summary>
         /// Initializes a new instance of the MaxBaseIdEntity class
@@ -243,6 +248,15 @@ namespace MaxFactry.Base.BusinessLayer
             return lsR;
         }
 
+        protected override MaxDataQuery GetDataQuery()
+        {
+            MaxDataQuery loR = base.GetDataQuery();
+            loR.StartGroup();
+            loR.AddFilter(this.MaxBaseDataModel.IsDeleted, "=", false);
+            loR.EndGroup();
+            return loR;
+        }
+
         /// <summary>
         /// True if the passed option flag has been set.
         /// </summary>
@@ -299,7 +313,7 @@ namespace MaxFactry.Base.BusinessLayer
         public virtual MaxEntityList LoadAllActiveByProperty(string lsPropertyName, object loValue, params string[] laPropertyNameList)
         {
             //// Add a Query 
-            MaxDataQuery loDataQuery = new MaxDataQuery();
+            MaxDataQuery loDataQuery = this.GetDataQuery();
             loDataQuery.StartGroup();
             loDataQuery.AddFilter(this.MaxBaseDataModel.IsActive, "=", true);
             loDataQuery.AddAnd();
@@ -317,7 +331,7 @@ namespace MaxFactry.Base.BusinessLayer
         public virtual MaxEntityList LoadAllSinceLastUpdateDate(DateTime ldLastUpdate, params string[] laPropertyNameList)
         {
             //// Add a Query 
-            MaxDataQuery loDataQuery = new MaxDataQuery();
+            MaxDataQuery loDataQuery = this.GetDataQuery();
             loDataQuery.StartGroup();
             loDataQuery.AddFilter(this.MaxBaseDataModel.LastUpdateDate, ">", ldLastUpdate);
             loDataQuery.EndGroup();
@@ -338,6 +352,27 @@ namespace MaxFactry.Base.BusinessLayer
         }
 
         /// <summary>
+        /// Gets a unique time to use for a log entry so that no two events are logged at exactly the same time.
+        /// </summary>
+        /// <returns></returns>
+        private static DateTime GetUniqueCreatedDate()
+        {
+            DateTime ldR = DateTime.MinValue;
+            lock (_oLock)
+            {
+                ldR = DateTime.UtcNow;
+                if (ldR.Ticks <= _nUniqueCreatedDateLast)
+                {
+                    ldR = new DateTime(_nUniqueCreatedDateLast + 1, DateTimeKind.Utc);
+                }
+
+                _nUniqueCreatedDateLast = ldR.Ticks;
+            }
+
+            return ldR;
+        }
+
+        /// <summary>
         /// Sets the initial values for the entity
         /// </summary>
         protected override void SetInitial()
@@ -350,7 +385,7 @@ namespace MaxFactry.Base.BusinessLayer
 
             if (this.Data.DataModel.IsStored(this.MaxBaseDataModel.CreatedDate))
             {
-                this.Set(this.MaxBaseDataModel.CreatedDate, DateTime.UtcNow);
+                this.Set(this.MaxBaseDataModel.CreatedDate, GetUniqueCreatedDate());
             }
         }
 
@@ -383,14 +418,6 @@ namespace MaxFactry.Base.BusinessLayer
         /// </summary>
         protected override void SetProperties()
         {
-            if (this.Data.DataModel.IsStored(this.MaxBaseDataModel.StorageKey))
-            {
-                if (string.IsNullOrEmpty(this.GetString(this.MaxBaseDataModel.StorageKey)))
-                {
-                    throw new MaxException("Storage Key cannot be null.");
-                }
-            }
-
             if (null == this.Get(this.MaxBaseDataModel.IsDeleted))
             {
                 this.Set(this.MaxBaseDataModel.IsDeleted, false);

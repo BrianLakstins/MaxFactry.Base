@@ -31,6 +31,7 @@
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/26/2024" author="Brian A. Lakstins" description="Move logic for GetStreamPath from MaxData">
 // <change date="3/30/2024" author="Brian A. Lakstins" description="Filter StorageKey from list of keys so it can be handled internally.">
+// <change date="6/3/2025" author="Brian A. Lakstins" description="Specify StorageKey as a StorageKey attribute so it's handled that way, but does not need to be the only StorageKey.">
 // </changelog>
 #endregion
 
@@ -86,7 +87,7 @@ namespace MaxFactry.Base.DataLayer
         /// </summary>
         public MaxBaseDataModel() : base()
         {
-            this.AddKey(this.StorageKey, typeof(MaxShortString));
+            this.AddStorageKey(this.StorageKey, typeof(MaxShortString));
             this.AddType(this.CreatedDate, typeof(DateTime));
             this.AddType(this.LastUpdateDate, typeof(DateTime));
             this.AddType(this.IsActive, typeof(bool));

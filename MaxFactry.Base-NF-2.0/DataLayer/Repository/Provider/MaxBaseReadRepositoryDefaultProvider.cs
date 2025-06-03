@@ -32,6 +32,7 @@
 // <change date="3/24/2024" author="Brian A. Lakstins" description="Updated for changes namespaces">
 // <change date="3/25/2024" author="Brian A. Lakstins" description="Use DataContextLibrary">
 // <change date="5/22/2025" author="Brian A. Lakstins" description="Remove stream handling.">
+// <change date="6/3/2025" author="Brian A. Lakstins" description="Add a default context provider.">
 // </changelog>
 #endregion
 
@@ -41,6 +42,7 @@ namespace MaxFactry.Base.DataLayer.Provider
     using System.IO;
 	using MaxFactry.Core;
     using MaxFactry.Base.DataLayer.Library;
+    using MaxFactry.Base.DataLayer.Library.Provider;
 
     /// <summary>
     /// Provides base for creating Providers for Repositories that use a subclass of MaxDataModel for storage.
@@ -140,6 +142,7 @@ namespace MaxFactry.Base.DataLayer.Provider
 		public override void Initialize(string lsName, MaxIndex loConfig)
 		{
             base.Initialize(lsName, loConfig);
+            this.DefaultContextProviderType = typeof(MaxDataContextLibraryDefaultProvider);
             string lsDefaultContextProviderName = this.GetConfigValue(loConfig, MaxDataContextLibrary.DefaultContextProviderConfigName) as string;
             if (null != lsDefaultContextProviderName)
             {

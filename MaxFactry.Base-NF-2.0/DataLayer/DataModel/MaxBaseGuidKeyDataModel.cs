@@ -30,6 +30,7 @@
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/23/2024" author="Brian A. Lakstins" description="Initial creation">
 // <change date="3/26/2024" author="Brian A. Lakstins" description="Move logic for GetStreamPath from MaxData">
+// <change date="6/3/2025" author="Brian A. Lakstins" description="Specify Id as DataKey">
 // </changelog>
 #endregion
 
@@ -55,7 +56,7 @@ namespace MaxFactry.Base.DataLayer
         public MaxBaseGuidKeyDataModel()
             : base()
         {
-            this.AddKey(this.Id, typeof(Guid));
+            this.AddDataKey(this.Id, typeof(Guid));
         }
 
         public override string[] GetStreamPath(MaxData loData)
