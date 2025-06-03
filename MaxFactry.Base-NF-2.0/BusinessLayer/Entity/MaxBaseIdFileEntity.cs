@@ -43,6 +43,7 @@
 // <change date="3/24/2024" author="Brian A. Lakstins" description="Updated for changes namespaces">
 // <change date="3/30/2024" author="Brian A. Lakstins" description="Get file indicated in FromFileName when saving.">
 // <change date="5/23/2025" author="Brian A. Lakstins" description="Use StreamLibrary directly.">
+// <change date="6/3/2025" author="Brian A. Lakstins" description="Remove need for custom repository">
 // </changelog>
 #endregion
 
@@ -54,7 +55,7 @@ namespace MaxFactry.Base.BusinessLayer
     using MaxFactry.Base.DataLayer.Library;
 
     /// <summary>
-    /// Base entity for interacting with files.
+    /// Base entity for interacting with files that need to keep previous versions
     /// </summary>
     public abstract class MaxBaseIdFileEntity : MaxBaseIdVersionedEntity
     {
@@ -276,7 +277,7 @@ namespace MaxFactry.Base.BusinessLayer
         /// <returns>Data updated based on sending of message.</returns>
         public string GetMimeType(string lsFileName)
         {
-            string lsR = MaxBaseIdVersionedRepository.GetMimeType(this.Data, lsFileName);
+            string lsR = MaxBaseReadRepository.GetMimeType(this.Data, lsFileName);
             return lsR;
         }
     }

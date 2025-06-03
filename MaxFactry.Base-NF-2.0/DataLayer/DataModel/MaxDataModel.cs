@@ -46,6 +46,7 @@
 // <change date="3/26/2024" author="Brian A. Lakstins" description="Move logic for GetStreamPath from MaxData">
 // <change date="3/30/2024" author="Brian A. Lakstins" description="Integrated DataKey.  Created list of DataNames that could be using Stream as storage.">
 // <change date="6/3/2025" author="Brian A. Lakstins" description="Separate key into DataKey for unique identification and StorageKey for indexing data when stored">
+// <change date="6/3/2025" author="Brian A. Lakstins" description="Add StorageKey attribute for generic stream path">
 // </changelog>
 #endregion
 
@@ -55,6 +56,7 @@ namespace MaxFactry.Base.DataLayer
     using System.Collections.Generic;
     using System.IO;
     using MaxFactry.Core;
+    using MaxFactry.Base.DataLayer.Library;
 
     /// <summary>
     /// Base class used to define data models.
@@ -651,6 +653,17 @@ namespace MaxFactry.Base.DataLayer
         public virtual string[] GetStreamPath(MaxData loData)
         {
             List<string> loR = new List<string>();
+            string lsStorageKey = MaxDataLibrary.GetStorageKey(loData);
+            if (!string.IsNullOrEmpty(lsStorageKey))
+            {
+                if (lsStorageKey.Contains(this.KeySeparator))
+                {
+                    lsStorageKey = MaxEncryptionLibrary.GetHash(typeof(object), "MD5", lsStorageKey);
+                }
+
+                loR.Add(lsStorageKey);
+            }
+
             string lsDataStorageName = this.DataStorageName;
             if (lsDataStorageName.EndsWith("MaxArchive"))
             {

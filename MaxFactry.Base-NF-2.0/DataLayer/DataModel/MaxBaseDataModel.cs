@@ -32,15 +32,13 @@
 // <change date="3/26/2024" author="Brian A. Lakstins" description="Move logic for GetStreamPath from MaxData">
 // <change date="3/30/2024" author="Brian A. Lakstins" description="Filter StorageKey from list of keys so it can be handled internally.">
 // <change date="6/3/2025" author="Brian A. Lakstins" description="Specify StorageKey as a StorageKey attribute so it's handled that way, but does not need to be the only StorageKey.">
+// <change date="6/3/2025" author="Brian A. Lakstins" description="Remove methods that used specific names">
 // </changelog>
 #endregion
 
 namespace MaxFactry.Base.DataLayer
 {
     using System;
-    using MaxFactry.Core;
-    using System.Collections.Generic;
-    using MaxFactry.Base.DataLayer.Library;
 
     /// <summary>
     /// Defines base data model with some standard storage properties
@@ -96,48 +94,6 @@ namespace MaxFactry.Base.DataLayer
             this.AddNullable(this.AttributeIndexText, typeof(MaxLongString));
             this.RepositoryType = typeof(MaxBaseRepository);
             this.RepositoryProviderType = typeof(Provider.MaxBaseRepositoryDefaultProvider);
-        }
-
-        public override string[] GetStreamPath(MaxData loData)
-        {
-            List<string> loR = new List<string>();
-            if (this.IsStored(this.StorageKey))
-            {
-                string lsStorageKey = MaxConvertLibrary.ConvertToString(typeof(object), loData.Get(this.StorageKey));
-                if (string.IsNullOrEmpty(lsStorageKey))
-                {
-                    lsStorageKey = MaxDataLibrary.GetStorageKey(loData);
-                }
-
-                loR.Add(lsStorageKey);
-            }
-
-            string lsDataStorageName = this.DataStorageName;
-            if (lsDataStorageName.EndsWith("MaxArchive"))
-            {
-                lsDataStorageName = lsDataStorageName.Substring(0, lsDataStorageName.Length - "MaxArchive".Length);
-            }
-
-            loR.Add(lsDataStorageName);
-
-            return loR.ToArray();
-        }
-
-        public override string[] DataNameKeyList
-        {
-            get
-            {
-                MaxIndex loR = new MaxIndex();
-                foreach (string lsDataNameKey in base.DataNameKeyList)
-                {
-                    if (lsDataNameKey != this.StorageKey)
-                    {
-                        loR.Add(lsDataNameKey, true);
-                    }
-                }
-
-                return loR.GetSortedKeyList();
-            }
         }
     }
 }

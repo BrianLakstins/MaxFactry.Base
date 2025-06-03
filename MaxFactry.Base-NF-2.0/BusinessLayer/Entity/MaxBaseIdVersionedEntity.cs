@@ -40,6 +40,7 @@
 // <change date="3/24/2024" author="Brian A. Lakstins" description="Updated for changes namespaces">
 // <change date="3/22/2025" author="Brian A. Lakstins" description="Don't make active when inserting.">
 // <change date="4/9/2025" author="Brian A. Lakstins" description="Override SetInitial method instead of altering insert.">
+// <change date="6/3/2025" author="Brian A. Lakstins" description="Change base class. Update to use DataKey and StorageKey correctly">
 // </changelog>
 #endregion
 
@@ -51,10 +52,12 @@ namespace MaxFactry.Base.BusinessLayer
     using MaxFactry.Base.DataLayer.Library;
 
     /// <summary>
-    /// Base entity for interacting with files.
+    /// Base entity for interacting with items with a name that need to be versioned
     /// </summary>
-    public abstract class MaxBaseIdVersionedEntity : MaxBaseIdEntity
+    public abstract class MaxBaseIdVersionedEntity : MaxBaseEntity
     {
+        private static object _oLock = new object();
+
 		/// <summary>
         /// Initializes a new instance of the MaxBaseIdVersionedEntity class
 		/// </summary>
@@ -125,10 +128,19 @@ namespace MaxFactry.Base.BusinessLayer
                 return this;
             }
 
-            MaxDataList loDataList = MaxBaseIdVersionedRepository.SelectAllActiveByName(this.Data, lsName);
+            MaxDataQuery loDataQuery = this.GetDataQuery();
+            loDataQuery.StartGroup();
+            loDataQuery.AddFilter(new MaxDataFilter(this.MaxBaseIdVersionedDataModel.IsActive, "=", true));
+            loDataQuery.EndGroup();
+
+            loData = new MaxData(this.Data.DataModel);
+            loData.Set(this.MaxBaseIdVersionedDataModel.Name, lsName);
+
+            MaxDataList loDataList = MaxBaseReadRepository.Select(loData, loDataQuery, 0, 0, string.Empty);
             if (loDataList.Count.Equals(0))
             {
-                loDataList = MaxBaseIdVersionedRepository.SelectAllByName(this.Data, lsName);
+                loDataQuery = this.GetDataQuery();
+                loDataList = MaxBaseReadRepository.Select(loData, loDataQuery, 0, 0, string.Empty);
             }
 
             int lnVersionCurrent = -1;
@@ -179,19 +191,28 @@ namespace MaxFactry.Base.BusinessLayer
         /// <returns>integer to use for next version</returns>
         public virtual int GetNextVersion()
         {
-            MaxDataList loDataList = MaxBaseIdVersionedRepository.SelectAllByName(this.Data, this.Name);
-            //// Get the largest version number of any entity regardless of active or deleted.
-            int lnVersionCurrent = 0;
-            for (int lnD = 0; lnD < loDataList.Count; lnD++)
+            int lnR = 0;
+            lock (_oLock)
             {
-                int lnVersion = MaxConvertLibrary.ConvertToInt(typeof(object), loDataList[lnD].Get(this.MaxBaseIdVersionedDataModel.Version));
-                if (lnVersion > lnVersionCurrent)
+                MaxDataQuery loDataQuery = this.GetDataQuery();
+                MaxData loData = new MaxData(this.Data.DataModel);
+                loData.Set(this.MaxBaseIdVersionedDataModel.Name, this.Name);
+                MaxDataList loDataList = MaxBaseReadRepository.Select(loData, loDataQuery, 0, 0, string.Empty);
+                //// Get the largest version number of any entity regardless of active or deleted.
+                int lnVersionCurrent = 0;
+                for (int lnD = 0; lnD < loDataList.Count; lnD++)
                 {
-                    lnVersionCurrent = lnVersion;
+                    int lnVersion = MaxConvertLibrary.ConvertToInt(typeof(object), loDataList[lnD].Get(this.MaxBaseIdVersionedDataModel.Version));
+                    if (lnVersion > lnVersionCurrent)
+                    {
+                        lnVersionCurrent = lnVersion;
+                    }
                 }
+
+                lnR = lnVersionCurrent + 1;
             }
 
-            return lnVersionCurrent + 1;
+            return lnR;
         }
 
         protected override void SetInitial()

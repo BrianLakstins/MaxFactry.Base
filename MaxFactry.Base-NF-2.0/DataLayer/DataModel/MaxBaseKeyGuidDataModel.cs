@@ -28,6 +28,7 @@
 #region Change Log
 // <changelog>
 // <change date="4/9/2025" author="Brian A. Lakstins" description="Initial creation">
+// <change date="6/3/2025" author="Brian A. Lakstins" description="Add generic DataKey support">
 // </changelog>
 #endregion
 
@@ -53,7 +54,7 @@ namespace MaxFactry.Base.DataLayer
         public MaxBaseKeyGuidDataModel()
             : base()
         {
-            this.AddKey(this.Id, typeof(Guid));
+            this.AddDataKey(this.Id, typeof(Guid));
         }
 
         public override string[] GetStreamPath(MaxData loData)

@@ -29,6 +29,7 @@
 // <changelog>
 // <change date="4/16/2015" author="Brian A. Lakstins" description="Initial creation">
 // <change date="3/26/2024" author="Brian A. Lakstins" description="Move logic for GetStreamPath from MaxData">
+// <change date="6/3/2025" author="Brian A. Lakstins" description="Add generic DataKey support">
 // </changelog>
 #endregion
 
@@ -65,7 +66,7 @@ namespace MaxFactry.Base.DataLayer
         public MaxIdIntegerDataModel()
             : base()
         {
-            this.AddKey(this.Id, typeof(long));
+            this.AddDataKey(this.Id, typeof(long));
             this.AddNullable(this.AlternateId, typeof(MaxShortString));
             this.AddType(this.CreatedDate, typeof(DateTime));
         }

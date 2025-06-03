@@ -29,6 +29,7 @@
 // <changelog>
 // <change date="11/10/2014" author="Brian A. Lakstins" description="Based on MaxAppIdDataModel without the AppId functionality.">
 // <change date="3/26/2015" author="Brian A. Lakstins" description="Moved to MaxFactry.Base">
+// <change date="6/3/2025" author="Brian A. Lakstins" description="Change base class. Update to use DataKey and StorageKey correctly">
 // </changelog>
 #endregion
 
@@ -41,8 +42,8 @@ namespace MaxFactry.Base.DataLayer
 	/// <summary>
     /// Defines base data model for data with a unique identifier that is versioned
 	/// </summary>
-    public class MaxBaseIdVersionedDataModel : MaxBaseIdDataModel
-	{
+    public class MaxBaseIdVersionedDataModel : MaxBaseDataModel
+    {
         /// <summary>
         /// Name used as the key for the versioned data.
         /// </summary>
@@ -60,10 +61,9 @@ namespace MaxFactry.Base.DataLayer
 			: base()
 		{
             this.SetDataStorageName("MaxBaseIdVersioned");
-            this.RepositoryProviderType = typeof(MaxFactry.Base.DataLayer.Provider.MaxBaseIdRepositoryDefaultProvider);
-            this.RepositoryType = typeof(MaxBaseIdRepository);
-            this.AddType(this.Name, typeof(string));
-            this.AddType(this.Version, typeof(int));
+            this.AddDataKey(this.Name, typeof(string));
+            this.AddAttribute(this.Name, MaxDataModel.AttributeIsStorageKey, "true");
+            this.AddDataKey(this.Version, typeof(int));
 		}
 	}
 }

@@ -40,6 +40,7 @@
 // <change date="5/21/2025" author="Brian A. Lakstins" description="Remove stream handling methods and integrate stream handling using StreamLibrary">
 // <change date="6/3/2025" author="Brian A. Lakstins" description="Have default folder configuration.  Updated to work with DataKey and StorageKey.">
 // <change date="6/3/2025" author="Brian A. Lakstins" description="Clean out separator so it works as a file name">
+// <change date="6/3/2025" author="Brian A. Lakstins" description="Use MD5 has for StorageKey part of File path when there is a separator.  Use MaxDataLibrary to get storage key.">
 // </changelog>
 #endregion
 
@@ -156,8 +157,9 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
         /// <returns>List of data that matches the query parameters</returns>
         public virtual MaxDataList Select(MaxData loData, MaxDataQuery loDataQuery, int lnPageIndex, int lnPageSize, string lsOrderBy, out int lnTotal, params string[] laDataNameList)
         {
+            string lsStorageKey = MaxDataLibrary.GetStorageKey(loData);
             this.CreateTable(loData);
-            DataSet loDataSet = this.GetDataSet(loData);
+            DataSet loDataSet = this.GetDataSet(lsStorageKey);
             MaxDataList loDataList = new MaxDataList(loData.DataModel);
             int lnRows = 0;
             int lnStart = 0;
@@ -290,7 +292,7 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
                         if (lnR == 0)
                         {
                             this.CreateTable(loData);
-                            DataSet loDataSet = this.GetDataSet(loData);
+                            DataSet loDataSet = this.GetDataSet(MaxDataLibrary.GetStorageKey(loData));
                             DataRow loRow = loDataSet.Tables[loDataList.DataModel.DataStorageName].NewRow();
                             foreach (string lsDataName in loData.DataModel.DataNameList)
                             {
@@ -342,6 +344,7 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
                         string lsDataKey = loData.DataModel.GetDataKey(loData);
                         if (!string.IsNullOrEmpty(lsDataKey))
                         {
+                            string lsStorageKey = MaxDataLibrary.GetStorageKey(loData);
                             foreach (string lsDataName in loData.DataModel.DataNameStreamList)
                             {
                                 int lnReturn = MaxStreamLibrary.StreamSave(loData, lsDataName);
@@ -354,7 +357,7 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
                             if (lnR == 0)
                             {
                                 this.CreateTable(loData);
-                                DataSet loDataSet = this.GetDataSet(loData);
+                                DataSet loDataSet = this.GetDataSet(lsStorageKey);
                                 foreach (DataRow loRow in loDataSet.Tables[loData.DataModel.DataStorageName].Rows)
                                 {
                                     bool lbIsMatch = true;
@@ -430,6 +433,7 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
                         string lsDataKey = loData.DataModel.GetDataKey(loData);
                         if (!string.IsNullOrEmpty(lsDataKey))
                         {
+                            string lsStorageKey = MaxDataLibrary.GetStorageKey(loData);
                             foreach (string lsDataName in loData.DataModel.DataNameStreamList)
                             {
                                 int lnReturn = MaxStreamLibrary.StreamDelete(loData, lsDataName);
@@ -442,7 +446,7 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
                             if (lnR == 0)
                             {
                                 this.CreateTable(loData);
-                                DataSet loDataSet = this.GetDataSet(loData);
+                                DataSet loDataSet = this.GetDataSet(lsStorageKey);
                                 for (int lnRow = loDataSet.Tables[loData.DataModel.DataStorageName].Rows.Count - 1; lnRow >= 0; lnRow--)
                                 {
                                     DataRow loRow = loDataSet.Tables[loData.DataModel.DataStorageName].Rows[lnRow];
@@ -495,7 +499,13 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
                         Directory.CreateDirectory(this.DataSetFolder);
                     }
 
-                    string lsFile = Path.Combine(this.DataSetFolder, "DataSet-" + lsKey.Replace(new MaxDataModel().KeySeparator, string.Empty) + ".txt");
+                    string lsFileKey = lsKey;
+                    if (lsFileKey.Contains(new MaxDataModel().KeySeparator))
+                    {
+                        lsFileKey = MaxEncryptionLibrary.GetHash(typeof(object), "MD5", lsFileKey);
+                    }
+
+                    string lsFile = Path.Combine(this.DataSetFolder, "DataSet-" + lsFileKey + ".txt");
                     File.WriteAllText(lsFile, lsText);
                 }
             }
@@ -503,7 +513,13 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
 
         private void LoadFromFile(string lsKey)
         {
-            string lsFile = Path.Combine(this.DataSetFolder, "DataSet-" + lsKey.Replace(new MaxDataModel().KeySeparator, string.Empty) + ".txt");
+            string lsFileKey = lsKey;
+            if (lsFileKey.Contains(new MaxDataModel().KeySeparator))
+            {
+                lsFileKey = MaxEncryptionLibrary.GetHash(typeof(object), "MD5", lsFileKey);
+            }
+            
+            string lsFile = Path.Combine(this.DataSetFolder, "DataSet-" + lsFileKey + ".txt");
             if (File.Exists(lsFile))
             {
                 string lsText = File.ReadAllText(lsFile);
@@ -516,9 +532,8 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
         /// </summary>
         /// <param name="loData">The data to use to determine the data set</param>
         /// <returns>A data set.</returns>
-        private DataSet GetDataSet(MaxData loData)
+        private DataSet GetDataSet(string lsStorageKey)
         {
-            string lsStorageKey = MaxDataLibrary.GetStorageKey(loData);
             if (!_oDataSetIndex.ContainsKey(lsStorageKey))
             {
                 _oDataSetIndex.Add(lsStorageKey, new DataSet());
@@ -534,7 +549,8 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
         /// <param name="loData">Data to be stored.</param>
         private void CreateTable(MaxData loData)
         {
-            DataSet loDataSet = this.GetDataSet(loData);
+            string lsStorageKey = MaxDataLibrary.GetStorageKey(loData);
+            DataSet loDataSet = this.GetDataSet(lsStorageKey);
             if (!loDataSet.Tables.Contains(loData.DataModel.DataStorageName))
             {
                 lock (_oLock)
@@ -568,8 +584,6 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
                         }
 
                         loTable.PrimaryKey = loPrimaryKeyList.ToArray();
-
-                        string lsStorageKey = MaxDataLibrary.GetStorageKey(loData);
                         if (_oDataSetIndex.ContainsKey(lsStorageKey + "Stored"))
                         {
                             DataSet loStored = _oDataSetIndex[lsStorageKey + "Stored"];
