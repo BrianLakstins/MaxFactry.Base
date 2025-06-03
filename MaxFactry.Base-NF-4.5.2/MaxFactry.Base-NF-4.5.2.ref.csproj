@@ -317,18 +317,6 @@
     <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\MaxShortString.cs">
       <Link>DataLayer\MaxShortString.cs</Link>
     </Compile>
-    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Interface\IMaxBaseIdIndexRepositoryProvider.cs">
-      <Link>DataLayer\Repository\Interface\IMaxBaseIdIndexRepositoryProvider.cs</Link>
-    </Compile>
-    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Interface\IMaxBaseIdRepositoryProvider.cs">
-      <Link>DataLayer\Repository\Interface\IMaxBaseIdRepositoryProvider.cs</Link>
-    </Compile>
-    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Interface\IMaxBaseIdVersionedRepositoryProvider.cs">
-      <Link>DataLayer\Repository\Interface\IMaxBaseIdVersionedRepositoryProvider.cs</Link>
-    </Compile>
-    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Interface\IMaxBaseTemplateRepositoryProvider.cs">
-      <Link>DataLayer\Repository\Interface\IMaxBaseTemplateRepositoryProvider.cs</Link>
-    </Compile>
     <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Interface\IMaxCacheRepositoryProvider.cs">
       <Link>DataLayer\Repository\Interface\IMaxCacheRepositoryProvider.cs</Link>
     </Compile>
@@ -337,18 +325,6 @@
     </Compile>
     <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Interface\IMaxRepositoryProvider.cs">
       <Link>DataLayer\Repository\Interface\IMaxRepositoryProvider.cs</Link>
-    </Compile>
-    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\MaxBaseIdIndexRepository.cs">
-      <Link>DataLayer\Repository\MaxBaseIdIndexRepository.cs</Link>
-    </Compile>
-    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\MaxBaseIdRepository.cs">
-      <Link>DataLayer\Repository\MaxBaseIdRepository.cs</Link>
-    </Compile>
-    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\MaxBaseIdVersionedRepository.cs">
-      <Link>DataLayer\Repository\MaxBaseIdVersionedRepository.cs</Link>
-    </Compile>
-    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\MaxBaseTemplateRepository.cs">
-      <Link>DataLayer\Repository\MaxBaseTemplateRepository.cs</Link>
     </Compile>
     <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\MaxCacheRepository.cs">
       <Link>DataLayer\Repository\MaxCacheRepository.cs</Link>
@@ -364,18 +340,6 @@
     </Compile>
     <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\MaxMessageRepository.cs">
       <Link>DataLayer\Repository\MaxMessageRepository.cs</Link>
-    </Compile>
-    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Provider\MaxBaseIdIndexRepositoryDefaultProvider.cs">
-      <Link>DataLayer\Repository\Provider\MaxBaseIdIndexRepositoryDefaultProvider.cs</Link>
-    </Compile>
-    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Provider\MaxBaseIdRepositoryDefaultProvider.cs">
-      <Link>DataLayer\Repository\Provider\MaxBaseIdRepositoryDefaultProvider.cs</Link>
-    </Compile>
-    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Provider\MaxBaseIdVersionedRepositoryDefaultProvider.cs">
-      <Link>DataLayer\Repository\Provider\MaxBaseIdVersionedRepositoryDefaultProvider.cs</Link>
-    </Compile>
-    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Provider\MaxBaseTemplateRepositoryDefaultProvider.cs">
-      <Link>DataLayer\Repository\Provider\MaxBaseTemplateRepositoryDefaultProvider.cs</Link>
     </Compile>
     <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\Repository\Provider\MaxCacheRepositoryDefaultProvider.cs">
       <Link>DataLayer\Repository\Provider\MaxCacheRepositoryDefaultProvider.cs</Link>

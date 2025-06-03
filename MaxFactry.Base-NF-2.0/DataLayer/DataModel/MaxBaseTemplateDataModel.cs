@@ -53,8 +53,6 @@ namespace MaxFactry.Module.Template.DataLayer
         public MaxBaseTemplateDataModel()
             : base()
         {
-            this.RepositoryProviderType = typeof(MaxFactry.Module.Template.DataLayer.Provider.MaxBaseTemplateRepositoryDefaultProvider);
-            this.RepositoryType = typeof(MaxBaseTemplateRepository);
             this.SetDataStorageName("MaxTemplate");
             this.AddType(this.Property, typeof(MaxShortString));
             this.AddType(this.Property, typeof(string));

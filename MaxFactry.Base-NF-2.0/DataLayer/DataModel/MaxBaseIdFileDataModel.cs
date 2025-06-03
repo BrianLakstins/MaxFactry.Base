@@ -92,8 +92,6 @@ namespace MaxFactry.Base.DataLayer
 			: base()
 		{
             this.SetDataStorageName("MaxBaseIdFile");
-            this.RepositoryProviderType = typeof(MaxFactry.Base.DataLayer.Provider.MaxBaseIdRepositoryDefaultProvider);
-            this.RepositoryType = typeof(MaxBaseIdRepository);
             this.AddNullable(this.ContentName, typeof(MaxShortString));
             this.AddType(this.ContentType, typeof(MaxShortString));
             this.AddType(this.ContentLength, typeof(long));

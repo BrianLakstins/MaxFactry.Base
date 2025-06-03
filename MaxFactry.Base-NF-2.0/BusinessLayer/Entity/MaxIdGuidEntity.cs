@@ -194,7 +194,7 @@ namespace MaxFactry.Base.BusinessLayer
             loDataQuery.StartGroup();
             loDataQuery.AddFilter(this.MaxIdDataModel.CreatedDate, ">", ldCreatedDate);
             loDataQuery.EndGroup();
-            MaxDataList loDataList = MaxBaseIdRepository.Select(this.GetData(), loDataQuery, 0, 0, string.Empty);
+            MaxDataList loDataList = MaxBaseRepository.Select(this.GetData(), loDataQuery, 0, 0, string.Empty);
             MaxEntityList loEntityList = MaxEntityList.Create(this.GetType(), loDataList);
             return loEntityList;
         }
