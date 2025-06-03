@@ -41,8 +41,8 @@ namespace MaxFactry.Base.DataLayer
 	/// <summary>
     /// Defines base data model for data with a unique identifier that is versioned
 	/// </summary>
-    public class MaxBaseIdVersionedDataModel : MaxBaseIdDataModel
-	{
+    public abstract class MaxBaseIdVersionedDataModel : MaxBaseGuidKeyDataModel
+    {
         /// <summary>
         /// Name used as the key for the versioned data.
         /// </summary>
@@ -59,11 +59,8 @@ namespace MaxFactry.Base.DataLayer
         public MaxBaseIdVersionedDataModel()
 			: base()
 		{
-            this.SetDataStorageName("MaxBaseIdVersioned");
-            this.RepositoryProviderType = typeof(MaxFactry.Base.DataLayer.Provider.MaxBaseIdRepositoryDefaultProvider);
-            this.RepositoryType = typeof(MaxBaseIdRepository);
-            this.AddType(this.Name, typeof(string));
-            this.AddType(this.Version, typeof(int));
+            this.AddDataKey(this.Name, typeof(string));
+            this.AddDataKey(this.Version, typeof(int));
 		}
 	}
 }

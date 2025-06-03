@@ -117,12 +117,13 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
         public virtual string GetStorageKey(MaxData loData)
         {
             string lsR = this.GetStorageKeyFromProcess();
-            MaxBaseDataModel loBaseDataModel = loData.DataModel as MaxBaseDataModel;
-            if (null != loBaseDataModel && null != loData.Get(loBaseDataModel.StorageKey))
+            string lsDataStorageKey = loData.DataModel.GetStorageKey(loData);
+            if (!string.IsNullOrEmpty(lsDataStorageKey))
             {
-                lsR = MaxConvertLibrary.ConvertToString(typeof(object), loData.Get(loBaseDataModel.StorageKey));   
+                lsR = lsDataStorageKey;
             }
-            else if (null == lsR || lsR.Length.Equals(0))
+
+            if (null == lsR || lsR.Length.Equals(0))
             {
                 lsR = this.GetStorageKeyFromConfiguration();
             }

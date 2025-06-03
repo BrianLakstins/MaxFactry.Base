@@ -43,7 +43,7 @@ namespace MaxFactry.Base.DataLayer
 	/// <summary>
     /// Defines base data model for data with a unique identifier
 	/// </summary>
-    public class MaxBaseIdFileDataModel : MaxBaseIdVersionedDataModel
+    public abstract class MaxBaseIdFileDataModel : MaxBaseIdVersionedDataModel
 	{
         /// <summary>
         /// Name for the content in the file
@@ -91,9 +91,6 @@ namespace MaxFactry.Base.DataLayer
         public MaxBaseIdFileDataModel()
 			: base()
 		{
-            this.SetDataStorageName("MaxBaseIdFile");
-            this.RepositoryProviderType = typeof(MaxFactry.Base.DataLayer.Provider.MaxBaseIdRepositoryDefaultProvider);
-            this.RepositoryType = typeof(MaxBaseIdRepository);
             this.AddNullable(this.ContentName, typeof(MaxShortString));
             this.AddType(this.ContentType, typeof(MaxShortString));
             this.AddType(this.ContentLength, typeof(long));

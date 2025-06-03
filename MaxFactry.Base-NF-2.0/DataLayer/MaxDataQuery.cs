@@ -61,7 +61,26 @@ namespace MaxFactry.Base.DataLayer
 		/// </summary>
 		public void StartGroup()
 		{
-            this.Add('(');	
+            //// Make sure that the last statement is a condition before a new group starts.
+            //// If not, then group all previous statements and use an "AND" condition
+            if (this._oIndex.Count > 0 && !(this._oIndex[this._oIndex.Count - 1] is string))
+            {
+                MaxIndex loIndex = new MaxIndex();
+                loIndex.Add('(');
+                for (int lnI = 0; lnI < this._oIndex.Count; lnI++)
+                {
+                    loIndex.Add(this._oIndex[lnI]);
+                }
+
+                loIndex.Add(')');
+                loIndex.Add("AND");
+                loIndex.Add('(');
+                this._oIndex = loIndex;
+            }
+            else
+            {
+                this.Add('(');
+            }
 		}
 
         /// <summary>
@@ -143,7 +162,31 @@ namespace MaxFactry.Base.DataLayer
 
         public override string ToString()
         {
-            string lsR = MaxConvertLibrary.SerializeObjectToString(this.GetType(), this._oIndex);
+            string lsR = string.Empty;
+            object[] laDataQuery = this.GetQuery();
+            if (laDataQuery.Length > 0)
+            {
+                for (int lnDQ = 0; lnDQ < laDataQuery.Length; lnDQ++)
+                {
+                    object loStatement = laDataQuery[lnDQ];
+                    if (loStatement is char)
+                    {
+                        // Group Start or end characters
+                        lsR += (char)loStatement;
+                    }
+                    else if (loStatement is string)
+                    {
+                        // Comparison operators
+                        lsR += " " + (string)loStatement + " ";
+                    }
+                    else if (loStatement is MaxDataFilter)
+                    {
+                        MaxDataFilter loDataFilter = (MaxDataFilter)loStatement;
+                        lsR += "[" + loDataFilter.Name + "] " + loDataFilter.Operator + " '" + loDataFilter.Value + "'";
+                    }
+                }
+            }
+
             return lsR;
         }
     }

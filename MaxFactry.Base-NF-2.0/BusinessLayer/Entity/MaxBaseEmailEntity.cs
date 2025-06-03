@@ -53,7 +53,7 @@ namespace MaxFactry.Base.BusinessLayer
     /// <summary>
     /// Entity to represent virtual text file in a web site.
     /// </summary>
-    public abstract class MaxBaseEmailEntity : MaxBaseIdEntity
+    public abstract class MaxBaseEmailEntity : MaxBaseGuidKeyEntity
     {
         private List<string> _oToAddressList = null;
 

@@ -41,7 +41,7 @@ namespace MaxFactry.Base.DataLayer
     /// <summary>
     /// Data model to use for emails.
     /// </summary>
-    public abstract class MaxBaseEmailDataModel : MaxBaseIdDataModel, IMaxMessageDataModel
+    public abstract class MaxBaseEmailDataModel : MaxBaseGuidKeyDataModel, IMaxMessageDataModel
     {
         /// <summary>
         /// Initializes a new instance of the MaxBaseEmailDataModel class.

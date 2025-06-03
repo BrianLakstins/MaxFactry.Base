@@ -45,42 +45,5 @@ namespace MaxFactry.Base.DataLayer
 	/// </summary>
     public class MaxBaseIdVersionedRepository : MaxBaseIdRepository
 	{
-        /// <summary>
-        /// Selects all not marked as deleted based on the name
-        /// </summary>
-        /// <param name="loData">Data information used for select</param>
-        /// <param name="lsName">The key used for the versioned data</param>
-        /// <param name="laDataNameList">list of fields to return from select</param>
-        /// <returns>List of information matching the name</returns>
-        public static MaxDataList SelectAllByName(MaxData loData, string lsName, params string[] laDataNameList)
-        {
-            MaxBaseIdVersionedDataModel loDataModel = loData.DataModel as MaxBaseIdVersionedDataModel;
-            if (null == loDataModel)
-            {
-                throw new MaxException("Error casting [" + loData.DataModel.GetType() + "] for DataModel");
-            }
-
-            MaxDataList loDataList = SelectAllByProperty(loData, loDataModel.Name, lsName, laDataNameList);
-            return loDataList;
-        }
-
-        /// <summary>
-        /// Selects all active not marked as deleted based on the name
-        /// </summary>
-        /// <param name="loData">Data information used for select.</param>
-        /// <param name="lsName">The key used for the versioned data</param>
-        /// <param name="laDataNameList">list of fields to return from select</param>
-        /// <returns>List of information matching the name</returns>
-        public static MaxDataList SelectAllActiveByName(MaxData loData, string lsName, params string[] laDataNameList)
-        {
-            MaxBaseIdVersionedDataModel loDataModel = loData.DataModel as MaxBaseIdVersionedDataModel;
-            if (null == loDataModel)
-            {
-                throw new MaxException("Error casting [" + loData.DataModel.GetType() + "] for DataModel");
-            }
-
-            MaxDataList loDataList = SelectAllActiveByProperty(loData, loDataModel.Name, lsName, laDataNameList);
-            return loDataList;
-        }
 	}
 }

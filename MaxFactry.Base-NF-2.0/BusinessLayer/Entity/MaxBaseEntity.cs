@@ -247,6 +247,15 @@ namespace MaxFactry.Base.BusinessLayer
             return lsR;
         }
 
+        protected override MaxDataQuery GetDataQuery()
+        {
+            MaxDataQuery loR = base.GetDataQuery();
+            loR.StartGroup();
+            loR.AddFilter(this.MaxBaseDataModel.IsDeleted, "=", false);
+            loR.EndGroup();
+            return loR;
+        }
+
         /// <summary>
         /// True if the passed option flag has been set.
         /// </summary>
@@ -303,7 +312,7 @@ namespace MaxFactry.Base.BusinessLayer
         public virtual MaxEntityList LoadAllActiveByProperty(string lsPropertyName, object loValue, params string[] laPropertyNameList)
         {
             //// Add a Query 
-            MaxDataQuery loDataQuery = new MaxDataQuery();
+            MaxDataQuery loDataQuery = this.GetDataQuery();
             loDataQuery.StartGroup();
             loDataQuery.AddFilter(this.MaxBaseDataModel.IsActive, "=", true);
             loDataQuery.AddAnd();
@@ -321,7 +330,7 @@ namespace MaxFactry.Base.BusinessLayer
         public virtual MaxEntityList LoadAllSinceLastUpdateDate(DateTime ldLastUpdate, params string[] laPropertyNameList)
         {
             //// Add a Query 
-            MaxDataQuery loDataQuery = new MaxDataQuery();
+            MaxDataQuery loDataQuery = this.GetDataQuery();
             loDataQuery.StartGroup();
             loDataQuery.AddFilter(this.MaxBaseDataModel.LastUpdateDate, ">", ldLastUpdate);
             loDataQuery.EndGroup();
@@ -408,14 +417,6 @@ namespace MaxFactry.Base.BusinessLayer
         /// </summary>
         protected override void SetProperties()
         {
-            if (this.Data.DataModel.IsStored(this.MaxBaseDataModel.StorageKey))
-            {
-                if (string.IsNullOrEmpty(this.GetString(this.MaxBaseDataModel.StorageKey)))
-                {
-                    throw new MaxException("Storage Key cannot be null.");
-                }
-            }
-
             if (null == this.Get(this.MaxBaseDataModel.IsDeleted))
             {
                 this.Set(this.MaxBaseDataModel.IsDeleted, false);

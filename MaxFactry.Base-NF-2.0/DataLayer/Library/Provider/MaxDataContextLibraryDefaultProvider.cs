@@ -84,8 +84,9 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
         public override void Initialize(string lsName, MaxIndex loConfig)
         {
             base.Initialize(lsName, loConfig);
+            this._sDataSetFolder = @"c:\temp\MaxDataSet";
             string lsFolder = this.GetConfigValue(loConfig, "DataSetFolder") as string;
-            if (null != lsFolder)
+            if (null != lsFolder && lsFolder != string.Empty)
             {
                 this._sDataSetFolder = lsFolder;
             }
@@ -133,7 +134,6 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
             return loDataList;
         }
 
-
         /// <summary>
         /// Selects data
         /// </summary>
@@ -158,8 +158,8 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
                 lnEnd = lnStart + lnPageSize;
             }
 
-            object[] laDataQuery = loDataQuery.GetQuery();
             string lsDataQuery = string.Empty;
+            object[] laDataQuery = loDataQuery.GetQuery();               
             if (laDataQuery.Length > 0)
             {
                 for (int lnDQ = 0; lnDQ < laDataQuery.Length; lnDQ++)
@@ -192,19 +192,22 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
             foreach (DataRowView loRow in loView)
             {
                 bool lbIsMatch = true;
-                //// Checking for matching row based on Data Key
-                foreach (string lsDataName in loData.DataModel.DataNameKeyList)
+                if (!string.IsNullOrEmpty(loData.DataKey))
                 {
-                    if (loData.DataModel.GetValueType(lsDataName) == typeof(Guid))
+                    //// Checking for matching row based on Data Key
+                    foreach (string lsDataName in loData.DataModel.DataNameKeyList)
                     {
-                        if ((Guid)loRow[lsDataName] != MaxConvertLibrary.ConvertToGuid(loData.DataModel.GetType(), loData.Get(lsDataName)))
+                        if (loData.DataModel.GetValueType(lsDataName) == typeof(Guid))
+                        {
+                            if ((Guid)loRow[lsDataName] != MaxConvertLibrary.ConvertToGuid(loData.DataModel.GetType(), loData.Get(lsDataName)))
+                            {
+                                lbIsMatch = false;
+                            }
+                        }
+                        else if (loRow[lsDataName] != loData.Get(lsDataName))
                         {
                             lbIsMatch = false;
                         }
-                    }
-                    else if (loRow[lsDataName] != loData.Get(lsDataName))
-                    {
-                        lbIsMatch = false;
                     }
                 }
 

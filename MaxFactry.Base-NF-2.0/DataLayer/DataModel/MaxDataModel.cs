@@ -219,6 +219,24 @@ namespace MaxFactry.Base.DataLayer
             }
         }
 
+        public virtual bool HasStorageKey
+        {
+            get
+            {
+                bool lbR = false;
+                foreach (string lsDataName in this.DataNameList)
+                {
+                    if (this.IsStored(lsDataName) && this.GetAttributeSetting(lsDataName, MaxDataModel.AttributeIsStorageKey))
+                    {
+                        lbR = true;
+                    }
+                }
+
+                return lbR;
+            }
+
+        }
+
         /// <summary>
         /// Gets a list of the data names stored in the tabular storage
         /// </summary>
@@ -274,7 +292,7 @@ namespace MaxFactry.Base.DataLayer
         }
 
         /// <summary>
-        /// Gets a list of primary keys
+        /// Gets a list of fields that are used to determine the unique identifier for the record
         /// </summary>
         public virtual string[] DataNameKeyList
         {
@@ -285,7 +303,7 @@ namespace MaxFactry.Base.DataLayer
                     MaxIndex loR = new MaxIndex();
                     foreach (string lsDataName in this.DataNameList)
                     {
-                        if (this.GetAttributeSetting(lsDataName, AttributeIsDataKey))
+                        if (this.IsStored(lsDataName) && this.GetAttributeSetting(lsDataName, AttributeIsDataKey))
                         {
                             loR.Add(lsDataName, true);
                         }
@@ -316,6 +334,33 @@ namespace MaxFactry.Base.DataLayer
                     }
 
                     lsR += lsValue;
+                }
+            }
+
+            return lsR;
+        }
+
+        public virtual string GetStorageKey(MaxData loData)
+        {
+            string lsR = string.Empty;
+            foreach (string lsDataName in this.DataNameList)
+            {
+                if (this.IsStored(lsDataName) && this.GetAttributeSetting(lsDataName, MaxDataModel.AttributeIsStorageKey))
+                {
+                    string lsValue = MaxConvertLibrary.ConvertToString(typeof(object), loData.Get(lsDataName));
+                    if (string.IsNullOrEmpty(lsValue))
+                    {
+                        lsR = null;
+                    }
+                    else if (null != lsR)
+                    {
+                        if (lsR.Length > 0)
+                        {
+                            lsR += this.KeySeparator;
+                        }
+
+                        lsR += lsValue;
+                    }
                 }
             }
 

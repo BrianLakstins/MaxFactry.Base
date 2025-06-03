@@ -54,7 +54,7 @@ namespace MaxFactry.Base.BusinessLayer
     using MaxFactry.Base.DataLayer.Library;
 
     /// <summary>
-    /// Base entity for interacting with files.
+    /// Base entity for interacting with files that need to keep previous versions
     /// </summary>
     public abstract class MaxBaseIdFileEntity : MaxBaseIdVersionedEntity
     {
@@ -276,7 +276,7 @@ namespace MaxFactry.Base.BusinessLayer
         /// <returns>Data updated based on sending of message.</returns>
         public string GetMimeType(string lsFileName)
         {
-            string lsR = MaxBaseIdVersionedRepository.GetMimeType(this.Data, lsFileName);
+            string lsR = MaxBaseReadRepository.GetMimeType(this.Data, lsFileName);
             return lsR;
         }
     }

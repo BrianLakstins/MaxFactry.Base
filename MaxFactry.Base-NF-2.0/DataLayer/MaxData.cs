@@ -69,8 +69,8 @@ namespace MaxFactry.Base.DataLayer
 {
     using System;
     using System.IO;
-    using MaxFactry.Core;
     using MaxFactry.Base.DataLayer.Library;
+    using MaxFactry.Core;
 
     /// <summary>
     /// Stores data retrieved from external sources in some name value pair type of collections.
@@ -117,10 +117,15 @@ namespace MaxFactry.Base.DataLayer
 
         public MaxData(string lsData)
         {
-            MaxIndex loDataIndex = MaxConvertLibrary.DeserializeObject(this.GetType(), lsData, typeof(MaxIndex)) as MaxIndex;
-            this._oIndex = loDataIndex["Index"] as MaxIndex;
-            this._oDataModel = loDataIndex["DataModel"] as MaxDataModel;
-            this._oExtendedIndex = loDataIndex["ExtendedIndex"] as MaxIndex;
+            MaxIndexItemStructure[] laData = MaxConvertLibrary.DeserializeObject(this.GetType(), lsData, typeof(MaxIndexItemStructure[])) as MaxIndexItemStructure[];
+            MaxIndex loDataIndex = new MaxIndex(laData);
+            MaxIndexItemStructure[] laIndex = MaxConvertLibrary.DeserializeObject(this.GetType(), loDataIndex["Index.MaxIndexItemStructure[]"] as string, typeof(MaxIndexItemStructure[])) as MaxIndexItemStructure[];
+            this._oIndex = new MaxIndex(laIndex);
+            MaxIndexItemStructure[] laExtendedIndex = MaxConvertLibrary.DeserializeObject(this.GetType(), loDataIndex["ExtendedIndex.MaxIndexItemStructure[]"] as string, typeof(MaxIndexItemStructure[])) as MaxIndexItemStructure[];
+            this._oExtendedIndex = new MaxIndex(laExtendedIndex);
+            this._sDataKey = loDataIndex["DataKey"] as string;
+            string lsDataModelType = loDataIndex["DataModelType"] as string;
+            this._oDataModel = MaxDataLibrary.GetDataModel(Type.GetType(lsDataModelType));
         }
 
         /// <summary>
@@ -389,41 +394,37 @@ namespace MaxFactry.Base.DataLayer
         {
             MaxIndex loDataIndex = new MaxIndex();
             MaxIndex loIndex = new MaxIndex();
-            //// Remove any stream values.  They don't serialize well
             string[] laDataName = this._oIndex.GetSortedKeyList();
             foreach (string lsDataName in laDataName)
             {
-                if (this._oIndex.Contains(lsDataName) && this._oIndex[lsDataName] is Stream)
+                //// Convert streams to just the text "stream"
+                object loValue = this._oIndex[lsDataName];
+                if (loValue is Stream)
                 {
-                    loIndex.Add(lsDataName, this._oIndex[lsDataName]);
-                    this._oIndex.Add(lsDataName, "stream");
+                    loValue = "stream";
                 }
+
+                loIndex.Add(lsDataName, loValue);
             }
 
+            loDataIndex.Add("Index.MaxIndexItemStructure[]", MaxConvertLibrary.SerializeObjectToString(this.GetType(), loIndex.GetSortedList()));
+
+            loIndex = new MaxIndex();
             laDataName = this._oExtendedIndex.GetSortedKeyList();
             foreach (string lsDataName in laDataName)
             {
-                if (this._oExtendedIndex.Contains(lsDataName) && this._oExtendedIndex[lsDataName] is Stream)
+                //// Convert streams to just the text "stream"
+                object loValue = this._oExtendedIndex[lsDataName];
+                if (loValue is Stream)
                 {
-                    loIndex.Add(lsDataName, this._oExtendedIndex[lsDataName]);
-                    this._oExtendedIndex.Add(lsDataName, "stream");
+                    loValue = "stream";
                 }
             }
 
-            loDataIndex.Add("Index", this._oIndex);
-            loDataIndex.Add("DataModel", this._oDataModel);
-            loDataIndex.Add("ExtendedIndex", this._oExtendedIndex);
-            string lsR = MaxConvertLibrary.SerializeObjectToString(this.GetType(), loDataIndex);
-            //// Add any stream values back.
-            if (loIndex.Count > 0)
-            {
-                laDataName = loIndex.GetSortedKeyList();
-                foreach (string lsKey in laDataName)
-                {
-                    this.Set(lsKey, loIndex[lsKey]);
-                }
-            }
-
+            loDataIndex.Add("ExtendedIndex.MaxIndexItemStructure[]", MaxConvertLibrary.SerializeObjectToString(this.GetType(), loIndex.GetSortedList()));
+            loDataIndex.Add("DataModelType", this.DataModel.GetType().AssemblyQualifiedName);
+            loDataIndex.Add("DataKey", this.DataKey);
+            string lsR = MaxConvertLibrary.SerializeObjectToString(this.GetType(), loDataIndex.GetSortedList());
             return lsR;
         }
 

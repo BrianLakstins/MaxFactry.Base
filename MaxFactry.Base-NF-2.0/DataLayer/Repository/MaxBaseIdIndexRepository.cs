@@ -64,11 +64,9 @@ namespace MaxFactry.Base.DataLayer
                 throw new MaxException("Error casting [" + loData.DataModel.GetType() + "] for DataModel");
             }
 
-            loData.Set(loDataModel.Name, lsName);
-            MaxData loDataFilter = new MaxData(loData);
-            loDataFilter.Set(loDataModel.Name, lsName);
             MaxDataQuery loDataQuery = new MaxDataQuery();
-            MaxDataList loDataList = Select(loDataFilter, loDataQuery, 0, 0, string.Empty, laDataNameList);
+            loDataQuery.AddFilter(new MaxDataFilter(loDataModel.Name, "=", lsName));
+            MaxDataList loDataList = Select(loData, loDataQuery, 0, 0, string.Empty, laDataNameList);
             return loDataList;
         }
 
@@ -87,11 +85,9 @@ namespace MaxFactry.Base.DataLayer
                 throw new MaxException("Error casting [" + loData.DataModel.GetType() + "] for DataModel");
             }
 
-            loData.Set(loDataModel.IndexId, loIndexId);
-            MaxData loDataFilter = new MaxData(loData);
-            loDataFilter.Set(loDataModel.IndexId, loIndexId);
             MaxDataQuery loDataQuery = new MaxDataQuery();
-            MaxDataList loDataList = Select(loDataFilter, loDataQuery, 0, 0, string.Empty, laDataNameList);
+            loDataQuery.AddFilter(new MaxDataFilter(loDataModel.IndexId, "=", loIndexId));
+            MaxDataList loDataList = Select(loData, loDataQuery, 0, 0, string.Empty, laDataNameList);
             return loDataList;
         }
 
@@ -113,11 +109,8 @@ namespace MaxFactry.Base.DataLayer
 
             loData.Set(loDataModel.Name, lsName);
             loData.Set(loDataModel.IndexId, loIndexId);
-            MaxData loDataFilter = new MaxData(loData);
-            loDataFilter.Set(loDataModel.IndexId, loIndexId);
-            loDataFilter.Set(loDataModel.Name, lsName);
             MaxDataQuery loDataQuery = new MaxDataQuery();
-            MaxDataList loDataList = Select(loDataFilter, loDataQuery, 0, 0, string.Empty, laDataNameList);
+            MaxDataList loDataList = Select(loData, loDataQuery, 0, 0, string.Empty, laDataNameList);
             return loDataList;
         }
 	}

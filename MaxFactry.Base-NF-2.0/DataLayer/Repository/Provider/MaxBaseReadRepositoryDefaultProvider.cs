@@ -41,6 +41,7 @@ namespace MaxFactry.Base.DataLayer.Provider
     using System.IO;
 	using MaxFactry.Core;
     using MaxFactry.Base.DataLayer.Library;
+    using MaxFactry.Base.DataLayer.Library.Provider;
 
     /// <summary>
     /// Provides base for creating Providers for Repositories that use a subclass of MaxDataModel for storage.
@@ -140,6 +141,7 @@ namespace MaxFactry.Base.DataLayer.Provider
 		public override void Initialize(string lsName, MaxIndex loConfig)
 		{
             base.Initialize(lsName, loConfig);
+            this.DefaultContextProviderType = typeof(MaxDataContextLibraryDefaultProvider);
             string lsDefaultContextProviderName = this.GetConfigValue(loConfig, MaxDataContextLibrary.DefaultContextProviderConfigName) as string;
             if (null != lsDefaultContextProviderName)
             {
