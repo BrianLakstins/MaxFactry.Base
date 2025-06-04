@@ -31,6 +31,8 @@
 // <change date="3/23/2024" author="Brian A. Lakstins" description="Initial creation">
 // <change date="3/26/2024" author="Brian A. Lakstins" description="Move logic for GetStreamPath from MaxData">
 // <change date="6/3/2025" author="Brian A. Lakstins" description="Specify Id as DataKey">
+// <change date="6/3/2025" author="Brian A. Lakstins" description="Fix issue with stream path">
+// <change date="6/3/2025" author="Brian A. Lakstins" description="Remove stream path">
 // </changelog>
 #endregion
 
@@ -57,13 +59,6 @@ namespace MaxFactry.Base.DataLayer
             : base()
         {
             this.AddDataKey(this.Id, typeof(Guid));
-        }
-
-        public override string[] GetStreamPath(MaxData loData)
-        {
-            List<string> loR = new List<string>(base.GetStreamPath(loData));
-            loR.Add(MaxConvertLibrary.ConvertToString(typeof(object), loData.Get(this.Id)));
-            return loR.ToArray();
         }
     }
 }

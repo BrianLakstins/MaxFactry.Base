@@ -89,6 +89,7 @@
 // <change date="5/23/2025" author="Brian A. Lakstins" description="Remove stream handling.  Should be part of DataContextLibraryProvider  Add multi record insert method.">
 // <change date="6/3/2025" author="Brian A. Lakstins" description="Fix LoadAll methods to not include any key filtering data. Add method to define default DataQuery.">
 // <change date="6/3/2025" author="Brian A. Lakstins" description="Clear changed data after successful insert.">
+// <change date="6/3/2025" author="Brian A. Lakstins" description="Fix issue with null error.">
 // </changelog>
 #endregion
 
@@ -1066,7 +1067,7 @@ namespace MaxFactry.Base.BusinessLayer
         public virtual MaxEntityList LoadAllByPage(int lnPageIndex, int lnPageSize, string lsPropertySort, params string[] laPropertyNameList)
         {
             MaxData loData = new MaxData(this.Data);
-            MaxEntityList loR = this.LoadAllByPage(loData, lnPageIndex, lnPageSize, lsPropertySort, null, laPropertyNameList);
+            MaxEntityList loR = this.LoadAllByPage(loData, lnPageIndex, lnPageSize, lsPropertySort, this.GetDataQuery(), laPropertyNameList);
             return loR;
         }
 
