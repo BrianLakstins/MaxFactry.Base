@@ -29,6 +29,7 @@
 // <changelog>
 // <change date="10/28/2022" author="Brian A. Lakstins" description="Initial creation.">
 // <change date="3/12/2024" author="Brian A. Lakstins" description="Make the end date nullable.">
+// <change date="6/4/2025" author="Brian A. Lakstins" description="Specify DataKey">
 // </changelog>
 #endregion
 
@@ -57,7 +58,7 @@ namespace MaxFactry.Base.DataLayer
 		public MaxBaseRelationDateDataModel()
 			: base()
 		{
-            this.AddKey(this.StartDate, typeof(DateTime));
+            this.AddDataKey(this.StartDate, typeof(DateTime));
             this.AddNullable(this.EndDate, typeof(DateTime));
         }
 	}

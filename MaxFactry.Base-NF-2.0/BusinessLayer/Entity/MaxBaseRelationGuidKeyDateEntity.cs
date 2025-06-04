@@ -29,6 +29,7 @@
 // <changelog>
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/24/2024" author="Brian A. Lakstins" description="Initial creation.">
+// <change date="6/4/2025" author="Brian A. Lakstins" description="Get DataQuery from entity">
 // </changelog>
 #endregion
 
@@ -118,7 +119,7 @@ namespace MaxFactry.Base.BusinessLayer
         /// <returns></returns>
         public MaxEntityList LoadAllByParentIdDateCache(Guid loParentId, DateTime ldDate)
         {
-            MaxDataQuery loDataQuery = new MaxDataQuery();
+            MaxDataQuery loDataQuery = this.GetDataQuery();
             loDataQuery.AddFilter(this.MaxBaseRelationGuidKeyDateDataModel.ParentId, "=", loParentId);
             loDataQuery.AddCondition("AND");
             loDataQuery.AddFilter(this.MaxBaseRelationGuidKeyDateDataModel.StartDate, "<", ldDate.ToUniversalTime());
@@ -141,7 +142,7 @@ namespace MaxFactry.Base.BusinessLayer
         /// <returns></returns>
         public MaxEntityList LoadAllByParentIdChildIdDateCache(Guid loParentId, Guid loChildId, DateTime ldDate)
         {
-            MaxDataQuery loDataQuery = new MaxDataQuery();
+            MaxDataQuery loDataQuery = this.GetDataQuery();
             loDataQuery.AddFilter(this.MaxBaseRelationGuidKeyDateDataModel.ParentId, "=", loParentId);
             loDataQuery.AddCondition("AND");
             loDataQuery.AddFilter(this.MaxBaseRelationGuidKeyDateDataModel.ChildId, "=", loChildId);

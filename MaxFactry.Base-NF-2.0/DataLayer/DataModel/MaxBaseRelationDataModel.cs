@@ -28,6 +28,7 @@
 #region Change Log
 // <changelog>
 // <change date="10/28/2022" author="Brian A. Lakstins" description="Initial creation.">
+// <change date="6/4/2025" author="Brian A. Lakstins" description="Specify DataKey and StorageKey">
 // </changelog>
 #endregion
 
@@ -71,8 +72,9 @@ namespace MaxFactry.Base.DataLayer
         public MaxBaseRelationDataModel()
 			: base()
 		{
-            this.AddKey(this.ParentId, typeof(Guid));
-            this.AddKey(this.ChildId, typeof(Guid));
+            this.AddDataKey(this.ParentId, typeof(Guid));
+            this.AddAttribute(this.ParentId, AttributeIsStorageKey, "true");
+            this.AddDataKey(this.ChildId, typeof(Guid));
             this.AddNullable(this.Name, typeof(string));
             this.AddNullable(this.RelativeOrder, typeof(int));
             this.AddNullable(this.RelationType, typeof(MaxShortString));

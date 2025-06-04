@@ -31,6 +31,7 @@
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/23/2024" author="Brian A. Lakstins" description="Incorporate parent class method.">
 // <change date="3/24/2024" author="Brian A. Lakstins" description="Updated for changes namespaces">
+// <change date="6/4/2025" author="Brian A. Lakstins" description="Get DataQuery from entity">
 // </changelog>
 #endregion
 
@@ -120,7 +121,7 @@ namespace MaxFactry.Base.BusinessLayer
         /// <returns></returns>
         public MaxEntityList LoadAllByParentIdDateCache(Guid loParentId, DateTime ldDate)
         {
-            MaxDataQuery loDataQuery = new MaxDataQuery();
+            MaxDataQuery loDataQuery = this.GetDataQuery();
             loDataQuery.AddFilter(this.MaxBaseRelationDateDataModel.ParentId, "=", loParentId);
             loDataQuery.AddCondition("AND");
             loDataQuery.AddFilter(this.MaxBaseRelationDateDataModel.StartDate, "<", ldDate.ToUniversalTime());
@@ -143,7 +144,7 @@ namespace MaxFactry.Base.BusinessLayer
         /// <returns></returns>
         public MaxEntityList LoadAllByParentIdChildIdDateCache(Guid loParentId, Guid loChildId, DateTime ldDate)
         {
-            MaxDataQuery loDataQuery = new MaxDataQuery();
+            MaxDataQuery loDataQuery =  this.GetDataQuery();
             loDataQuery.AddFilter(this.MaxBaseRelationDateDataModel.ParentId, "=", loParentId);
             loDataQuery.AddCondition("AND");
             loDataQuery.AddFilter(this.MaxBaseRelationDateDataModel.ChildId, "=", loChildId);

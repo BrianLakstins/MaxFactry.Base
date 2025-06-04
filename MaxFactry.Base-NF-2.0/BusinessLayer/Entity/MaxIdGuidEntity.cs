@@ -48,6 +48,7 @@
 // <change date="3/23/2024" author="Brian A. Lakstins" description="Updated for change to dependency class.">
 // <change date="3/24/2024" author="Brian A. Lakstins" description="Updated for changes namespaces">
 // <change date="4/9/2025" author="Brian A. Lakstins" description="Override SetInitial method insteading of altering Insert method.">
+// <change date="6/4/2025" author="Brian A. Lakstins" description="Get DataQuery from entity">
 // </changelog>
 #endregion
 
@@ -190,7 +191,7 @@ namespace MaxFactry.Base.BusinessLayer
         public virtual MaxEntityList LoadAllSinceCreatedDate(DateTime ldCreatedDate)
         {
             //// Add a Query 
-            MaxDataQuery loDataQuery = new MaxDataQuery();
+            MaxDataQuery loDataQuery = this.GetDataQuery();
             loDataQuery.StartGroup();
             loDataQuery.AddFilter(this.MaxIdDataModel.CreatedDate, ">", ldCreatedDate);
             loDataQuery.EndGroup();

@@ -29,6 +29,7 @@
 // <changelog>
 // <change date="4/9/2025" author="Brian A. Lakstins" description="Initial creation">
 // <change date="4/9/2025" author="Brian A. Lakstins" description="Add ways to customize the number used for the Id">
+// <change date="6/4/2025" author="Brian A. Lakstins" description="Get DataQuery from entity">
 // </changelog>
 #endregion
 
@@ -185,7 +186,7 @@ namespace MaxFactry.Base.BusinessLayer
                         long lnStartId = MaxConvertLibrary.ConvertToLong(typeof(object), lsStartId.PadRight(this.IdDigits, '0'));
                         long lnEndId = MaxConvertLibrary.ConvertToLong(typeof(object), lsEndId.PadRight(this.IdDigits, '0'));
 
-                        MaxDataQuery loDataQuery = new MaxDataQuery();
+                        MaxDataQuery loDataQuery = this.GetDataQuery();
                         loDataQuery.StartGroup();
                         loDataQuery.AddFilter(this.MaxBaseKeyLongDataModel.Id, ">=", lnStartId);
                         loDataQuery.AddAnd();
