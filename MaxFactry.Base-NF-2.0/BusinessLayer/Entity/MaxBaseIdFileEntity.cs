@@ -44,6 +44,7 @@
 // <change date="3/30/2024" author="Brian A. Lakstins" description="Get file indicated in FromFileName when saving.">
 // <change date="5/23/2025" author="Brian A. Lakstins" description="Use StreamLibrary directly.">
 // <change date="6/3/2025" author="Brian A. Lakstins" description="Remove need for custom repository">
+// <change date="6/4/2025" author="Brian A. Lakstins" description="Change base to GuidKey">
 // </changelog>
 #endregion
 
@@ -57,7 +58,7 @@ namespace MaxFactry.Base.BusinessLayer
     /// <summary>
     /// Base entity for interacting with files that need to keep previous versions
     /// </summary>
-    public abstract class MaxBaseIdFileEntity : MaxBaseIdVersionedEntity
+    public abstract class MaxBaseIdFileEntity : MaxBaseGuidKeyEntity
     {
         /// <summary>
         /// Long string of spaces to help with creating sorted strings.
@@ -80,6 +81,22 @@ namespace MaxFactry.Base.BusinessLayer
         public MaxBaseIdFileEntity(Type loDataModelType)
             : base(loDataModelType)
         {
+        }
+
+        /// <summary>
+        /// Gets or sets the name of the file.
+        /// </summary>
+        public string Name
+        {
+            get
+            {
+                return this.GetString(this.MaxBaseIdFileDataModel.Name);
+            }
+
+            set
+            {
+                this.Set(this.MaxBaseIdFileDataModel.Name, value);
+            }
         }
 
         /// <summary>
@@ -241,7 +258,38 @@ namespace MaxFactry.Base.BusinessLayer
                 this.Content = loFile.OpenRead();
             }
 
+            if (null == this.MimeType || this.MimeType.Length.Equals(0))
+            {
+                this.MimeType = MaxBaseReadRepository.GetMimeType(this.Data, this.FileName);
+            }
+
+            if (null == this.ContentName || this.ContentName.Length.Equals(0))
+            {
+                this.ContentName = this.FileName;
+            }
+
+            if (null == this.ContentType || this.ContentType.Length.Equals(0))
+            {
+                this.ContentType = MaxBaseReadRepository.GetMimeType(this.Data, this.ContentName);
+            }
+
             base.SetProperties();
+        }
+
+        protected override void SetInitial()
+        {
+            base.SetInitial();
+            if (null == this.Name || this.Name.Length.Equals(0))
+            {
+                if (null != this.FileName && this.FileName.Length > 0)
+                {
+                    this.Name = this.FileName;
+                }
+                else if (null != this.ContentName && this.ContentName.Length > 0)
+                {
+                    this.Name = this.ContentName;
+                }
+            }
         }
 
         /// <summary>

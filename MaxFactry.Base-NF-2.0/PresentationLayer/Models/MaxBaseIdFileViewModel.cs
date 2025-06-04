@@ -43,7 +43,7 @@ namespace MaxFactry.Base.PresentationLayer
     /// <summary>
     /// View model base
     /// </summary>
-    public abstract class MaxBaseIdFileViewModel : MaxBaseIdViewModel
+    public abstract class MaxBaseIdFileViewModel : MaxBaseGuidKeyViewModel
     {
         /// <summary>
         /// Internal storage of the content stream
@@ -75,6 +75,15 @@ namespace MaxFactry.Base.PresentationLayer
         /// Gets or sets the name of the file.
         /// </summary>
         public virtual string Name
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets or sets the name of the file.
+        /// </summary>
+        public virtual string ContentName
         {
             get;
             set;
@@ -166,6 +175,7 @@ namespace MaxFactry.Base.PresentationLayer
                 if (null != loEntity)
                 {
                     loEntity.Name = this.Name;
+                    loEntity.ContentName = this.ContentName;
                     loEntity.FileName = this.FileName;
                     loEntity.MimeType = this.MimeType;
                     if (null != this._oContent)
@@ -198,6 +208,7 @@ namespace MaxFactry.Base.PresentationLayer
                 if (null != loEntity && !Guid.Empty.Equals(loEntity.Id))
                 {
                     this.Name = loEntity.Name;
+                    this.ContentName = loEntity.ContentName;
                     this.FileName = loEntity.FileName;
                     this.ContentLength = loEntity.ContentLength.ToString();
                     this.ContentType = loEntity.ContentType;

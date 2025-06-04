@@ -31,6 +31,7 @@
 // <change date="3/26/2015" author="Brian A. Lakstins" description="Moved to MaxFactry.Base">
 // <change date="7/12/2016" author="Brian A. Lakstins" description="Add ContentName to be used for name of file related to the Content.">
 // <change date="4/30/2021" author="Brian A. Lakstins" description="Add content date for original file date and time.">
+// <change date="6/4/2025" author="Brian A. Lakstins" description="Change base to GuidKey">
 // </changelog>
 #endregion
 
@@ -38,13 +39,17 @@ namespace MaxFactry.Base.DataLayer
 {
 	using System;
     using System.IO;
-    using MaxFactry.Base.DataLayer;
 
 	/// <summary>
-    /// Defines base data model for data with a unique identifier
+    /// Defines base data model for binary files
 	/// </summary>
-    public class MaxBaseIdFileDataModel : MaxBaseIdVersionedDataModel
+    public class MaxBaseIdFileDataModel : MaxBaseGuidKeyDataModel
 	{
+        /// <summary>
+        /// Name for the content in the file
+        /// </summary>
+        public readonly string Name = "Name";
+
         /// <summary>
         /// Name for the content in the file
         /// </summary>
@@ -92,6 +97,7 @@ namespace MaxFactry.Base.DataLayer
 			: base()
 		{
             this.SetDataStorageName("MaxBaseIdFile");
+            this.AddType(this.Name, typeof(MaxShortString));
             this.AddNullable(this.ContentName, typeof(MaxShortString));
             this.AddType(this.ContentType, typeof(MaxShortString));
             this.AddType(this.ContentLength, typeof(long));
