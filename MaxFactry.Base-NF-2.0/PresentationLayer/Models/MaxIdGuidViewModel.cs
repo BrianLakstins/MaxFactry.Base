@@ -79,15 +79,6 @@ namespace MaxFactry.Base.PresentationLayer
             get;
             set;
         }
-
-        /// <summary>
-        /// Gets or sets the date created. Set at record creation.
-        /// </summary>
-        public virtual string CreatedDate
-        {
-            get;
-            set;
-        }
         
         /// <summary>
         /// Gets or sets the alternate Id
@@ -102,7 +93,7 @@ namespace MaxFactry.Base.PresentationLayer
         /// Loads the content of the Entity associated with this ViewModel
         /// </summary>
         /// <returns>true if successful</returns>
-        public virtual bool EntityLoad()
+        public override bool EntityLoad()
         {
             if (null != this.Id && this.Id.Length > 0)
             {

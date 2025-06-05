@@ -44,6 +44,7 @@
 namespace MaxFactry.Base.BusinessLayer
 {
     using System;
+    using MaxFactry.Core;
     using MaxFactry.Base.DataLayer;
     using MaxFactry.Base.DataLayer.Library;
 
