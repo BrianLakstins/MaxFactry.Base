@@ -40,6 +40,7 @@
 // <change date="3/22/2024" author="Brian A. Lakstins" description="Updated for change to MaxData">
 // <change date="3/24/2024" author="Brian A. Lakstins" description="Updated for changes namespaces">
 // <change date="6/3/2025" author="Brian A. Lakstins" description="Update to use base methods for managing data">
+// <change date="6/4/2025" author="Brian A. Lakstins" description="Fix issue inserting after updating">
 // </changelog>
 #endregion
 
@@ -142,7 +143,6 @@ namespace MaxFactry.Base.BusinessLayer
         {
             if (!Guid.Empty.Equals(loIndexId) && !string.IsNullOrEmpty(lsName))
             {
-                bool lbFound = false;
                 MaxEntityList loList = this.LoadAllActiveByIndexIdNameCache(loIndexId, lsName);
                 if (loList.Count > 0)
                 {
@@ -163,8 +163,7 @@ namespace MaxFactry.Base.BusinessLayer
                         }
                     }
                 }
-
-                if (!lbFound)
+                else
                 {
                     this.Data.Clear();
                     this.IndexId = loIndexId;
