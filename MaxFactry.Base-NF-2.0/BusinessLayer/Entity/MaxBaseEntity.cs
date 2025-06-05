@@ -37,13 +37,13 @@
 // <change date="3/22/2025" author="Brian A. Lakstins" description="Integrate with changes to base insert.">
 // <change date="4/9/2025" author="Brian A. Lakstins" description="Override SetInitial method insteading of altering Insert method.">
 // <change date="6/3/2025" author="Brian A. Lakstins" description="Remove special handling of StorageKey. Make sure CreatedDate is unique.  Override GetDataQuery to filter out deleted records.">
+// <change date="6/4/2025" author="Brian A. Lakstins" description="Fix IsDeleted filter">
 // </changelog>
 #endregion
 
 namespace MaxFactry.Base.BusinessLayer
 {
     using System;
-    using MaxFactry.Core;
     using MaxFactry.Base.DataLayer;
     using MaxFactry.Base.DataLayer.Library;
 
@@ -251,9 +251,13 @@ namespace MaxFactry.Base.BusinessLayer
         protected override MaxDataQuery GetDataQuery()
         {
             MaxDataQuery loR = base.GetDataQuery();
-            loR.StartGroup();
-            loR.AddFilter(this.MaxBaseDataModel.IsDeleted, "=", false);
-            loR.EndGroup();
+            if (this.Data.DataModel.IsStored(this.MaxBaseDataModel.IsDeleted))
+            {
+                loR.StartGroup();
+                loR.AddFilter(this.MaxBaseDataModel.IsDeleted, "=", false);
+                loR.EndGroup();
+            }
+
             return loR;
         }
 

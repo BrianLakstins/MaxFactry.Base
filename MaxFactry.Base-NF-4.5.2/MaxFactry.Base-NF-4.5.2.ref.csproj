@@ -391,7 +391,6 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <None Include="MaxFactry.pfx" />
     <None Include="MaxFactry.snk" />
     <None Include="Resources\mimetypes.txt" />
   </ItemGroup>
