@@ -63,6 +63,7 @@
 // <change date="3/26/2024" author="Brian A. Lakstins" description="Move logic for GetStreamPath.  Filter streams from extended data when converting to string.">
 // <change date="3/30/2024" author="Brian A. Lakstins" description="Add DataKey as unique identifer for any record.  Update cloning proccess to keep track of changes.  Remove Streams when creating string from data.  Keep DataKey when initialized from another MaxData.">
 // <change date="6/3/2025" author="Brian A. Lakstins" description="Update process to convert to and from string so it works with XML serializer">
+// <change date="6/9/2025" author="Brian A. Lakstins" description="Update DataKey to get from current data if not already set">
 // </changelog>
 #endregion
 
@@ -159,6 +160,11 @@ namespace MaxFactry.Base.DataLayer
         {
             get
             {
+                if (null == this._sDataKey)
+                {
+                    this._sDataKey = this.DataModel.GetDataKey(this);
+                }
+
                 return this._sDataKey;
             }
         }

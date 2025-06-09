@@ -28,6 +28,7 @@
 #region Change Log
 // <changelog>
 // <change date="4/4/2015" author="Brian A. Lakstins" description="Initial creation.">
+// <change date="6/9/2025" author="Brian A. Lakstins" description="Remove load because not needed.">
 // </changelog>
 #endregion
 
@@ -102,7 +103,6 @@ namespace MaxFactry.Module.Template.PresentationLayer
                 for (int lnK = 0; lnK < laKey.Length; lnK++)
                 {
                     MaxBaseTemplateViewModel loViewModel = new MaxBaseTemplateViewModel(this.EntityIndex[laKey[lnK]] as MaxEntity);
-                    loViewModel.Load();
                     this._oSortedList.Add(loViewModel);
                 }
             }

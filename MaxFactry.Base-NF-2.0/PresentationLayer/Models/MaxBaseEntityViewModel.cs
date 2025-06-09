@@ -35,6 +35,7 @@
 // <change date="10/3/2019" author="Brian A. Lakstins" description="Add support for using functional expressions for getting and setting properties the frameworks that support functional expressions.">
 // <change date="8/3/2020" author="Brian A. Lakstins" description="Change base class and remove duplicated methods.">
 // <change date="1/21/2025" author="Brian A. Lakstins" description="Updated to match MaxBaseEntity.">
+// <change date="6/9/2025" author="Brian A. Lakstins" description="Replace StorageKey with DataKey.  Load entity by DataKey">
 // </changelog>
 #endregion Change Log
 
@@ -81,17 +82,10 @@ namespace MaxFactry.Base.PresentationLayer
         /// <summary>
         /// Gets the date last updated.  Not changed through view model.
         /// </summary>
-        public virtual string StorageKey
+        public virtual string DataKey
         {
-            get
-            {
-                if (this.Entity is MaxBaseEntity)
-                {
-                    return ((MaxBaseEntity)this.Entity).StorageKey;
-                }
-
-                return string.Empty;
-            }
+            get;
+            set;
         }
 
         /// <summary>
@@ -249,10 +243,17 @@ namespace MaxFactry.Base.PresentationLayer
         /// <returns>true if successful</returns>
         public virtual bool EntityLoad()
         {
-            bool lbR = false;
-            if (!this.IsEntityLoaded && null != this.Entity)
+            bool lbR = this.IsEntityLoaded && null != this.Entity;
+            if (!lbR)
             {
-                lbR = true;
+                if (null != this.DataKey && string.Empty != this.DataKey && this.Entity is MaxBaseEntity)
+                {
+                    if (((MaxBaseEntity)this.Entity).LoadByDataKeyCache(this.DataKey))
+                    {
+                        this.IsEntityLoaded = true;
+                        lbR = true;
+                    }
+                }
             }
 
             return lbR;
@@ -345,6 +346,7 @@ namespace MaxFactry.Base.PresentationLayer
             if (this.Entity is MaxBaseEntity)
             {
                 MaxBaseEntity loEntity = (MaxBaseEntity)this.Entity;
+                this.DataKey = loEntity.DataKey;
                 if (loEntity.CreatedDate > DateTime.MinValue)
                 {
                     this.CreatedDate = MaxConvertLibrary.ConvertToDateTimeFromUtc(typeof(object), loEntity.CreatedDate).ToString("G");

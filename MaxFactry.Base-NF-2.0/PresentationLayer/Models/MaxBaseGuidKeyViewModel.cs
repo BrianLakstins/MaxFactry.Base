@@ -28,6 +28,7 @@
 #region Change Log
 // <changelog>
 // <change date="1/21/2025" author="Brian A. Lakstins" description="Initial creation">
+// <change date="6/9/2025" author="Brian A. Lakstins" description="Update method used to load when Id is available">
 // </changelog>
 #endregion
 
@@ -81,23 +82,14 @@ namespace MaxFactry.Base.PresentationLayer
         public override bool EntityLoad()
         {
             bool lbR = base.EntityLoad();
-            if (lbR)
+            if (!lbR)
             {
                 if (null != this.Id && string.Empty != this.Id && this.Entity is MaxBaseGuidKeyEntity)
                 {
-                    Guid loId = MaxConvertLibrary.ConvertToGuid(typeof(object), this.Id);
-                    if (Guid.Empty.Equals(loId))
+                    if (((MaxBaseGuidKeyEntity)this.Entity).LoadByDataKeyCache(this.Id))
                     {
-                        this.Entity.Clear();
-                        this.IsEntityLoaded = false;
-                    }
-                    else
-                    {
-                        if (((MaxBaseGuidKeyEntity)this.Entity).LoadByIdCache(loId))
-                        {
-                            this.IsEntityLoaded = true;
-                            lbR = true;
-                        }
+                        this.IsEntityLoaded = true;
+                        lbR = true;
                     }
                 }
             }

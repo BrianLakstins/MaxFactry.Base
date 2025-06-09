@@ -90,6 +90,9 @@
 // <change date="6/3/2025" author="Brian A. Lakstins" description="Fix LoadAll methods to not include any key filtering data. Add method to define default DataQuery.">
 // <change date="6/3/2025" author="Brian A. Lakstins" description="Clear changed data after successful insert.">
 // <change date="6/3/2025" author="Brian A. Lakstins" description="Fix issue with null error.">
+// <change date="6/9/2025" author="Brian A. Lakstins" description="Indicate success on update even when data has not changed, but log the info.">
+// <change date="6/9/2025" author="Brian A. Lakstins" description="Fix index mapping to default to all properties.">
+// <change date="6/9/2025" author="Brian A. Lakstins" description="Fix loading by filter to specify DataQuery correctly.">
 // </changelog>
 #endregion
 
@@ -403,7 +406,16 @@ namespace MaxFactry.Base.BusinessLayer
             bool lbR = false;
             OnUpdateBefore();
             this.SetProperties();
-            if (this.IsDataChanged && !string.IsNullOrEmpty(this.DataKey))
+            if (!this.IsDataChanged)
+            {
+                MaxLogLibrary.Log(new MaxLogEntryStructure(this.GetType(), "Update", MaxEnumGroup.LogInfo, "No data has been changed for update."));
+                lbR = true;
+            }
+            else if (string.IsNullOrEmpty(this.DataKey))
+            {
+                MaxLogLibrary.Log(new MaxLogEntryStructure(this.GetType(), "Update", MaxEnumGroup.LogError, "DataKey is not set for update."));
+            }
+            else
             {
                 int lnLimit = 5;
                 int lnTry = 0;
@@ -425,8 +437,13 @@ namespace MaxFactry.Base.BusinessLayer
                     return lbR;
                 }
             }
+            
 
-            OnUpdateFail();
+            if (!lbR)
+            {
+                OnUpdateFail();
+            }
+
             return lbR;
         }
 
@@ -531,74 +548,76 @@ namespace MaxFactry.Base.BusinessLayer
         /// </summary>
         /// <param name="laPropertyNameList"></param>
         /// <returns></returns>
-        public virtual MaxIndex MapIndex(params string[] laPropertyNameList)
+        public virtual MaxIndex MapIndex(params string[] laFilteredPropertyNameList)
         {
             MaxIndex loR = new MaxIndex();
-            if (null != laPropertyNameList)
+            MaxIndex loPropertyIndex = MaxFactry.Core.MaxFactryLibrary.GetPropertyList(this);
+            string[] laPropertyNameIndex = loPropertyIndex.GetSortedKeyList();
+            foreach (string lsPropertyName in laPropertyNameIndex)
             {
-                MaxIndex loPropertyIndex = MaxFactry.Core.MaxFactryLibrary.GetPropertyList(this);
-                string[] laPropertyNameIndex = loPropertyIndex.GetSortedKeyList();
-
-                foreach (string lsPropertyName in laPropertyNameIndex)
+                object loProperty = loPropertyIndex[lsPropertyName];
+                if (loProperty is PropertyInfo)
                 {
-                    object loProperty = loPropertyIndex[lsPropertyName];
-                    if (loProperty is PropertyInfo)
-                    {
-                        loPropertyIndex.Add(((PropertyInfo)loProperty).Name, loProperty);
-                        loPropertyIndex.Add(this.GetType().ToString() + "." + ((PropertyInfo)loProperty).Name, loProperty);
-                    }
+                    loPropertyIndex.Add(((PropertyInfo)loProperty).Name, loProperty);
+                    loPropertyIndex.Add(this.GetType().ToString() + "." + ((PropertyInfo)loProperty).Name, loProperty);
+                }
+            }
+
+            string[] laPropertyNameList = laFilteredPropertyNameList;
+            if (null == laPropertyNameList || laPropertyNameList.Length == 0)
+            {
+                laPropertyNameList = laPropertyNameIndex;
+            }
+
+            foreach (string lsPropertyName in laPropertyNameList)
+            {
+                string lsName = lsPropertyName;
+                if (lsPropertyName.Contains("."))
+                {
+                    lsName = lsPropertyName.Substring(lsPropertyName.LastIndexOf(".") + 1);
                 }
 
-                foreach (string lsPropertyName in laPropertyNameList)
+                loR.Add(lsName, string.Empty);
+                object loProperty = loPropertyIndex[lsPropertyName];
+                if (loProperty is PropertyInfo)
                 {
-                    string lsName = lsPropertyName;
-                    if (lsPropertyName.Contains("."))
+                    object loValue = ((PropertyInfo)loProperty).GetValue(this, null);
+                    if (loValue is MaxEntity)
                     {
-                        lsName = lsPropertyName.Substring(lsPropertyName.LastIndexOf(".") + 1);
+                        loR.Add(lsName, ((MaxEntity)loValue).MapIndex(laPropertyNameList));
                     }
-
-                    loR.Add(lsName, string.Empty);
-                    object loProperty = loPropertyIndex[lsPropertyName];
-                    if (loProperty is PropertyInfo)
+                    else if (loValue is double)
                     {
-                        object loValue = ((PropertyInfo)loProperty).GetValue(this, null);
-                        if (loValue is MaxEntity)
-                        {
-                            loR.Add(lsName, ((MaxEntity)loValue).MapIndex(laPropertyNameList));
-                        }
-                        else if (loValue is double)
-                        {
-                            if (double.MinValue != (double)loValue)
-                            {
-                                loR.Add(lsName, loValue);
-                            }
-                        }
-                        else if (loValue is int)
-                        {
-                            if (int.MinValue != (int)loValue)
-                            {
-                                loR.Add(lsName, loValue);
-                            }
-                        }
-                        else if (loValue is Guid)
-                        {
-                            if (Guid.Empty != (Guid)loValue)
-                            {
-                                loR.Add(lsName, loValue);
-                            }
-                        }
-                        else if (loValue is DateTime)
-                        {
-                            if ((DateTime)loValue > DateTime.MinValue)
-                            {
-                                //// Use same format as javascript date .toISOString()
-                                loR.Add(lsName, MaxConvertLibrary.ConvertToDateTimeUtc(typeof(object), loValue).ToString("o", CultureInfo.InvariantCulture));
-                            }
-                        }
-                        else if (loValue != null && !(loValue is Stream))
+                        if (double.MinValue != (double)loValue)
                         {
                             loR.Add(lsName, loValue);
                         }
+                    }
+                    else if (loValue is int)
+                    {
+                        if (int.MinValue != (int)loValue)
+                        {
+                            loR.Add(lsName, loValue);
+                        }
+                    }
+                    else if (loValue is Guid)
+                    {
+                        if (Guid.Empty != (Guid)loValue)
+                        {
+                            loR.Add(lsName, loValue);
+                        }
+                    }
+                    else if (loValue is DateTime)
+                    {
+                        if ((DateTime)loValue > DateTime.MinValue)
+                        {
+                            //// Use same format as javascript date .toISOString()
+                            loR.Add(lsName, MaxConvertLibrary.ConvertToDateTimeUtc(typeof(object), loValue).ToString("o", CultureInfo.InvariantCulture));
+                        }
+                    }
+                    else if (loValue != null && !(loValue is Stream))
+                    {
+                        loR.Add(lsName, loValue);
                     }
                 }
             }
@@ -1088,6 +1107,7 @@ namespace MaxFactry.Base.BusinessLayer
                 string[] laKey = loFilter.GetSortedKeyList();
                 if (laKey.Length > 0)
                 {
+                    MaxDataQuery loDataQueryFilter = new MaxDataQuery();
                     string lsNextCondition = string.Empty;
                     foreach (string lsKey in laKey)
                     {
@@ -1098,19 +1118,19 @@ namespace MaxFactry.Base.BusinessLayer
                         if (!string.IsNullOrEmpty(lsDataName) && !string.IsNullOrEmpty(lsValue))
                         {
                             if (!string.IsNullOrEmpty(lsNextCondition)) {
-                                loDataQuery.AddCondition(lsNextCondition);
+                                loDataQueryFilter.AddCondition(lsNextCondition);
                                 lsNextCondition = string.Empty;
                             }
 
                             if (loDetail.Contains("StartGroup"))
                             {
-                                loDataQuery.StartGroup();
+                                loDataQueryFilter.StartGroup();
                             }
 
-                            loDataQuery.AddFilter(lsDataName, loDetail.GetValueString("Operator"), lsValue);
+                            loDataQueryFilter.AddFilter(lsDataName, loDetail.GetValueString("Operator"), lsValue);
                             if (loDetail.Contains("EndGroup"))
                             {
-                                loDataQuery.EndGroup();
+                                loDataQueryFilter.EndGroup();
                             }
 
                             if (loDetail.Contains("Condition") && !string.IsNullOrEmpty(loDetail.GetValueString("Condition")))
@@ -1118,6 +1138,18 @@ namespace MaxFactry.Base.BusinessLayer
                                 lsNextCondition = loDetail.GetValueString("Condition");                                
                             }
                         }
+                    }
+
+                    Object[] laDataQueryFilter = loDataQueryFilter.GetQuery();
+                    if (laDataQueryFilter.Length > 0)
+                    {
+                        loDataQuery.StartGroup();
+                        foreach (object loQuery in laDataQueryFilter)
+                        {
+                            loDataQuery.Add(loQuery);
+                        }
+
+                        loDataQuery.EndGroup();
                     }
                 }
             }
@@ -1141,34 +1173,44 @@ namespace MaxFactry.Base.BusinessLayer
                 string[] laKey = loFilter.GetSortedKeyList();
                 if (laKey.Length > 0)
                 {
-                    loDataQuery.StartGroup();
+                    MaxDataQuery loDataQueryFilter = new MaxDataQuery();
                     foreach (string lsKey in laKey)
                     {
                         MaxIndex loDetail = loFilter[lsKey] as MaxIndex;
                         if (loDetail.Contains("StartGroup"))
                         {
-                            loDataQuery.StartGroup();
+                            loDataQueryFilter.StartGroup();
                         }
 
                         string lsPropertyName = loDetail.GetValueString("Name");
                         string lsDataName = this.GetDataName(this.Data.DataModel, lsPropertyName);
                         if (!string.IsNullOrEmpty(lsDataName))
                         {
-                            loDataQuery.AddFilter(lsDataName, loDetail.GetValueString("Operator"), loDetail.GetValueString("Value"));
+                            loDataQueryFilter.AddFilter(lsDataName, loDetail.GetValueString("Operator"), loDetail.GetValueString("Value"));
                         }
 
                         if (loDetail.Contains("EndGroup"))
                         {
-                            loDataQuery.EndGroup();
+                            loDataQueryFilter.EndGroup();
                         }
 
                         if (loDetail.Contains("Condition") && !string.IsNullOrEmpty(loDetail.GetValueString("Condition")))
                         {
-                            loDataQuery.AddCondition(loDetail.GetValueString("Condition"));
+                            loDataQueryFilter.AddCondition(loDetail.GetValueString("Condition"));
                         }
                     }
 
-                    loDataQuery.EndGroup();
+                    Object[] laDataQueryFilter = loDataQueryFilter.GetQuery();
+                    if (laDataQueryFilter.Length > 0)
+                    {
+                        loDataQuery.StartGroup();
+                        foreach (object loQuery in laDataQueryFilter)
+                        {
+                            loDataQuery.Add(loQuery);
+                        }
+
+                        loDataQuery.EndGroup();
+                    }
                 }
             }
 
