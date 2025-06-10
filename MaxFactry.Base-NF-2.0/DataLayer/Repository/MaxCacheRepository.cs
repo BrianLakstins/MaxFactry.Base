@@ -30,12 +30,14 @@
 // <change date="9/15/2014" author="Brian A. Lakstins" description="Based on MaxCRUDRepository">
 // <change date="12/18/2014" author="Brian A. Lakstins" description="Updated Provider and DataModel access pattern.">
 // <change date="3/26/2015" author="Brian A. Lakstins" description="Restructured.">
+// <change date="6/10/2015" author="Brian A. Lakstins" description="Add expire date.  Add MaxData and MaxDataList handling.">
 // </changelog>
 #endregion
 
 namespace MaxFactry.Base.DataLayer
 {
 	using System;
+    using System.Collections.Generic;
     using MaxFactry.Core;
 
     /// <summary>
@@ -82,10 +84,44 @@ namespace MaxFactry.Base.DataLayer
         /// <param name="loType">Type to use to get provider.</param>
         /// <param name="lsKey">Key to use to retrieve the object.</param>
         /// <param name="loValue">Object to save in cache.</param>
-        public static void Set(Type loType, string lsKey, object loValue)
+        /// <param name="ldExpire">Date and time when the object should expire.</param>
+        public static void Set(Type loType, string lsKey, object loValue, DateTime ldExpire)
         {
             IMaxCacheRepositoryProvider loProvider = Instance.GetCacheRepositoryProvider(loType);
-            loProvider.Set(lsKey, loValue);
+            if (loValue is MaxData)
+            {
+                loProvider.Set(lsKey, ((MaxData)loValue).ToString(), ldExpire);
+            }
+            else if (loValue is MaxDataList)
+            {
+                List<string> loDataKeyList = null;
+                MaxDataList loDataList = loValue as MaxDataList;
+                if (loDataList.Count > 0 && lsKey.Contains("/"))
+                {
+                    loDataKeyList = new List<string>();
+                    string lsKeyFormat = GetDataKeyFormat(lsKey);
+                    for (int lnD = 0; lnD < loDataList.Count; lnD++)
+                    {
+                        MaxData loData = loDataList[lnD];
+                        string lsDataKey = loData.DataModel.GetDataKey(loData);
+                        loDataKeyList.Add(lsDataKey);
+                        loProvider.Set(lsKeyFormat.Replace("{lsDataKey}", lsDataKey), loData.ToString(), ldExpire);
+                    }                    
+                }
+
+                if (null != loDataKeyList)
+                {
+                    loProvider.Set(lsKey, loDataKeyList.ToArray(), ldExpire);
+                }
+                else
+                {
+                    loProvider.Set(lsKey, loValue, ldExpire);
+                }
+            }
+            else
+            {
+                loProvider.Set(lsKey, loValue, ldExpire);
+            }
         }
 
         /// <summary>
@@ -98,8 +134,98 @@ namespace MaxFactry.Base.DataLayer
         public static object Get(Type loType, string lsKey, Type loTypeExpected)
         {
             IMaxCacheRepositoryProvider loProvider = Instance.GetCacheRepositoryProvider(loType);
-            object loR = loProvider.Get(lsKey, loTypeExpected);
+            object loR = null;
+
+            if (loTypeExpected == typeof(MaxData))
+            {
+                string lsValue = loProvider.Get(lsKey, typeof(string)) as string;
+                if (null != lsValue && lsValue.Length > 0)
+                {
+                    MaxData loData = new MaxData(lsValue);
+                    loData.Set("_IsFromMaxCache", true);
+                    loR = loData;
+                }
+            }
+            else if (loTypeExpected == typeof(MaxDataList) && lsKey.Contains("/"))
+            {
+                string[] laValue = loProvider.Get(lsKey, typeof(string[])) as string[];
+                if (null != laValue)
+                {
+                    string lsKeyFormat = GetDataKeyFormat(lsKey);
+                    MaxDataList loDataList = new MaxDataList();
+                    for (int lnD = 0; lnD < laValue.Length && null != loDataList; lnD++)
+                    {
+                        string lsDataKey = laValue[lnD];
+                        string lsValue = loProvider.Get(lsKeyFormat.Replace("{lsDataKey}", lsDataKey), typeof(string)) as string;
+                        if (null != lsValue && lsValue.Length > 0)
+                        {
+                            MaxData loData = new MaxData(lsValue);
+                            loData.Set("_IsFromMaxCache", true);
+                            if (null == loDataList.DataModel)
+                            {
+                                loDataList = new MaxDataList(loData.DataModel);
+                            }
+
+                            loDataList.Add(loData);
+                        }
+                        else
+                        {
+                            loDataList = null;
+                        }
+                    }
+
+                    loR = loDataList;
+                }
+                else
+                {
+                    loR = loProvider.Get(lsKey, typeof(MaxDataList));
+                }
+            }
+            else
+            {
+                loR = loProvider.Get(lsKey, typeof(MaxDataList));
+            }
+                
             return loR;
+        }
+
+        private static string GetDataKeyFormat(string lsKey)
+        {
+            string lsR = string.Empty;
+            string[] laKey = lsKey.Split(new char[] { '/' });
+            for (int lnK = 0; lnK < laKey.Length; lnK++)
+            {
+                string lsKeyPart = laKey[lnK];
+                string lsKeyPartToAdd = string.Empty;
+                if (lsKeyPart.StartsWith("LoadAll"))
+                {
+                    lsKeyPartToAdd = "LoadByDataKey/{lsDataKey}";
+                }
+                else if (lsKeyPart.Contains("="))
+                {
+                    //// Only include Propery Name list because LoadByDataKey can restrict the data returned
+                    if (lsKeyPart.StartsWith("PNLH="))
+                    {
+                        lsKeyPartToAdd = lsKeyPart;
+                    }
+                }
+                else
+                {
+                    lsKeyPartToAdd = lsKeyPart;
+                }
+
+                if (lsKeyPartToAdd.Length > 0)
+                {
+                    if (lsR.Length > 0)
+                    {
+                        lsR += "/";
+                    }
+
+                    lsR += lsKeyPartToAdd;
+                }
+            }
+
+            return lsR;
         }
 
         /// <summary>

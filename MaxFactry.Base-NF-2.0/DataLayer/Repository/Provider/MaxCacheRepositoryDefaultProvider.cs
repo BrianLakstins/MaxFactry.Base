@@ -32,7 +32,7 @@
 // <change date="6/8/2015" author="Brian A. Lakstins" description="Updated to no longer separate data by storage key.  That will need to be done in the key provided.">
 // <change date="4/20/2016" author="Brian A. Lakstins" description="Clean up code.  Fix problem removing with wildcard.">
 // <change date="1/16/2021" author="Brian A. Lakstins" description="Update storage and retrieval of MaxData and MaxDataList so data is serialized so cannot be changed when edited">
-// <change date="6/10/2025" author="Brian A. Lakstins" description="Handle null and blank keys.  Lock threads.  ">
+// <change date="6/10/2025" author="Brian A. Lakstins" description="Handle null and blank keys.  Lock threads. Add expire date. Remove specific MaxData and MaxDataList handling">
 // </changelog>
 #endregion
 
@@ -50,7 +50,12 @@ namespace MaxFactry.Base.DataLayer.Provider
         /// <summary>
         /// Index to store cached objects.
         /// </summary>
-        private static MaxIndex _oIndex = new MaxIndex();
+        private static MaxIndex _oCacheIndex = new MaxIndex();
+
+        /// <summary>
+        /// Index to store expiration times for cached objects.
+        /// </summary>
+        private static MaxIndex _oExpireIndex = new MaxIndex();
 
         /// <summary>
         /// Lock to prevent multiple thread access to Index
@@ -62,78 +67,15 @@ namespace MaxFactry.Base.DataLayer.Provider
         /// </summary>
         /// <param name="lsKey">Key to use to retrieve the object.</param>
         /// <param name="loValue">Object to save in cache.</param>
-        public virtual void Set(string lsKey, object loValue)
+        /// <param name="ldExpire">Date and time when the object should expire.</param>
+        public virtual void Set(string lsKey, object loValue, DateTime ldExpire)
         {
             lock (_oLock)
             {
-                if (null != loValue && lsKey.Length > 0)
+                if (lsKey.Length > 0)
                 {
-                    if (loValue is MaxData)
-                    {
-                        _oIndex.Add(lsKey, ((MaxData)loValue).ToString());
-                    }
-                    else if (loValue is MaxDataList && lsKey.Contains("/"))
-                    {
-                        MaxIndex loIdIndex = null;
-                        MaxDataList loDataList = loValue as MaxDataList;
-                        if (loDataList.Count > 0)
-                        {
-                            loIdIndex = new MaxIndex();
-                            string[] laKey = lsKey.Split(new char[] { '/' });
-                            if (laKey.Length >= 2)
-                            {
-                                string lsKeyBase = laKey[0] + "/" + laKey[1];
-                                if (laKey[laKey.Length - 1].StartsWith("FieldList="))
-                                {
-                                    lsKeyBase += "/" + laKey[laKey.Length - 1];
-                                }
-
-                                for (int lnD = 0; lnD < loDataList.Count && null != loIdIndex; lnD++)
-                                {
-                                    MaxData loData = loDataList[lnD];
-                                    if (loData.DataModel is MaxBaseIdDataModel)
-                                    {
-                                        MaxBaseIdDataModel loDataModel = loData.DataModel as MaxBaseIdDataModel;
-                                        string lsId = MaxConvertLibrary.ConvertToString(typeof(object), loData.Get(loDataModel.Id));
-                                        if (!string.IsNullOrEmpty(lsId))
-                                        {
-                                            this.Set(lsKeyBase + "/LoadById/" + lsId, loData);
-                                            if (null != loIdIndex)
-                                            {
-                                                loIdIndex.Add(lsId);
-                                            }
-                                        }
-                                        else
-                                        {
-                                            loIdIndex = null;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        loIdIndex = null;
-                                    }
-                                }
-                            }
-                        }
-
-                        if (null != loIdIndex)
-                        {
-                            string lsValue = MaxConvertLibrary.SerializeObjectToString(loIdIndex);
-                            _oIndex.Add(lsKey, lsValue);
-                        }
-                        else
-                        {
-                            _oIndex.Add(lsKey, loValue);
-                        }
-                    }
-                    else
-                    {
-                        _oIndex.Add(lsKey, loValue);
-                    }
-                }
-                else
-                {
-                    _oIndex.Add(lsKey, null);
+                    _oExpireIndex.Add(lsKey, ldExpire);
+                    _oCacheIndex.Add(lsKey, loValue);
                 }
             }
         }
@@ -149,74 +91,19 @@ namespace MaxFactry.Base.DataLayer.Provider
             object loR = null;
             lock (_oLock)
             {
-                if (lsKey.Length > 0 && null != _oIndex[lsKey])
+                if (null != lsKey && lsKey.Length > 0)
                 {
-                    if (loType == typeof(MaxData))
+                    if (_oExpireIndex.Contains(lsKey) && (DateTime)_oExpireIndex[lsKey] < DateTime.UtcNow)
                     {
-                        MaxData loData = new MaxData(_oIndex[lsKey] as string);
-                        loR = loData;
+                        this.Remove(lsKey);
                     }
-                    else if (loType == typeof(MaxDataList) && lsKey.Contains("/"))
+                    else if (null != _oCacheIndex[lsKey])
                     {
-                        string lsIdIndex = _oIndex[lsKey] as string;
-                        if (!string.IsNullOrEmpty(lsIdIndex))
-                        {
-                            MaxIndex loIdIndex = MaxConvertLibrary.DeserializeObject(lsIdIndex, typeof(MaxIndex)) as MaxIndex;
-                            if (null != loIdIndex)
-                            {
-                                string[] laKey = lsKey.Split(new char[] { '/' });
-                                if (laKey.Length >= 2)
-                                {
-                                    string lsKeyBase = laKey[0] + "/" + laKey[1];
-                                    if (laKey[laKey.Length - 1].StartsWith("FieldList="))
-                                    {
-                                        lsKeyBase += "/" + laKey[laKey.Length - 1];
-                                    }
-
-                                    string[] laIdKey = loIdIndex.GetSortedKeyList();
-                                    MaxDataList loDataList = null;
-                                    if (laIdKey.Length > 0)
-                                    {
-                                        loDataList = new MaxDataList();
-                                        for (int lnK = 0; lnK < laIdKey.Length && null != loDataList; lnK++)
-                                        {
-                                            string lsId = loIdIndex[laIdKey[lnK]] as string;
-                                            if (!string.IsNullOrEmpty(lsId))
-                                            {
-                                                MaxData loData = this.Get(lsKeyBase + "/LoadById/" + lsId, typeof(MaxData)) as MaxData;
-                                                if (null != loData)
-                                                {
-                                                    if (null == loDataList.DataModel)
-                                                    {
-                                                        loDataList = new MaxDataList(loData.DataModel);
-                                                    }
-
-                                                    loDataList.Add(loData);
-                                                }
-                                                else
-                                                {
-                                                    loDataList = null;
-                                                }
-                                            }
-                                        }
-                                    }
-
-                                    loR = loDataList;
-                                }
-                            }
-                        }
-
-                        if (null == loR)
-                        {
-                            loR = _oIndex[lsKey];
-                        }
-                    }
-                    else
-                    {
-                        loR = _oIndex[lsKey];
+                        loR = _oCacheIndex[lsKey];
                     }
                 }
             }
+
             return loR;
         }
 
@@ -226,7 +113,7 @@ namespace MaxFactry.Base.DataLayer.Provider
         /// <returns>List of current keys used to set items.</returns>
         public virtual string[] GetKeyList()
         {
-            string[] laR = _oIndex.GetSortedKeyList();
+            string[] laR = _oCacheIndex.GetSortedKeyList();
             return laR;
         }
 
@@ -250,14 +137,16 @@ namespace MaxFactry.Base.DataLayer.Provider
                             {
                                 if (lsKeyFromList.Substring(0, lsKeyStart.Length) == lsKeyStart)
                                 {
-                                    _oIndex.Remove(lsKeyFromList);
+                                    _oCacheIndex.Remove(lsKeyFromList);
+                                    _oExpireIndex.Remove(lsKeyFromList);
                                 }
                             }
                         }
                     }
                     else
                     {
-                        _oIndex.Remove(lsKey);
+                        _oCacheIndex.Remove(lsKey);
+                        _oExpireIndex.Remove(lsKey);
                     }
                 }
             }

@@ -29,6 +29,7 @@
 // <changelog>
 // <change date="9/15/2014" author="Brian A. Lakstins" description="Initial Release">
 // <change date="12/18/2014" author="Brian A. Lakstins" description="Removed unused Type parameters.">
+// <change date="6/10/2025" author="Brian A. Lakstins" description="Add expire date.">
 // </changelog>
 #endregion
 
@@ -47,7 +48,8 @@ namespace MaxFactry.Base.DataLayer
         /// </summary>
         /// <param name="lsKey">Key to use to retrieve the object.</param>
         /// <param name="loValue">Object to save in cache.</param>
-        void Set(string lsKey, object loValue);
+        /// <param name="ldExpire">Date and time when the object should expire.</param>
+        void Set(string lsKey, object loValue, DateTime ldExpire);
 
         /// <summary>
         /// Retrieves an object from the cache.
