@@ -41,6 +41,7 @@
 // <change date="3/22/2025" author="Brian A. Lakstins" description="Don't make active when inserting.">
 // <change date="4/9/2025" author="Brian A. Lakstins" description="Override SetInitial method instead of altering insert.">
 // <change date="6/3/2025" author="Brian A. Lakstins" description="Change base class. Update to use DataKey and StorageKey correctly">
+// <change date="6/10/2025" author="Brian A. Lakstins" description="Add expire data for caching.  Update how most recent version is retrieved.">
 // </changelog>
 #endregion
 
@@ -121,68 +122,47 @@ namespace MaxFactry.Base.BusinessLayer
         /// <returns>Current entity.</returns>
         public virtual MaxBaseIdVersionedEntity GetCurrent(string lsName)
         {
-            string lsCacheDataKey = this.GetCacheKey("LoadAllByNameCurrent/" + lsName);
-            MaxData loData = MaxCacheRepository.Get(this.GetType(), lsCacheDataKey, typeof(MaxData)) as MaxData;
-            if (this.Load(loData))
-            {
-                return this;
-            }
-
+            MaxBaseIdVersionedEntity loR = null;
             MaxDataQuery loDataQuery = this.GetDataQuery();
             loDataQuery.StartGroup();
             loDataQuery.AddFilter(new MaxDataFilter(this.MaxBaseIdVersionedDataModel.IsActive, "=", true));
+            loDataQuery.AddAnd();
+            loDataQuery.AddFilter(new MaxDataFilter(this.MaxBaseIdVersionedDataModel.Name, "=", lsName));
             loDataQuery.EndGroup();
 
-            loData = new MaxData(this.Data.DataModel);
-            loData.Set(this.MaxBaseIdVersionedDataModel.Name, lsName);
-
-            MaxDataList loDataList = MaxBaseReadRepository.Select(loData, loDataQuery, 0, 0, string.Empty);
-            if (loDataList.Count.Equals(0))
+            MaxData loData = new MaxData(this.Data.DataModel);
+            MaxEntityList loList = this.LoadAllByPageCache(loData, 1, 10, this.MaxBaseIdVersionedDataModel.Version + " desc", loDataQuery);
+            if (loList.Count == 0)
             {
                 loDataQuery = this.GetDataQuery();
-                loDataList = MaxBaseReadRepository.Select(loData, loDataQuery, 0, 0, string.Empty);
+                loDataQuery.StartGroup();
+                loDataQuery.AddFilter(new MaxDataFilter(this.MaxBaseIdVersionedDataModel.Name, "=", lsName));
+                loDataQuery.EndGroup();
+                loList = this.LoadAllByPageCache(loData, 1, 10, this.MaxBaseIdVersionedDataModel.Version + " desc", loDataQuery);
             }
 
-            int lnVersionCurrent = -1;
-            for (int lnD = 0; lnD < loDataList.Count; lnD++)
+            if (loList.Count == 1)
             {
-                if (this.Load(loDataList[lnD]) && this.Version > lnVersionCurrent)
-                {
-                    lnVersionCurrent = this.Version;
-                }
+                loR = loList[0] as MaxBaseIdVersionedEntity;
             }
-
-            if (lnVersionCurrent >= 0)
+            else if (loList.Count > 1)
             {
-                // Mark any that are not the latest version as inactive to speed up future requests.
-                for (int lnD = 0; lnD < loDataList.Count; lnD++)
+                for (int lnE = 0; lnE < loList.Count; lnE++)
                 {
-                    if (this.Load(loDataList[lnD]) && this.IsActive && this.Version != lnVersionCurrent)
+                    if (null == loR)
                     {
-                        this.IsActive = false;
-                        this.Update();
+                        loR = loList[lnE] as MaxBaseIdVersionedEntity;
                     }
-                }
-
-                for (int lnD = 0; lnD < loDataList.Count; lnD++)
-                {
-                    if (this.Load(loDataList[lnD]) && this.Version == lnVersionCurrent)
+                    else if (loR.Version < (loList[lnE] as MaxBaseIdVersionedEntity).Version)
                     {
-                        if (!this.IsActive)
-                        {
-                            this.IsActive = true;
-                            this.Update();
-                        }
-
-                        MaxCacheRepository.Set(this.GetType(), lsCacheDataKey, this.Data);
-                        return this;
+                        loR.IsActive = false;
+                        loR.Update();
+                        loR = loList[lnE] as MaxBaseIdVersionedEntity;
                     }
                 }
             }
 
-            this.Clear();
-            MaxCacheRepository.Set(this.GetType(), lsCacheDataKey, this.Data.Clone());
-            return this;
+            return loR;
         }
 
         /// <summary>
@@ -194,11 +174,11 @@ namespace MaxFactry.Base.BusinessLayer
             int lnR = 0;
             lock (_oLock)
             {
-                MaxDataQuery loDataQuery = this.GetDataQuery();
+                //// Get the largest version number for this name regardless of active or deleted.
+                MaxDataQuery loDataQuery = new MaxDataQuery();
                 MaxData loData = new MaxData(this.Data.DataModel);
                 loData.Set(this.MaxBaseIdVersionedDataModel.Name, this.Name);
-                MaxDataList loDataList = MaxBaseReadRepository.Select(loData, loDataQuery, 0, 0, string.Empty);
-                //// Get the largest version number of any entity regardless of active or deleted.
+                MaxDataList loDataList = MaxBaseReadRepository.Select(loData, loDataQuery, 1, 10, this.MaxBaseIdVersionedDataModel.Version + "  desc");
                 int lnVersionCurrent = 0;
                 for (int lnD = 0; lnD < loDataList.Count; lnD++)
                 {
