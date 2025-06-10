@@ -30,6 +30,7 @@
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/22/2024" author="Brian A. Lakstins" description="Initial creation.  Based on MaxStorageWriteRepository.">
 // <change date="5/21/2025" author="Brian A. Lakstins" description="Remove stream handling.  Return flag based status codes. Always handle a list.">
+// <change date="6/10/2025" author="Brian A. Lakstins" description="Fix deleting.">
 // </changelog>
 #endregion
 
@@ -184,7 +185,7 @@ namespace MaxFactry.Base.DataLayer
         /// <returns>true if success and false if any issues</returns>
         public static bool Delete(MaxData loData)
         {
-            MaxDataList loDataList = new MaxDataList();
+            MaxDataList loDataList = new MaxDataList(loData.DataModel);
             loDataList.Add(loData);
             int lnReturn = Delete(loDataList);
             if (lnReturn == 0)
