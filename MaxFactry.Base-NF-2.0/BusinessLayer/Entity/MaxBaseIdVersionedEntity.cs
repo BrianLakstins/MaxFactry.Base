@@ -121,7 +121,7 @@ namespace MaxFactry.Base.BusinessLayer
         /// <returns>Current entity.</returns>
         public virtual MaxBaseIdVersionedEntity GetCurrent(string lsName)
         {
-            string lsCacheDataKey = this.GetCacheKey() + "LoadAllByNameCurrent/" + lsName;
+            string lsCacheDataKey = this.GetCacheKey("LoadAllByNameCurrent/" + lsName);
             MaxData loData = MaxCacheRepository.Get(this.GetType(), lsCacheDataKey, typeof(MaxData)) as MaxData;
             if (this.Load(loData))
             {

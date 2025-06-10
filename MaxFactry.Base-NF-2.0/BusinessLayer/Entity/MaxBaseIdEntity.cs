@@ -148,7 +148,7 @@ namespace MaxFactry.Base.BusinessLayer
             get
             {
                 DateTime ldR = DateTime.MinValue;
-                string lsCacheKey = this.GetCacheKey() + "Archive";
+                string lsCacheKey = this.GetCacheKey("Archive");
                 object ldArchive = MaxCacheRepository.Get(typeof(object), lsCacheKey, typeof(DateTime));
                 if (null != ldArchive && ldArchive is DateTime)
                 {
@@ -168,7 +168,7 @@ namespace MaxFactry.Base.BusinessLayer
 
             set
             {
-                string lsCacheKey = this.GetCacheKey() + "Archive";
+                string lsCacheKey = this.GetCacheKey("Archive");
                 MaxCacheRepository.Set(typeof(object), lsCacheKey, value);
                 MaxConfigurationLibrary.SetValue(MaxEnumGroup.ScopePersistent, lsCacheKey, value);
             }
@@ -310,7 +310,7 @@ namespace MaxFactry.Base.BusinessLayer
                             {
                                 if (MaxBaseWriteRepository.Delete(this.Data))
                                 {
-                                    string lsCacheKey = this.GetCacheKey() + "Load*";
+                                    string lsCacheKey = this.GetCacheKey("Load");
                                     MaxCacheRepository.Remove(this.GetType(), lsCacheKey);
                                     lbR = true;
                                 }
@@ -418,7 +418,7 @@ namespace MaxFactry.Base.BusinessLayer
         {
             bool lbR = false;
             //// Check defaults once per application run
-            string lsCacheKey = this.GetCacheKey() + "CheckDefaults";
+            string lsCacheKey = this.GetCacheKey("CheckDefaults");
             object loIsChecked = MaxCacheRepository.Get(this.GetType(), lsCacheKey, typeof(bool));
             if (null == loIsChecked || (loIsChecked is bool && !(bool)loIsChecked))
             {

@@ -108,6 +108,7 @@ namespace MaxFactry.Base.BusinessLayer
     using MaxFactry.Core;
     using MaxFactry.Base.DataLayer;
     using MaxFactry.Base.DataLayer.Library;
+    using System.Security.Cryptography;
 
     /// <summary>
     /// Base Business Layer Entity
@@ -180,11 +181,6 @@ namespace MaxFactry.Base.BusinessLayer
         /// Internal storage of EntityList this entity is a part of.
         /// </summary>
         private MaxEntityList _oEntityList = null;
-
-        /// <summary>
-        /// Internal storage of base cache key
-        /// </summary>
-        private string _sCacheKey = null;
 
         /// <summary>
         /// Initializes a new instance of the MaxEntity class
@@ -347,9 +343,9 @@ namespace MaxFactry.Base.BusinessLayer
             if (lbR)
             {
                 this.Data.ClearChanged();
-                string lsCacheKey = this.GetCacheKey() + "LoadByKey/" + this.DataKey;
+                string lsCacheKey = this.GetCacheKey("LoadByKey/" + this.DataKey);
                 MaxCacheRepository.Set(this.GetType(), lsCacheKey, this.Data);
-                lsCacheKey = this.GetCacheKey() + "LoadAll*";
+                lsCacheKey = this.GetCacheKey("LoadAll*");
                 MaxCacheRepository.Remove(this.GetType(), lsCacheKey);
                 OnInsertAfter();
             } 
@@ -429,9 +425,9 @@ namespace MaxFactry.Base.BusinessLayer
 
                 if (lbR)
                 {
-                    string lsCacheKey = this.GetCacheKey() + "LoadByKey/" + this.DataKey;
+                    string lsCacheKey = this.GetCacheKey("LoadByKey/" + this.DataKey);
                     MaxCacheRepository.Set(this.GetType(), lsCacheKey, this.Data);
-                    lsCacheKey = this.GetCacheKey() + "LoadAll*";
+                    lsCacheKey = this.GetCacheKey("LoadAll*");
                     MaxCacheRepository.Remove(this.GetType(), lsCacheKey);
                     OnUpdateAfter();
                     return lbR;
@@ -496,7 +492,7 @@ namespace MaxFactry.Base.BusinessLayer
                 lbR = MaxBaseWriteRepository.Delete(this.Data);
                 if (lbR)
                 {
-                    string lsCacheKey = this.GetCacheKey() + "LoadAll*";
+                    string lsCacheKey = this.GetCacheKey("LoadAll*");
                     MaxCacheRepository.Remove(this.GetType(), lsCacheKey);
                     OnDeleteAfter();
                     return lbR;
@@ -925,7 +921,7 @@ namespace MaxFactry.Base.BusinessLayer
         /// <returns>List of entities</returns>
         public virtual MaxEntityList LoadAllCache(params string[] laPropertyNameList)
         {
-            string lsCacheDataKey = this.GetCacheKey() + "LoadAll";
+            string lsCacheDataKey = this.GetCacheKey("LoadAll");
             if (null != laPropertyNameList && laPropertyNameList.Length > 0)
             {
                 lsCacheDataKey += "/PropertyNameHash=" + MaxEncryptionLibrary.GetHash(typeof(object), MaxEncryptionLibrary.MD5Hash, string.Concat(laPropertyNameList));
@@ -988,7 +984,7 @@ namespace MaxFactry.Base.BusinessLayer
         /// <returns></returns>
         protected virtual MaxEntityList LoadAllByPageCache(MaxData loData, int lnPageIndex, int lnPageSize, string lsPropertySort, MaxDataQuery loDataQuery, params string[] laPropertyNameList)
         {
-            string lsCacheDataListKey = this.GetCacheKey() + "LoadAllByPage/" + lnPageIndex.ToString() + "/" + lnPageSize + "/" + lsPropertySort;
+            string lsCacheDataListKey = "LoadAllByPage/" + lnPageIndex.ToString() + "/" + lnPageSize + "/" + lsPropertySort;
             if (null != loData)
             {
                 lsCacheDataListKey += "/DataHash=" + MaxEncryptionLibrary.GetHash(typeof(object), MaxEncryptionLibrary.MD5Hash, loData.ToString());
@@ -1003,6 +999,8 @@ namespace MaxFactry.Base.BusinessLayer
             {
                 lsCacheDataListKey += "/PropertyNameHash=" + MaxEncryptionLibrary.GetHash(typeof(object), MaxEncryptionLibrary.MD5Hash, string.Concat(laPropertyNameList));
             }
+
+            lsCacheDataListKey = this.GetCacheKey(lsCacheDataListKey);
 
             MaxDataList loDataList = MaxCacheRepository.Get(this.GetType(), lsCacheDataListKey, typeof(MaxDataList)) as MaxDataList;
             string lsOrderBy = this.GetOrderBy(loData.DataModel, lsPropertySort);
@@ -1331,14 +1329,29 @@ namespace MaxFactry.Base.BusinessLayer
         /// Gets a key that can be used for caching this entity.
         /// </summary>
         /// <returns>a key to use for the cache</returns>
-        public virtual string GetCacheKey()
+        public virtual string GetCacheKey(string lsKey)
         {
-            if (null == this._sCacheKey)
+            string lsR = string.Empty;
+            if (null != this.Data && null != this.Data.DataModel && lsKey.Length > 0)
             {
-                this._sCacheKey = this.GetType().ToString() + "/";
+                lsR = this.GetType().ToString();
+                if (this.Data.DataModel.HasStorageKey)
+                {
+                    lsR = string.Empty;
+                    string lsStorageKey = this.Data.DataModel.GetStorageKey(this.Data);
+                    if (null != lsStorageKey && lsStorageKey.Length > 0)
+                    {
+                        lsR = this.GetType().ToString() + "/" + lsStorageKey;
+                    }
+                }
+
+                if (lsR.Length > 0)
+                {
+                    lsR += "/" + lsKey;
+                }
             }
 
-            return this._sCacheKey;
+            return lsR;
         }
 
         /// <summary>
@@ -1430,7 +1443,7 @@ namespace MaxFactry.Base.BusinessLayer
                         }
 
                         lsStreamPath += "/" + lsDataName;
-                        string lsCacheDataKey = this.GetCacheKey() + "GetString/" + lsStreamPath;
+                        string lsCacheDataKey = this.GetCacheKey("GetString/" + lsStreamPath);
                         MaxCacheRepository.Remove(this.GetType(), lsCacheDataKey);
                     }
                     catch (Exception loE)
@@ -1578,7 +1591,7 @@ namespace MaxFactry.Base.BusinessLayer
                 }
 
                 lsStreamPath += "/" + lsDataName;
-                string lsCacheDataKey = this.GetCacheKey() + "GetString/" + lsStreamPath;
+                string lsCacheDataKey = this.GetCacheKey("GetString/" + lsStreamPath);
                 loValue = MaxCacheRepository.Get(this.GetType(), lsCacheDataKey, typeof(string)) as string;
                 if (null == loValue)
                 {

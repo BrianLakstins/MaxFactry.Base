@@ -345,17 +345,6 @@ namespace MaxFactry.Base.BusinessLayer
             return loEntityList;
         }
 
-        public override string GetCacheKey()
-        {
-            string lsR = base.GetCacheKey();
-            if (this.Data.DataModel.IsStored(this.MaxBaseDataModel.StorageKey))
-            {
-                lsR += this.StorageKey + "/";
-            }
-
-            return lsR;
-        }
-
         /// <summary>
         /// Gets a unique time to use for a log entry so that no two events are logged at exactly the same time.
         /// </summary>

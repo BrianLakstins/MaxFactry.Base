@@ -140,7 +140,7 @@ namespace MaxFactry.Base.BusinessLayer
         /// <returns>True if data was found, loaded, and not marked as deleted.  False could be not found, or deleted.</returns>
         public virtual bool LoadByIdCache(Guid loId)
         {
-            string lsCacheIdDataKey = this.GetCacheKey() + "LoadById/" + loId.ToString();
+            string lsCacheIdDataKey = this.GetCacheKey("LoadById/" + loId.ToString());
             MaxData loData = MaxCacheRepository.Get(this.GetType(), lsCacheIdDataKey, typeof(MaxData)) as MaxData;
             if (null == loData)
             {
@@ -227,7 +227,7 @@ namespace MaxFactry.Base.BusinessLayer
         {
             if (base.Update())
             {
-                string lsCacheKey = this.GetCacheKey() + "LoadById/" + MaxConvertLibrary.ConvertToString(typeof(object), this.Id);
+                string lsCacheKey = this.GetCacheKey("LoadById/" + MaxConvertLibrary.ConvertToString(typeof(object), this.Id));
                 MaxCacheRepository.Set(this.GetType(), lsCacheKey, this.Data);
                 return true;
             }
@@ -243,7 +243,7 @@ namespace MaxFactry.Base.BusinessLayer
         {
             if (base.Delete())
             {
-                string lsCacheKey = this.GetCacheKey() + "LoadById/" + MaxConvertLibrary.ConvertToString(typeof(object), this.Id);
+                string lsCacheKey = this.GetCacheKey("LoadById/" + MaxConvertLibrary.ConvertToString(typeof(object), this.Id));
                 MaxCacheRepository.Remove(this.GetType(), lsCacheKey);
                 return true;
             }
