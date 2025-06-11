@@ -58,6 +58,7 @@
 // <change date="3/25/2024" author="Brian A. Lakstins" description="Remove handling of DataContext">
 // <change date="6/3/2025" author="Brian A. Lakstins" description="Get StorageKey from DataModel definition">
 // <change date="6/3/2025" author="Brian A. Lakstins" description="Update getting StorageKey">
+// <change date="6/11/2025" author="Brian A. Lakstins" description="Rename StorageKey to ApplicationKey and try to prevent stack overflow">
 // </changelog>
 #endregion
 
@@ -82,7 +83,7 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
         /// <summary>
         /// Default storage key
         /// </summary>
-        private string _sDefaultStorageKey = null;
+        private string _sDefaultApplicationKey = null;
 
         /// <summary>
         /// Gets the context provider using the Repository provider for this type
@@ -116,43 +117,17 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
         /// </summary>
         /// <param name="loData">The data to be stored using the storage key.</param>
         /// <returns>string used for the storage key</returns>
-        public virtual string GetStorageKey(MaxData loData)
+        public virtual string GetApplicationKey()
         {
-            string lsR = this.GetStorageKeyFromProcess();
+            string lsR = this.GetApplicationKeyFromProcess();
             if (null == lsR || lsR.Length.Equals(0))
             {
-                lsR = this.GetStorageKeyFromConfiguration();
+                lsR = this.GetApplicationKeyFromConfiguration();
             }
-
-            if (loData.DataModel.HasStorageKey)
-            {
-                if (loData.DataModel is MaxBaseDataModel && !string.IsNullOrEmpty(lsR))
-                {
-                    MaxBaseDataModel loDataModel = loData.DataModel as MaxBaseDataModel;
-                    foreach (string lsDataName in loDataModel.DataNameList)
-                    {
-                        if (loDataModel.IsStored(lsDataName) &&
-                            loDataModel.GetAttributeSetting(lsDataName, MaxDataModel.AttributeIsStorageKey) &&
-                            loDataModel.StorageKey == lsDataName &&
-                            null == loData.Get(lsDataName))
-                        {
-                            loData.Set(lsDataName, lsR);
-                        }
-                    }
-                }
-
-                string lsDataStorageKey = loData.DataModel.GetStorageKey(loData);
-                if (!string.IsNullOrEmpty(lsDataStorageKey))
-                {
-                    lsR = lsDataStorageKey;
-                }
-            }
-
-
 
             if (lsR.Length == 0)
             {
-                MaxFactry.Core.MaxLogLibrary.Log(new MaxLogEntryStructure("GetStorageKeyProvider", MaxEnumGroup.LogError, "GetStorageKey(MaxData loData) ended with blank storagekey."));
+                MaxFactry.Core.MaxLogLibrary.Log(new MaxLogEntryStructure(this.GetType(), "GetApplicationKey", MaxEnumGroup.LogError, "GetApplicationKey() ended with blank storagekey."));
             }
 
             return lsR;
@@ -308,7 +283,7 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
             return loR;
         }
 
-        protected virtual string GetStorageKeyFromProcess()
+        protected virtual string GetApplicationKeyFromProcess()
         {
             string lsR = MaxConfigurationLibrary.GetValue(MaxEnumGroup.ScopeProcess, MaxFactryLibrary.MaxStorageKeyName) as string;
             return lsR;
@@ -352,42 +327,44 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
             return lsR;
         }
 #else
-        protected virtual string GetStorageKeyFromConfigurationConditional()
+        protected virtual string GetApplicationKeyFromConfigurationConditional()
         {
             string lsR = string.Empty;
             string lsLog = string.Empty;
             Stopwatch loWatch = Stopwatch.StartNew();
-            string lsDefaultStorageKey = new Guid("7AAFA5DF-B2A9-462F-918A-C8A4242DC348").ToString().ToLower();
-            if (null == this._sDefaultStorageKey || this._sDefaultStorageKey == lsDefaultStorageKey)
+            string lsDefaultApplicationKey = new Guid("7AAFA5DF-B2A9-462F-918A-C8A4242DC348").ToString().ToLower();
+            if (null == this._sDefaultApplicationKey || this._sDefaultApplicationKey == lsDefaultApplicationKey)
             {
-                //// Without the storagekey defined in the data, default to the storagekey for the application
-                this._sDefaultStorageKey = MaxConvertLibrary.ConvertToString(typeof(object), MaxConfigurationLibrary.GetValue(MaxEnumGroup.ScopeApplication, MaxFactryLibrary.MaxStorageKeyName)).ToLower();
-                if (null == this._sDefaultStorageKey || this._sDefaultStorageKey.Length == 0)
+                //// Without the application key defined in the data, default to the application key for the application
+                this._sDefaultApplicationKey = MaxConvertLibrary.ConvertToString(typeof(object), MaxConfigurationLibrary.GetValue(MaxEnumGroup.ScopeApplication, MaxFactryLibrary.MaxStorageKeyName)).ToLower();
+                if (null == this._sDefaultApplicationKey || this._sDefaultApplicationKey.Length == 0)
                 {
-                    this._sDefaultStorageKey = lsDefaultStorageKey;
-                    lsLog += "|_sDefaultStorageKey|" + loWatch.ElapsedTicks;
+                    this._sDefaultApplicationKey = lsDefaultApplicationKey;
+                    lsLog += "|_sDefaultApplicationKey|" + loWatch.ElapsedTicks;
                 }
             }
 
-            object loStorageKey = MaxConfigurationLibrary.GetValue(MaxEnumGroup.ScopeSession, MaxFactryLibrary.MaxStorageKeyName);
+            //// In case any of the configuration methods need a default application key, set it in the process scope
+            MaxConfigurationLibrary.SetValue(MaxEnumGroup.ScopeProcess, MaxFactryLibrary.MaxStorageKeyName, this._sDefaultApplicationKey);
+            object loApplicationKey = MaxConfigurationLibrary.GetValue(MaxEnumGroup.ScopeSession, MaxFactryLibrary.MaxStorageKeyName);
             lsLog += "|ScopeSession|" + loWatch.ElapsedTicks;
-            if (null == loStorageKey || loStorageKey.ToString().Trim().Length.Equals(0) || (loStorageKey is Guid && Guid.Empty.Equals((Guid)loStorageKey)))
+            if (null == loApplicationKey || loApplicationKey.ToString().Trim().Length.Equals(0) || (loApplicationKey is Guid && Guid.Empty.Equals((Guid)loApplicationKey)))
             {
-                loStorageKey = MaxConfigurationLibrary.GetValue(MaxEnumGroup.ScopeProfile, MaxFactryLibrary.MaxStorageKeyName);
+                loApplicationKey = MaxConfigurationLibrary.GetValue(MaxEnumGroup.ScopeProfile, MaxFactryLibrary.MaxStorageKeyName);
                 lsLog += "|ScopeProfile|" + loWatch.ElapsedTicks;
-                if (null == loStorageKey || loStorageKey.ToString().Trim().Length.Equals(0) || (loStorageKey is Guid && Guid.Empty.Equals((Guid)loStorageKey)))
+                if (null == loApplicationKey || loApplicationKey.ToString().Trim().Length.Equals(0) || (loApplicationKey is Guid && Guid.Empty.Equals((Guid)loApplicationKey)))
                 {
-                    loStorageKey = this._sDefaultStorageKey;
+                    loApplicationKey = this._sDefaultApplicationKey;
                     lsLog += "|Default|" + loWatch.ElapsedTicks;
                 }
 
-                MaxConfigurationLibrary.SetValue(MaxEnumGroup.ScopeSession, MaxFactryLibrary.MaxStorageKeyName, loStorageKey);
+                MaxConfigurationLibrary.SetValue(MaxEnumGroup.ScopeSession, MaxFactryLibrary.MaxStorageKeyName, loApplicationKey);
                 lsLog += "|SetSession|" + loWatch.ElapsedTicks;
             }
 
-            if (null != loStorageKey && loStorageKey.ToString().Length > 0)
+            if (null != loApplicationKey && loApplicationKey.ToString().Length > 0)
             {
-                lsR = loStorageKey.ToString();
+                lsR = loApplicationKey.ToString();
                 MaxConfigurationLibrary.SetValue(MaxEnumGroup.ScopeProcess, MaxFactryLibrary.MaxStorageKeyName, lsR);
                 lsLog += "|SetProcess|" + loWatch.ElapsedTicks;
             }
@@ -397,15 +374,15 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
                 long lnDuration = loWatch.ElapsedTicks;
                 if (lnDuration > 100000)
                 {
-                    MaxFactry.Core.MaxLogLibrary.Log(new MaxLogEntryStructure("GetStorageKeyFromConfiguration", MaxEnumGroup.LogWarning, "GetStorageKeyFromConfiguration took {lnDuration} ticks for storage key {lsStorageKey} with log {lsLog}.", lnDuration, lsR, lsLog));
+                    MaxFactry.Core.MaxLogLibrary.Log(new MaxLogEntryStructure(this.GetType(), "GetApplicationKeyFromConfigurationConditional", MaxEnumGroup.LogWarning, "GetApplicationKeyFromConfigurationConditional took {lnDuration} ticks for application key {lsKey} with log {lsLog}.", lnDuration, lsR, lsLog));
                 }
                 else if (lnDuration > 10000)
                 {
-                    MaxFactry.Core.MaxLogLibrary.Log(new MaxLogEntryStructure("GetStorageKeyFromConfiguration", MaxEnumGroup.LogInfo, "GetStorageKeyFromConfiguration took {lnDuration} ticks for storage key {lsStorageKey} with log {lsLog}.", lnDuration, lsR, lsLog));
+                    MaxFactry.Core.MaxLogLibrary.Log(new MaxLogEntryStructure(this.GetType(), "GetApplicationKeyFromConfigurationConditional", MaxEnumGroup.LogInfo, "GetApplicationKeyFromConfigurationConditional took {lnDuration} ticks for application key {lsKey} with log {lsLog}.", lnDuration, lsR, lsLog));
                 }
                 else
                 {
-                    MaxFactry.Core.MaxLogLibrary.Log(new MaxLogEntryStructure("GetStorageKeyFromConfiguration", MaxEnumGroup.LogDebug, "GetStorageKeyFromConfiguration took {lnDuration} ticks for storage key {lsStorageKey} with log {lsLog}.", lnDuration, lsR, lsLog));
+                    MaxFactry.Core.MaxLogLibrary.Log(new MaxLogEntryStructure(this.GetType(), "GetApplicationKeyFromConfigurationConditional", MaxEnumGroup.LogDebug, "GetApplicationKeyFromConfigurationConditional took {lnDuration} ticks for application key {lsKey} with log {lsLog}.", lnDuration, lsR, lsLog));
                 }
             }
 
@@ -413,9 +390,9 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
         }
 #endif
 
-        protected virtual string GetStorageKeyFromConfiguration()
+        protected virtual string GetApplicationKeyFromConfiguration()
         {
-            return this.GetStorageKeyFromConfigurationConditional();
+            return this.GetApplicationKeyFromConfigurationConditional();
         }
     }
 }

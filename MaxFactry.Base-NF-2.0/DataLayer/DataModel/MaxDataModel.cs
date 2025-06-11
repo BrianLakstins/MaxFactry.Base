@@ -47,6 +47,7 @@
 // <change date="3/30/2024" author="Brian A. Lakstins" description="Integrated DataKey.  Created list of DataNames that could be using Stream as storage.">
 // <change date="6/3/2025" author="Brian A. Lakstins" description="Separate key into DataKey for unique identification and StorageKey for indexing data when stored">
 // <change date="6/3/2025" author="Brian A. Lakstins" description="Add StorageKey attribute for generic stream path">
+// <change date="6/11/2025" author="Brian A. Lakstins" description="Use application key">
 // </changelog>
 #endregion
 
@@ -346,6 +347,7 @@ namespace MaxFactry.Base.DataLayer
         public virtual string GetStorageKey(MaxData loData)
         {
             string lsR = string.Empty;
+            string lsApplicationKey = MaxDataLibrary.GetApplicationKey();
             foreach (string lsDataName in this.DataNameList)
             {
                 if (this.IsStored(lsDataName) && this.GetAttributeSetting(lsDataName, MaxDataModel.AttributeIsStorageKey))
@@ -653,7 +655,7 @@ namespace MaxFactry.Base.DataLayer
         public virtual string[] GetStreamPath(MaxData loData)
         {
             List<string> loR = new List<string>();
-            string lsStorageKey = MaxDataLibrary.GetStorageKey(loData);
+            string lsStorageKey = loData.GetStorageKey();
             if (!string.IsNullOrEmpty(lsStorageKey))
             {
                 if (lsStorageKey.Contains(this.KeySeparator))

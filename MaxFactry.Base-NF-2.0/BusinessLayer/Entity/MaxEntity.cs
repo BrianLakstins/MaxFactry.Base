@@ -242,7 +242,7 @@ namespace MaxFactry.Base.BusinessLayer
         {
             get
             {
-                return this.Data.DataKey;
+                return this.Data.GetDataKey();
             }
         }
 
@@ -1355,7 +1355,7 @@ namespace MaxFactry.Base.BusinessLayer
                 if (this.Data.DataModel.HasStorageKey)
                 {
                     lsR = string.Empty;
-                    string lsStorageKey = this.Data.DataModel.GetStorageKey(this.Data);
+                    string lsStorageKey = this.Data.GetStorageKey();
                     if (null != lsStorageKey && lsStorageKey.Length > 0)
                     {
                         lsR = this.GetType().ToString() + "/" + lsStorageKey;
