@@ -94,6 +94,7 @@
 // <change date="6/9/2025" author="Brian A. Lakstins" description="Fix index mapping to default to all properties.">
 // <change date="6/9/2025" author="Brian A. Lakstins" description="Fix loading by filter to specify DataQuery correctly.">
 // <change date="6/10/2025" author="Brian A. Lakstins" description="Update caching integration to include expire date and work consistently with Data and DataList">
+// <change date="6/11/2025" author="Brian A. Lakstins" description="Use ApplicationKey for cache and allow override using StorageKey">
 // </changelog>
 #endregion
 
@@ -109,7 +110,6 @@ namespace MaxFactry.Base.BusinessLayer
     using MaxFactry.Core;
     using MaxFactry.Base.DataLayer;
     using MaxFactry.Base.DataLayer.Library;
-    using System.Security.Cryptography;
 
     /// <summary>
     /// Base Business Layer Entity
@@ -1348,10 +1348,9 @@ namespace MaxFactry.Base.BusinessLayer
         /// <returns>a key to use for the cache</returns>
         public virtual string GetCacheKey(string lsKey)
         {
-            string lsR = string.Empty;
+            string lsR = this.GetType().ToString() + "/" + MaxDataLibrary.GetApplicationKey();
             if (null != this.Data && null != this.Data.DataModel && lsKey.Length > 0)
             {
-                lsR = this.GetType().ToString();
                 if (this.Data.DataModel.HasStorageKey)
                 {
                     lsR = string.Empty;
@@ -1361,11 +1360,11 @@ namespace MaxFactry.Base.BusinessLayer
                         lsR = this.GetType().ToString() + "/" + lsStorageKey;
                     }
                 }
+            }
 
-                if (lsR.Length > 0)
-                {
-                    lsR += "/" + lsKey;
-                }
+            if (lsR.Length > 0)
+            {
+                lsR += "/" + lsKey;
             }
 
             return lsR;

@@ -48,6 +48,7 @@
 // <change date="6/3/2025" author="Brian A. Lakstins" description="Separate key into DataKey for unique identification and StorageKey for indexing data when stored">
 // <change date="6/3/2025" author="Brian A. Lakstins" description="Add StorageKey attribute for generic stream path">
 // <change date="6/11/2025" author="Brian A. Lakstins" description="Use application key">
+// <change date="6/11/2025" author="Brian A. Lakstins" description="Remove using application key when getting StorageKey.  Use Data only.">
 // </changelog>
 #endregion
 
@@ -347,7 +348,6 @@ namespace MaxFactry.Base.DataLayer
         public virtual string GetStorageKey(MaxData loData)
         {
             string lsR = string.Empty;
-            string lsApplicationKey = MaxDataLibrary.GetApplicationKey();
             foreach (string lsDataName in this.DataNameList)
             {
                 if (this.IsStored(lsDataName) && this.GetAttributeSetting(lsDataName, MaxDataModel.AttributeIsStorageKey))
