@@ -95,6 +95,7 @@
 // <change date="6/9/2025" author="Brian A. Lakstins" description="Fix loading by filter to specify DataQuery correctly.">
 // <change date="6/10/2025" author="Brian A. Lakstins" description="Update caching integration to include expire date and work consistently with Data and DataList">
 // <change date="6/11/2025" author="Brian A. Lakstins" description="Use ApplicationKey for cache and allow override using StorageKey">
+// <change date="6/12/2025" author="Brian A. Lakstins" description="Fix CacheKey for when there is not a StorageKey defined for the DataModel">
 // </changelog>
 #endregion
 
@@ -1359,6 +1360,10 @@ namespace MaxFactry.Base.BusinessLayer
                     {
                         lsR = this.GetType().ToString() + "/" + lsStorageKey;
                     }
+                }
+                else
+                {
+                    lsR = this.GetType().ToString() + "/" + MaxConfigurationLibrary.GetValue(MaxEnumGroup.ScopeApplication, MaxFactryLibrary.MaxStorageKeyName) as string;
                 }
             }
 
