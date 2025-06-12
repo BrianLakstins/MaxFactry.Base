@@ -38,6 +38,7 @@
 // <change date="3/22/2024" author="Brian A. Lakstins" description="Add some methods that were in Repository proviers.  Remove some unused methods.">
 // <change date="3/24/2024" author="Brian A. Lakstins" description="Update to namespace.">
 // <change date="3/25/2024" author="Brian A. Lakstins" description="Remove handling of DataContext">
+// <change date="6/11/2025" author="Brian A. Lakstins" description="Rename StorageKey to ApplicationKey">
 // </changelog>
 #endregion
 
@@ -70,7 +71,7 @@ namespace MaxFactry.Base.DataLayer.Library
         /// </summary>
         /// <param name="loData">The data to be stored using the storage key.</param>
         /// <returns>string used for the storage key</returns>
-        string GetStorageKey(MaxData loData);
+        string GetApplicationKey();
 
         /// <summary>
         /// Gets the extension of a file name.

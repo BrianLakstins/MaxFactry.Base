@@ -38,6 +38,7 @@
 // <change date="4/9/2025" author="Brian A. Lakstins" description="Override SetInitial method insteading of altering Insert method.">
 // <change date="6/3/2025" author="Brian A. Lakstins" description="Remove special handling of StorageKey. Make sure CreatedDate is unique.  Override GetDataQuery to filter out deleted records.">
 // <change date="6/4/2025" author="Brian A. Lakstins" description="Fix IsDeleted filter">
+// <change date="6/11/2025" author="Brian A. Lakstins" description="Use new method to get StorageKey">
 // </changelog>
 #endregion
 
@@ -211,7 +212,7 @@ namespace MaxFactry.Base.BusinessLayer
                 if (loR.DataModel.IsStored(this.MaxBaseDataModel.StorageKey) &&
                     null == loR.Get(this.MaxBaseDataModel.StorageKey))
                 {
-                    loR.Set(this.MaxBaseDataModel.StorageKey, MaxDataLibrary.GetStorageKey(loR));
+                    loR.Set(this.MaxBaseDataModel.StorageKey, MaxDataLibrary.GetApplicationKey());
                 }
 
                 return loR;
@@ -343,17 +344,6 @@ namespace MaxFactry.Base.BusinessLayer
             MaxData loData = this.Data.Clone();
             MaxEntityList loEntityList = this.LoadAllByPage(loData, 0, 0, string.Empty, loDataQuery, laPropertyNameList);
             return loEntityList;
-        }
-
-        public override string GetCacheKey()
-        {
-            string lsR = base.GetCacheKey();
-            if (this.Data.DataModel.IsStored(this.MaxBaseDataModel.StorageKey))
-            {
-                lsR += this.StorageKey + "/";
-            }
-
-            return lsR;
         }
 
         /// <summary>

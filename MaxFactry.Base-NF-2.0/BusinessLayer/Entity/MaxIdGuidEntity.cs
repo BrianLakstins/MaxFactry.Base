@@ -49,6 +49,7 @@
 // <change date="3/24/2024" author="Brian A. Lakstins" description="Updated for changes namespaces">
 // <change date="4/9/2025" author="Brian A. Lakstins" description="Override SetInitial method insteading of altering Insert method.">
 // <change date="6/4/2025" author="Brian A. Lakstins" description="Get DataQuery from entity">
+// <change date="6/10/2025" author="Brian A. Lakstins" description="Use base class for loading by Id">
 // </changelog>
 #endregion
 
@@ -140,11 +141,10 @@ namespace MaxFactry.Base.BusinessLayer
         /// <returns>True if data was found, loaded, and not marked as deleted.  False could be not found, or deleted.</returns>
         public virtual bool LoadByIdCache(Guid loId)
         {
-            string lsCacheIdDataKey = this.GetCacheKey() + "LoadById/" + loId.ToString();
-            MaxData loData = MaxCacheRepository.Get(this.GetType(), lsCacheIdDataKey, typeof(MaxData)) as MaxData;
-            if (null == loData)
+            bool lbR = this.LoadByDataKeyCache(loId.ToString());
+            if (!lbR)
             {
-                loData = MaxIdGuidRepository.SelectById(this.Data, loId);
+                MaxData loData = MaxIdGuidRepository.SelectById(this.Data, loId);
                 if (null == loData)
                 {
                     //// Try loading from archive
@@ -155,32 +155,17 @@ namespace MaxFactry.Base.BusinessLayer
                         {
                             MaxData loDataArchive = this.Data.Clone();
                             loData = MaxIdGuidRepository.SelectById(loDataArchive, loId);
-                            if (null != loData)
-                            {
-                                MaxCacheRepository.Set(this.GetType(), lsCacheIdDataKey, loData);
-                            }
                         }
                     }
                 }
-                else
+
+                if (null != loData)
                 {
-                    MaxCacheRepository.Set(this.GetType(), lsCacheIdDataKey, loData);
+                    lbR = this.Load(loData);
                 }
             }
 
-            if (this.Load(loData))
-            {
-                if (null == loData.Get(((MaxIdGuidDataModel)loData.DataModel).Id))
-                {
-                    return false;
-                }
-                
-                return true;
-            }
-
-            this.Clear();
-            MaxCacheRepository.Set(this.GetType(), lsCacheIdDataKey, this.Data.Clone());
-            return false;
+            return lbR;
         }
 
         /// <summary>
@@ -220,22 +205,6 @@ namespace MaxFactry.Base.BusinessLayer
         }
 
         /// <summary>
-        /// Updates an existing record and removes record from Cache.
-        /// </summary>
-        /// <returns>true if updated.  False if cannot be updated.</returns>
-        public override bool Update()
-        {
-            if (base.Update())
-            {
-                string lsCacheKey = this.GetCacheKey() + "LoadById/" + MaxConvertLibrary.ConvertToString(typeof(object), this.Id);
-                MaxCacheRepository.Set(this.GetType(), lsCacheKey, this.Data);
-                return true;
-            }
-
-            return false;
-        }
-
-        /// <summary>
         /// Marks a record as deleted and removes record from Cache.
         /// </summary>
         /// <returns>true if marked as deleted.  False if it cannot be deleted.</returns>
@@ -243,7 +212,7 @@ namespace MaxFactry.Base.BusinessLayer
         {
             if (base.Delete())
             {
-                string lsCacheKey = this.GetCacheKey() + "LoadById/" + MaxConvertLibrary.ConvertToString(typeof(object), this.Id);
+                string lsCacheKey = this.GetCacheKey("LoadById/" + MaxConvertLibrary.ConvertToString(typeof(object), this.Id));
                 MaxCacheRepository.Remove(this.GetType(), lsCacheKey);
                 return true;
             }

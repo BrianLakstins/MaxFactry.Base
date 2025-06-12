@@ -48,6 +48,7 @@
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/24/2024" author="Brian A. Lakstins" description="Update to namespace.">
 // <change date="3/25/2024" author="Brian A. Lakstins" description="Remove handling of DataContext">
+// <change date="6/11/2025" author="Brian A. Lakstins" description="Rename StorageKey to ApplicationKey and don't use MaxData for value">
 // </changelog>
 #endregion
 
@@ -131,18 +132,17 @@ namespace MaxFactry.Base.DataLayer.Library
 		}
 
         /// <summary>
-        /// Gets the storage key used to separate the storage of data
+        /// Gets the application key used to separate applications
         /// </summary>
-        /// <param name="loData">The data to be stored using the storage key.</param>
-        /// <returns>string used for the storage key</returns>
-        public static string GetStorageKey(MaxData loData)
+        /// <returns>string used for the application key</returns>
+        public static string GetApplicationKey()
         {
             DateTime ldStart = DateTime.UtcNow;
-            string lsR = Provider.GetStorageKey(loData);
+            string lsR = Provider.GetApplicationKey();
             TimeSpan loDuration = DateTime.UtcNow - ldStart;
             if (loDuration.TotalMilliseconds > 500)
             {
-                MaxFactry.Core.MaxLogLibrary.Log(new MaxLogEntryStructure("GetStorageKey", MaxEnumGroup.LogWarning, "GetStorageKey(MaxData loData) took {Duration} ms for storage key {StorageKey} using {Provider}.", loDuration.TotalMilliseconds, lsR, Provider.GetType()));
+                MaxFactry.Core.MaxLogLibrary.Log(new MaxLogEntryStructure("GetApplicationKey", MaxEnumGroup.LogWarning, "GetApplicationKey() took {Duration} ms for key {lsR} using {Provider}.", loDuration.TotalMilliseconds, lsR, Provider.GetType()));
             }
 
             return lsR;

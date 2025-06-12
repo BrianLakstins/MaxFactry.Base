@@ -67,6 +67,7 @@
 // <change date="3/22/2024" author="Brian A. Lakstins" description="Change parent class.  Remove unused field.  Remove properties that are in parent class.  Add archive properties that were in previous parent class.  Remove methods that are in parent class.">
 // <change date="3/24/2024" author="Brian A. Lakstins" description="Updated for changes namespaces">
 // <change date="1/21/2025" author="Brian A. Lakstins" description="Change base class">
+// <change date="6/10/2025" author="Brian A. Lakstins" description="Add expire data for caching">
 // </changelog>
 #endregion
 
@@ -148,7 +149,7 @@ namespace MaxFactry.Base.BusinessLayer
             get
             {
                 DateTime ldR = DateTime.MinValue;
-                string lsCacheKey = this.GetCacheKey() + "Archive";
+                string lsCacheKey = this.GetCacheKey("Archive");
                 object ldArchive = MaxCacheRepository.Get(typeof(object), lsCacheKey, typeof(DateTime));
                 if (null != ldArchive && ldArchive is DateTime)
                 {
@@ -168,8 +169,8 @@ namespace MaxFactry.Base.BusinessLayer
 
             set
             {
-                string lsCacheKey = this.GetCacheKey() + "Archive";
-                MaxCacheRepository.Set(typeof(object), lsCacheKey, value);
+                string lsCacheKey = this.GetCacheKey("Archive");
+                MaxCacheRepository.Set(typeof(object), lsCacheKey, value, this.GetCacheExpire());
                 MaxConfigurationLibrary.SetValue(MaxEnumGroup.ScopePersistent, lsCacheKey, value);
             }
         }
@@ -310,7 +311,7 @@ namespace MaxFactry.Base.BusinessLayer
                             {
                                 if (MaxBaseWriteRepository.Delete(this.Data))
                                 {
-                                    string lsCacheKey = this.GetCacheKey() + "Load*";
+                                    string lsCacheKey = this.GetCacheKey("Load");
                                     MaxCacheRepository.Remove(this.GetType(), lsCacheKey);
                                     lbR = true;
                                 }
@@ -418,7 +419,7 @@ namespace MaxFactry.Base.BusinessLayer
         {
             bool lbR = false;
             //// Check defaults once per application run
-            string lsCacheKey = this.GetCacheKey() + "CheckDefaults";
+            string lsCacheKey = this.GetCacheKey("CheckDefaults");
             object loIsChecked = MaxCacheRepository.Get(this.GetType(), lsCacheKey, typeof(bool));
             if (null == loIsChecked || (loIsChecked is bool && !(bool)loIsChecked))
             {
@@ -427,7 +428,7 @@ namespace MaxFactry.Base.BusinessLayer
                     loIsChecked = MaxCacheRepository.Get(this.GetType(), lsCacheKey, typeof(bool));
                     if (null == loIsChecked || (loIsChecked is bool && !(bool)loIsChecked))
                     {
-                        MaxCacheRepository.Set(this.GetType(), lsCacheKey, true);
+                        MaxCacheRepository.Set(this.GetType(), lsCacheKey, true, this.GetCacheExpire());
                         MaxIndex loDefaultIndex = this.GetDefaultIdIndex();
                         for (int lnE = 0; lnE < loEntityList.Count; lnE++)
                         {

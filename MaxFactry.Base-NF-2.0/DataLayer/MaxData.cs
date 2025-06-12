@@ -64,6 +64,7 @@
 // <change date="3/30/2024" author="Brian A. Lakstins" description="Add DataKey as unique identifer for any record.  Update cloning proccess to keep track of changes.  Remove Streams when creating string from data.  Keep DataKey when initialized from another MaxData.">
 // <change date="6/3/2025" author="Brian A. Lakstins" description="Update process to convert to and from string so it works with XML serializer">
 // <change date="6/9/2025" author="Brian A. Lakstins" description="Update DataKey to get from current data if not already set">
+// <change date="6/11/2025" author="Brian A. Lakstins" description="Remove DataKey as a property and use a method instead.  Add a StorageKey method. Set StorageKey based on Application Key if used and not set.">
 // </changelog>
 #endregion
 
@@ -99,8 +100,6 @@ namespace MaxFactry.Base.DataLayer
         /// </summary>
         private MaxIndex _oExtendedIndex = new MaxIndex();
 
-        private string _sDataKey = null;
-
         /// <summary>
         /// Initializes a new instance of the MaxData class
         /// </summary>
@@ -125,7 +124,6 @@ namespace MaxFactry.Base.DataLayer
             this._oIndex = new MaxIndex(laIndex);
             MaxIndexItemStructure[] laExtendedIndex = MaxConvertLibrary.DeserializeObject(this.GetType(), loDataIndex["ExtendedIndex.MaxIndexItemStructure[]"] as string, typeof(MaxIndexItemStructure[])) as MaxIndexItemStructure[];
             this._oExtendedIndex = new MaxIndex(laExtendedIndex);
-            this._sDataKey = loDataIndex["DataKey"] as string;
             string lsDataModelType = loDataIndex["DataModelType"] as string;
             this._oDataModel = MaxDataLibrary.GetDataModel(Type.GetType(lsDataModelType));
         }
@@ -137,7 +135,6 @@ namespace MaxFactry.Base.DataLayer
         public MaxData(MaxData loData)
         {
             this._oDataModel = loData.DataModel;
-            this._sDataKey = loData.DataKey;
             string[] laExtendedNameList = loData.GetExtendedNameList();
             foreach (string lsDataName in laExtendedNameList)
             {
@@ -156,17 +153,47 @@ namespace MaxFactry.Base.DataLayer
             }
         }
 
-        public string DataKey
+        /// <summary>
+        /// Gets the unique value for this data object.
+        /// </summary>
+        /// <returns>string representing a unique record</returns>
+        public string GetDataKey()
         {
-            get
+            string lsR = string.Empty;
+            if (null != this.DataModel)
             {
-                if (null == this._sDataKey)
+                lsR = this.DataModel.GetDataKey(this);
+            }
+
+            return lsR;
+        }
+
+        /// <summary>
+        /// Gets the storage key used to separate the storage of data
+        /// </summary>
+        /// <returns>string used to separate data</returns>
+        public string GetStorageKey()
+        {
+            string lsR = string.Empty;
+            string lsApplicationKey = MaxDataLibrary.GetApplicationKey();
+            if (null != this.DataModel)
+            {
+                if (this.DataModel.IsStored("StorageKey") && 
+                    this.DataModel.GetAttributeSetting("StorageKey", MaxDataModel.AttributeIsStorageKey) &&
+                    this.Get("StorageKey") == null)
                 {
-                    this._sDataKey = this.DataModel.GetDataKey(this);
+                    this.Set("StorageKey", lsApplicationKey);
                 }
 
-                return this._sDataKey;
+                lsR = this.DataModel.GetStorageKey(this);
             }
+
+            if (null == lsR || string.Empty == lsR)
+            {
+                lsR = lsApplicationKey;
+            }
+
+            return lsR;
         }
 
         /// <summary>
@@ -263,7 +290,6 @@ namespace MaxFactry.Base.DataLayer
         /// </summary>
         public void ClearChanged()
         {
-            this._sDataKey = this.DataModel.GetDataKey(this);
             this._oChangedIndex = new MaxIndex();
         }
 
@@ -432,7 +458,6 @@ namespace MaxFactry.Base.DataLayer
 
             loDataIndex.Add("ExtendedIndex.MaxIndexItemStructure[]", MaxConvertLibrary.SerializeObjectToString(this.GetType(), loIndex.GetSortedList()));
             loDataIndex.Add("DataModelType", this.DataModel.GetType().AssemblyQualifiedName);
-            loDataIndex.Add("DataKey", this.DataKey);
             string lsR = MaxConvertLibrary.SerializeObjectToString(this.GetType(), loDataIndex.GetSortedList());
             return lsR;
         }

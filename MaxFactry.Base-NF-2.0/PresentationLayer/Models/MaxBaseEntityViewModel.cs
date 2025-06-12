@@ -36,6 +36,7 @@
 // <change date="8/3/2020" author="Brian A. Lakstins" description="Change base class and remove duplicated methods.">
 // <change date="1/21/2025" author="Brian A. Lakstins" description="Updated to match MaxBaseEntity.">
 // <change date="6/9/2025" author="Brian A. Lakstins" description="Replace StorageKey with DataKey.  Load entity by DataKey">
+// <change date="6/11/2025" author="Brian A. Lakstins" description="Use method to get DataKey">
 // </changelog>
 #endregion Change Log
 
