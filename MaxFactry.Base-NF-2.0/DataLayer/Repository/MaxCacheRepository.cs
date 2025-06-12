@@ -30,7 +30,8 @@
 // <change date="9/15/2014" author="Brian A. Lakstins" description="Based on MaxCRUDRepository">
 // <change date="12/18/2014" author="Brian A. Lakstins" description="Updated Provider and DataModel access pattern.">
 // <change date="3/26/2015" author="Brian A. Lakstins" description="Restructured.">
-// <change date="6/10/2015" author="Brian A. Lakstins" description="Add expire date.  Add MaxData and MaxDataList handling.">
+// <change date="6/10/2025" author="Brian A. Lakstins" description="Add expire date.  Add MaxData and MaxDataList handling.">
+// <change date="6/12/2025" author="Brian A. Lakstins" description="Update Getting key to use MaxDataMethod">
 // </changelog>
 #endregion
 
@@ -103,7 +104,7 @@ namespace MaxFactry.Base.DataLayer
                     for (int lnD = 0; lnD < loDataList.Count; lnD++)
                     {
                         MaxData loData = loDataList[lnD];
-                        string lsDataKey = loData.DataModel.GetDataKey(loData);
+                        string lsDataKey = loData.GetDataKey();
                         loDataKeyList.Add(lsDataKey);
                         loProvider.Set(lsKeyFormat.Replace("{lsDataKey}", lsDataKey), loData.ToString(), ldExpire);
                     }                    

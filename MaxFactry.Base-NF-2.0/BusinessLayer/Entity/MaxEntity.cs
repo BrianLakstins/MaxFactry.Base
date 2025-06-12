@@ -96,6 +96,7 @@
 // <change date="6/10/2025" author="Brian A. Lakstins" description="Update caching integration to include expire date and work consistently with Data and DataList">
 // <change date="6/11/2025" author="Brian A. Lakstins" description="Use ApplicationKey for cache and allow override using StorageKey">
 // <change date="6/12/2025" author="Brian A. Lakstins" description="Fix CacheKey for when there is not a StorageKey defined for the DataModel">
+// <change date="6/12/2025" author="Brian A. Lakstins" description="Move CacheKey method into DataModel">
 // </changelog>
 #endregion
 
@@ -497,6 +498,7 @@ namespace MaxFactry.Base.BusinessLayer
                 lbR = MaxBaseWriteRepository.Delete(this.Data);
                 if (lbR)
                 {
+                    this.Data.Clear();
                     string lsCacheKey = this.GetCacheKey("LoadAll*");
                     MaxCacheRepository.Remove(this.GetType(), lsCacheKey);
                     OnDeleteAfter();
@@ -1349,27 +1351,10 @@ namespace MaxFactry.Base.BusinessLayer
         /// <returns>a key to use for the cache</returns>
         public virtual string GetCacheKey(string lsKey)
         {
-            string lsR = this.GetType().ToString() + "/" + MaxDataLibrary.GetApplicationKey();
-            if (null != this.Data && null != this.Data.DataModel && lsKey.Length > 0)
+            string lsR = string.Empty;
+            if (null != this.Data && null != this.Data.DataModel)
             {
-                if (this.Data.DataModel.HasStorageKey)
-                {
-                    lsR = string.Empty;
-                    string lsStorageKey = this.Data.GetStorageKey();
-                    if (null != lsStorageKey && lsStorageKey.Length > 0)
-                    {
-                        lsR = this.GetType().ToString() + "/" + lsStorageKey;
-                    }
-                }
-                else
-                {
-                    lsR = this.GetType().ToString() + "/" + MaxConfigurationLibrary.GetValue(MaxEnumGroup.ScopeApplication, MaxFactryLibrary.MaxStorageKeyName) as string;
-                }
-            }
-
-            if (lsR.Length > 0)
-            {
-                lsR += "/" + lsKey;
+                lsR = new MaxData(this.Data.DataModel).GetCacheKey(lsKey);
             }
 
             return lsR;

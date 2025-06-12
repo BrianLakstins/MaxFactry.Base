@@ -65,6 +65,7 @@
 // <change date="6/3/2025" author="Brian A. Lakstins" description="Update process to convert to and from string so it works with XML serializer">
 // <change date="6/9/2025" author="Brian A. Lakstins" description="Update DataKey to get from current data if not already set">
 // <change date="6/11/2025" author="Brian A. Lakstins" description="Remove DataKey as a property and use a method instead.  Add a StorageKey method. Set StorageKey based on Application Key if used and not set.">
+// <change date="6/12/2025" author="Brian A. Lakstins" description="Add method to get Cache Key.">
 // </changelog>
 #endregion
 
@@ -191,6 +192,21 @@ namespace MaxFactry.Base.DataLayer
             if (null == lsR || string.Empty == lsR)
             {
                 lsR = lsApplicationKey;
+            }
+
+            return lsR;
+        }
+
+        /// <summary>
+        /// Gets a key that can be used for caching this data.
+        /// </summary>
+        /// <returns>a key to use for the cache</returns>
+        public string GetCacheKey(string lsKey)
+        {
+            string lsR = string.Empty;
+            if (null  != this.DataModel)
+            {
+                lsR = this.DataModel.GetCacheKey(this, lsKey);
             }
 
             return lsR;

@@ -49,6 +49,7 @@
 // <change date="6/3/2025" author="Brian A. Lakstins" description="Add StorageKey attribute for generic stream path">
 // <change date="6/11/2025" author="Brian A. Lakstins" description="Use application key">
 // <change date="6/11/2025" author="Brian A. Lakstins" description="Remove using application key when getting StorageKey.  Use Data only.">
+// <change date="6/11/2025" author="Brian A. Lakstins" description="Add method to get CacheKey">
 // </changelog>
 #endregion
 
@@ -367,6 +368,35 @@ namespace MaxFactry.Base.DataLayer
                         lsR += lsValue;
                     }
                 }
+            }
+
+            return lsR;
+        }
+
+        /// <summary>
+        /// Gets a key that can be used for caching this data.
+        /// </summary>
+        /// <returns>a key to use for the cache</returns>
+        public virtual string GetCacheKey(MaxData loData, string lsKey)
+        {
+            string lsR = this.GetType().ToString() + "/" + MaxDataLibrary.GetApplicationKey();
+            if (this.HasStorageKey)
+            {
+                lsR = string.Empty;
+                string lsStorageKey = loData.GetStorageKey();
+                if (null != lsStorageKey && lsStorageKey.Length > 0)
+                {
+                    lsR = this.GetType().ToString() + "/" + lsStorageKey;
+                }
+            }
+            else
+            {
+                lsR = this.GetType().ToString() + "/" + MaxConfigurationLibrary.GetValue(MaxEnumGroup.ScopeApplication, MaxFactryLibrary.MaxStorageKeyName) as string;
+            }
+
+            if (lsR.Length > 0)
+            {
+                lsR += "/" + lsKey;
             }
 
             return lsR;
