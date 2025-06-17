@@ -97,6 +97,7 @@
 // <change date="6/11/2025" author="Brian A. Lakstins" description="Use ApplicationKey for cache and allow override using StorageKey">
 // <change date="6/12/2025" author="Brian A. Lakstins" description="Fix CacheKey for when there is not a StorageKey defined for the DataModel">
 // <change date="6/12/2025" author="Brian A. Lakstins" description="Move CacheKey method into DataModel">
+// <change date="6/17/2025" author="Brian A. Lakstins" description="Try to prevent exception when parsing a guid">
 // </changelog>
 #endregion
 
@@ -112,6 +113,7 @@ namespace MaxFactry.Base.BusinessLayer
     using MaxFactry.Core;
     using MaxFactry.Base.DataLayer;
     using MaxFactry.Base.DataLayer.Library;
+    using System.Text.RegularExpressions;
 
     /// <summary>
     /// Base Business Layer Entity
@@ -1262,7 +1264,11 @@ namespace MaxFactry.Base.BusinessLayer
                             {
                                 if (this.Data.DataModel.GetValueType(lsDataName) == typeof(Guid) && loValue is string)
                                 {
-                                    loValue = new Guid((string)loValue);
+                                    string lsGuidPattern = @"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$";
+                                    if (Regex.IsMatch((string)loValue, lsGuidPattern))
+                                    {
+                                        loValue = new Guid(((string)loValue));
+                                    }
                                 }
 
                                 loData.Set(lsDataName, loValue);
