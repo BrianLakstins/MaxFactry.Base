@@ -33,13 +33,17 @@
 // <change date="4/20/2016" author="Brian A. Lakstins" description="Clean up code.  Fix problem removing with wildcard.">
 // <change date="1/16/2021" author="Brian A. Lakstins" description="Update storage and retrieval of MaxData and MaxDataList so data is serialized so cannot be changed when edited">
 // <change date="6/10/2025" author="Brian A. Lakstins" description="Handle null and blank keys.  Lock threads. Add expire date. Remove specific MaxData and MaxDataList handling">
+// <change date="6/18/2025" author="Brian A. Lakstins" description="Clear expired content in a background thread">
 // </changelog>
 #endregion
 
 namespace MaxFactry.Base.DataLayer.Provider
 {
-	using System;
     using MaxFactry.Core;
+	using System;
+    using System.Runtime.CompilerServices;
+    using System.Security.Policy;
+    using System.Threading;
 
     /// <summary>
     /// Provides static methods to manipulate storage of data
@@ -61,6 +65,45 @@ namespace MaxFactry.Base.DataLayer.Provider
         /// Lock to prevent multiple thread access to Index
         /// </summary>
         private static object _oLock = new object();
+
+        private int _nClearExpiredInterval = 5; // Minutes
+
+        public override void Initialize(string lsName, MaxIndex loConfig)
+        {
+            base.Initialize(lsName, loConfig);
+            string lsClearExpiredInterval = this.GetConfigValue(loConfig, "ClearExpiredInterval") as string;
+            if (null != lsClearExpiredInterval && lsClearExpiredInterval.Length > 0)
+            {
+                this._nClearExpiredInterval = MaxConvertLibrary.ConvertToInt(typeof(object), lsClearExpiredInterval);
+            }
+
+            // Start thread to clear expired items
+            Thread loThread = new Thread(new ThreadStart(this.ClearExpired));
+            loThread.IsBackground = true;
+            loThread.Start();
+        }
+
+        private void ClearExpired()
+        {
+            lock (_oLock)
+            {
+                DateTime ldNow = DateTime.UtcNow;
+                {                   
+                    string[] laKeys = _oExpireIndex.GetSortedKeyList();
+                    foreach (string lsKey in laKeys)
+                    {
+                        if (_oExpireIndex.Contains(lsKey) && (DateTime)_oExpireIndex[lsKey] < ldNow)
+                        {
+                            _oCacheIndex.Remove(lsKey);
+                            _oExpireIndex.Remove(lsKey);
+                        }
+                    }
+                }
+            }
+
+            System.Threading.Thread.Sleep(this._nClearExpiredInterval * 60 * 1000); // Sleep for 5 minutes to allow next thread to run
+            this.ClearExpired(); // Call again
+        }
 
         /// <summary>
         /// Sets the object in the cache.
@@ -151,5 +194,5 @@ namespace MaxFactry.Base.DataLayer.Provider
                 }
             }
         }
-	}
+    }
 }

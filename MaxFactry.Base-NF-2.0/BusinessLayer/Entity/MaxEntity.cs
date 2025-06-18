@@ -98,6 +98,7 @@
 // <change date="6/12/2025" author="Brian A. Lakstins" description="Fix CacheKey for when there is not a StorageKey defined for the DataModel">
 // <change date="6/12/2025" author="Brian A. Lakstins" description="Move CacheKey method into DataModel">
 // <change date="6/17/2025" author="Brian A. Lakstins" description="Try to prevent exception when parsing a guid">
+// <change date="6/18/2025" author="Brian A. Lakstins" description="Fix and add some cache clearing">
 // </changelog>
 #endregion
 
@@ -433,7 +434,7 @@ namespace MaxFactry.Base.BusinessLayer
                     if (null != this.DataKey && this.DataKey.Length > 0)
                     {
                         //// Clear everything that has this DataKey from cache
-                        string lsCacheKey = this.GetCacheKey("LoadByKey/" + this.DataKey + "*");
+                        string lsCacheKey = this.GetCacheKey("LoadByDataKey/" + this.DataKey + "*");
                         MaxCacheRepository.Remove(this.GetType(), lsCacheKey);
                     }
 
@@ -497,11 +498,13 @@ namespace MaxFactry.Base.BusinessLayer
             OnDeleteBefore();
             if (!string.IsNullOrEmpty(this.DataKey))
             {
+                string lsCacheKey = this.GetCacheKey("LoadByDataKey/" + this.DataKey + "*");
                 lbR = MaxBaseWriteRepository.Delete(this.Data);
                 if (lbR)
                 {
                     this.Data.Clear();
-                    string lsCacheKey = this.GetCacheKey("LoadAll*");
+                    MaxCacheRepository.Remove(this.GetType(), lsCacheKey);
+                    lsCacheKey = this.GetCacheKey("LoadAll*");
                     MaxCacheRepository.Remove(this.GetType(), lsCacheKey);
                     OnDeleteAfter();
                     return lbR;
