@@ -99,6 +99,7 @@
 // <change date="6/12/2025" author="Brian A. Lakstins" description="Move CacheKey method into DataModel">
 // <change date="6/17/2025" author="Brian A. Lakstins" description="Try to prevent exception when parsing a guid">
 // <change date="6/18/2025" author="Brian A. Lakstins" description="Fix and add some cache clearing">
+
 // </changelog>
 #endregion
 
@@ -1597,44 +1598,30 @@ namespace MaxFactry.Base.BusinessLayer
 
             bool lbIsStream = false;
             if (lsR.Equals(MaxDataModel.StreamStringIndicator))
-            {                
-                string[] laStreamPath = this.Data.GetStreamPath();
-                string lsStreamPath = laStreamPath[0];
-                for (int lnP = 1; lnP < laStreamPath.Length; lnP++)
+            {
+                Stream loStream = MaxStreamLibrary.StreamOpen(this.Data, lsDataName);
+                try
                 {
-                    lsStreamPath += "/" + laStreamPath[lnP];
-                }
-
-                lsStreamPath += "/" + lsDataName;
-                string lsCacheDataKey = this.GetCacheKey("LoadStringFromStream/" + lsStreamPath);
-                loValue = MaxCacheRepository.Get(this.GetType(), lsCacheDataKey, typeof(string)) as string;
-                if (null == loValue)
-                {
-                    Stream loStream = MaxStreamLibrary.StreamOpen(this.Data, lsDataName);
-                    try
+                    if (null != loStream)
                     {
-                        if (null != loStream)
+                        StreamReader loReader = new StreamReader(loStream);
+                        try
                         {
-                            StreamReader loReader = new StreamReader(loStream);
-                            try
-                            {
-                                loValue = loReader.ReadToEnd();
-                                MaxCacheRepository.Set(this.GetType(), lsCacheDataKey, loValue, this.GetCacheExpire());
-                            }
-                            finally
-                            {
-                                loReader.Dispose();
-                            }
+                            loValue = loReader.ReadToEnd();
                         }
-                    }
-                    finally
-                    {
-                        if (null != loStream)
+                        finally
                         {
-                            loStream.Dispose();
+                            loReader.Dispose();
                         }
                     }
                 }
+                finally
+                {
+                    if (null != loStream)
+                    {
+                        loStream.Dispose();
+                    }
+                }                
 
                 if (null != loValue)
                 {

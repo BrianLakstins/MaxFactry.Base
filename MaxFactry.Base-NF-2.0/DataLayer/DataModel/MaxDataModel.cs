@@ -50,6 +50,7 @@
 // <change date="6/11/2025" author="Brian A. Lakstins" description="Use application key">
 // <change date="6/11/2025" author="Brian A. Lakstins" description="Remove using application key when getting StorageKey.  Use Data only.">
 // <change date="6/11/2025" author="Brian A. Lakstins" description="Add method to get CacheKey">
+// <change date="6/21/2025" author="Brian A. Lakstins" description="Add Stream Path handling.  Allow changing attributes.">
 // </changelog>
 #endregion
 
@@ -83,6 +84,13 @@ namespace MaxFactry.Base.DataLayer
         /// Indicates that the data for the byte[] is stored as a stream
         /// </summary>
         public static readonly byte[] StreamByteIndicator = System.Text.UTF8Encoding.UTF8.GetBytes("{SBI}");
+
+        /// <summary>
+        /// Represents a list of stream path types used to identify different storage key formats.
+        /// </summary>
+        /// <remarks>The array contains predefined string values: "StorageKeyDataKey", "StorageKeyId", and
+        /// "StorageKeyDataKey". These values are used to specify the type of path associated with a stream.</remarks>
+        public static readonly string[] StreamPathTypeList = new string[] { "Original", "StorageKeyId", "StorageKeyDataKey" };
 
         /// <summary>
         /// Index of data names and types
@@ -665,10 +673,14 @@ namespace MaxFactry.Base.DataLayer
 		{
             string lsAttributeKey = lsDataName + "|" + lsAttribute;
             if (!this._oDataNameAttributeIndex.Contains(lsAttributeKey))
-			{
+            {
                 this._oDataNameAttributeIndex.Add(lsAttributeKey, lsValue);
-				return true;
-			}
+                return true;
+            }
+            else
+            {
+                this._oDataNameAttributeIndex[lsAttributeKey] = lsValue;
+            }
 
 			return false;
 		}
@@ -682,19 +694,14 @@ namespace MaxFactry.Base.DataLayer
 			this._sDataStorageName = lsDataStorageName;
 		}
 
+        /// <summary>
+        /// Gets Array of 3 - StorageKey, StorageName, DataKey
+        /// </summary>
+        /// <param name="loData"></param>
+        /// <returns></returns>
         public virtual string[] GetStreamPath(MaxData loData)
         {
             List<string> loR = new List<string>();
-            string lsStorageKey = loData.GetStorageKey();
-            if (!string.IsNullOrEmpty(lsStorageKey))
-            {
-                if (lsStorageKey.Contains(this.KeySeparator))
-                {
-                    lsStorageKey = MaxEncryptionLibrary.GetHash(typeof(object), "MD5", lsStorageKey);
-                }
-
-                loR.Add(lsStorageKey);
-            }
 
             string lsDataStorageName = this.DataStorageName;
             if (lsDataStorageName.EndsWith("MaxArchive"))
@@ -702,15 +709,61 @@ namespace MaxFactry.Base.DataLayer
                 lsDataStorageName = lsDataStorageName.Substring(0, lsDataStorageName.Length - "MaxArchive".Length);
             }
 
-            loR.Add(lsDataStorageName);
-            string lsKey = this.GetDataKey(loData);
-            if (!string.IsNullOrEmpty(lsKey))
+            string lsStreamPathType = loData.Get("_StreamPathType") as string;
+            if (null == lsStreamPathType)
             {
-                string[] laStreamKey = lsKey.Split(new string[] { this.KeySeparator }, StringSplitOptions.RemoveEmptyEntries);
-                foreach (string lsStreamKey in laStreamKey)
+                lsStreamPathType = StreamPathTypeList[StreamPathTypeList.Length - 1]; //// Latest
+            }
+
+            if (lsStreamPathType == StreamPathTypeList[0]) //// Original
+            {
+                string lsStorageKey = loData.Get("StorageKey") as string;
+                if (string.IsNullOrEmpty(lsStorageKey))
                 {
-                    loR.Add(lsStreamKey);
+                    lsStorageKey = MaxDataLibrary.GetApplicationKey();
                 }
+
+                loR.Add(lsStorageKey);
+                loR.Add(lsDataStorageName);
+                string lsDataKey = MaxConvertLibrary.ConvertToString(typeof(object), loData.Get("Id"));
+                loR.Add(lsDataKey);
+            }
+            else if (lsStreamPathType == StreamPathTypeList[1]) //// StorageKeyId
+            {
+                string lsStorageKey = loData.Get("StorageKey") as string;
+                if (string.IsNullOrEmpty(lsStorageKey))
+                {
+                    lsStorageKey = MaxDataLibrary.GetApplicationKey();
+                }
+
+                loR.Add(lsStorageKey);
+                loR.Add(lsDataStorageName);
+                string lsDataKey = MaxConvertLibrary.ConvertToString(typeof(object), loData.Get("Id"));
+                loR.Add(lsDataKey);
+            }
+            else if (lsStreamPathType == StreamPathTypeList[2]) //// StorageKeyDataKey
+            {
+                string lsStorageKey = loData.GetStorageKey();
+                if (!string.IsNullOrEmpty(lsStorageKey))
+                {
+                    if (lsStorageKey.Contains(this.KeySeparator))
+                    {
+                        lsStorageKey = MaxEncryptionLibrary.GetHash(typeof(object), "MD5", lsStorageKey);
+                    }
+                }
+
+                loR.Add(lsStorageKey);
+                loR.Add(lsDataStorageName);
+                string lsDataKey = this.GetDataKey(loData);
+                if (!string.IsNullOrEmpty(lsDataKey))
+                {
+                    if (lsDataKey.Contains(this.KeySeparator))
+                    {
+                        lsDataKey = MaxEncryptionLibrary.GetHash(typeof(object), "MD5", lsDataKey);
+                    }
+                }
+
+                loR.Add(lsDataKey);
             }
 
             return loR.ToArray();
