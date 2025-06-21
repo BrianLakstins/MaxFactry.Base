@@ -29,6 +29,7 @@
 // <changelog>
 // <change date="1/21/2025" author="Brian A. Lakstins" description="Initial creation">
 // <change date="6/9/2025" author="Brian A. Lakstins" description="Update method used to load when Id is available">
+// <change date="6/21/2025" author="Brian A. Lakstins" description="Update base class">
 // </changelog>
 #endregion
 
@@ -41,7 +42,7 @@ namespace MaxFactry.Base.PresentationLayer
     /// <summary>
     /// View model base
     /// </summary>
-    public abstract class MaxBaseGuidKeyViewModel : MaxBaseEntityViewModel
+    public abstract class MaxBaseGuidKeyViewModel : MaxBaseViewModel
     {
         /// <summary>
         /// Initializes a new instance of the MaxBaseIdViewModel class.
@@ -129,7 +130,7 @@ namespace MaxFactry.Base.PresentationLayer
         /// Saves the model
         /// </summary>
         /// <returns>true if successful</returns>
-        public virtual bool Save()
+        public override bool Save()
         {
             if (this.MapToEntity())
             {

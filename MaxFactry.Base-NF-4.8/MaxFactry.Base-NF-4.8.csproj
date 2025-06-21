@@ -96,6 +96,9 @@
     <Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxBaseUSPostalAddressEntity.cs">
       <Link>BusinessLayer\Entity\MaxBaseUSPostalAddressEntity.cs</Link>
     </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxBaseVersionedEntity.cs">
+      <Link>BusinessLayer\Entity\MaxBaseVersionedEntity.cs</Link>
+    </Compile>
     <Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxEntity.cs">
       <Link>BusinessLayer\Entity\MaxEntity.cs</Link>
     </Compile>
@@ -188,6 +191,9 @@
     </Compile>
     <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseUSPostalAddressDataModel.cs">
       <Link>DataLayer\DataModel\MaxBaseUSPostalAddressDataModel.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseVersionedDataModel.cs">
+      <Link>DataLayer\DataModel\MaxBaseVersionedDataModel.cs</Link>
     </Compile>
     <Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxDataModel.cs">
       <Link>DataLayer\DataModel\MaxDataModel.cs</Link>
@@ -375,11 +381,17 @@
     <Compile Include="..\MaxFactry.Base-NF-2.0\PresentationLayer\Models\MaxBaseUSPostalAddressViewModel.cs">
       <Link>PresentationLayer\Models\MaxBaseUSPostalAddressViewModel.cs</Link>
     </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\PresentationLayer\Models\MaxBaseVersionedViewModel.cs">
+      <Link>PresentationLayer\Models\MaxBaseVersionedViewModel.cs</Link>
+    </Compile>
     <Compile Include="..\MaxFactry.Base-NF-2.0\PresentationLayer\Models\MaxBaseViewModel.cs">
       <Link>PresentationLayer\Models\MaxBaseViewModel.cs</Link>
     </Compile>
     <Compile Include="..\MaxFactry.Base-NF-2.0\PresentationLayer\Models\MaxIdGuidViewModel.cs">
       <Link>PresentationLayer\Models\MaxIdGuidViewModel.cs</Link>
+    </Compile>
+    <Compile Include="..\MaxFactry.Base-NF-2.0\PresentationLayer\Models\MaxViewModel.cs">
+      <Link>PresentationLayer\Models\MaxViewModel.cs</Link>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">

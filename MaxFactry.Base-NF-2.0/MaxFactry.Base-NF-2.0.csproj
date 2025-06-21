@@ -56,6 +56,7 @@
     <Compile Include="BusinessLayer\Entity\MaxBaseRelationGuidKeyEntity.cs" />
     <Compile Include="BusinessLayer\Entity\MaxBaseTemplateEntity.cs" />
     <Compile Include="BusinessLayer\Entity\MaxBaseUSPostalAddressEntity.cs" />
+    <Compile Include="BusinessLayer\Entity\MaxBaseVersionedEntity.cs" />
     <Compile Include="BusinessLayer\Entity\MaxEntity.cs" />
     <Compile Include="BusinessLayer\Entity\MaxIdGuidEntity.cs" />
     <Compile Include="BusinessLayer\Entity\MaxIdIntegerEntity.cs" />
@@ -85,6 +86,7 @@
     <Compile Include="DataLayer\DataModel\MaxBaseRelationDateDataModel.cs" />
     <Compile Include="DataLayer\DataModel\MaxBaseTemplateDataModel.cs" />
     <Compile Include="DataLayer\DataModel\MaxBaseUSPostalAddressDataModel.cs" />
+    <Compile Include="DataLayer\DataModel\MaxBaseVersionedDataModel.cs" />
     <Compile Include="DataLayer\DataModel\MaxDataModel.cs" />
     <Compile Include="DataLayer\DataModel\MaxBaseGuidKeyDataModel.cs" />
     <Compile Include="DataLayer\DataModel\MaxIdGuidDataModel.cs" />
@@ -145,6 +147,8 @@
     <Compile Include="MaxResource.cs" />
     <Compile Include="MaxStartup.cs" />
     <Compile Include="PresentationLayer\Models\MaxBaseGuidKeyViewModel.cs" />
+    <Compile Include="PresentationLayer\Models\MaxBaseVersionedViewModel.cs" />
+    <Compile Include="PresentationLayer\Models\MaxViewModel.cs" />
     <Compile Include="PresentationLayer\Models\MaxBaseViewModel.cs" />
     <Compile Include="PresentationLayer\Models\MaxBaseIdFileViewModel.cs" />
     <Compile Include="PresentationLayer\Models\MaxBaseIdViewModel.cs" />

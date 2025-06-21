@@ -36,6 +36,7 @@
 		<Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxBaseRelationGuidKeyEntity.cs" Link="BusinessLayer\Entity\MaxBaseRelationGuidKeyEntity.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxBaseTemplateEntity.cs" Link="BusinessLayer\Entity\MaxBaseTemplateEntity.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxBaseUSPostalAddressEntity.cs" Link="BusinessLayer\Entity\MaxBaseUSPostalAddressEntity.cs" />
+		<Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxBaseVersionedEntity.cs" Link="BusinessLayer\Entity\MaxBaseVersionedEntity.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxEntity.cs" Link="BusinessLayer\Entity\MaxEntity.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxIdGuidEntity.cs" Link="BusinessLayer\Entity\MaxIdGuidEntity.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxIdIntegerEntity.cs" Link="BusinessLayer\Entity\MaxIdIntegerEntity.cs" />
@@ -67,6 +68,7 @@
 		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseSerialPortDataModel.cs" Link="DataLayer\DataModel\MaxBaseSerialPortDataModel.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseTemplateDataModel.cs" Link="DataLayer\DataModel\MaxBaseTemplateDataModel.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseUSPostalAddressDataModel.cs" Link="DataLayer\DataModel\MaxBaseUSPostalAddressDataModel.cs" />
+		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxBaseVersionedDataModel.cs" Link="DataLayer\DataModel\MaxBaseVersionedDataModel.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxDataModel.cs" Link="DataLayer\DataModel\MaxDataModel.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxIdGuidDataModel.cs" Link="DataLayer\DataModel\MaxIdGuidDataModel.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\DataLayer\DataModel\MaxIdIntegerDataModel.cs" Link="DataLayer\DataModel\MaxIdIntegerDataModel.cs" />
@@ -129,8 +131,10 @@
 		<Compile Include="..\MaxFactry.Base-NF-2.0\PresentationLayer\Models\MaxBasePersonViewModel.cs" Link="PresentationLayer\Models\MaxBasePersonViewModel.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\PresentationLayer\Models\MaxBaseTemplateViewModel.cs" Link="PresentationLayer\Models\MaxBaseTemplateViewModel.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\PresentationLayer\Models\MaxBaseUSPostalAddressViewModel.cs" Link="PresentationLayer\Models\MaxBaseUSPostalAddressViewModel.cs" />
+		<Compile Include="..\MaxFactry.Base-NF-2.0\PresentationLayer\Models\MaxBaseVersionedViewModel.cs" Link="PresentationLayer\Models\MaxBaseVersionedViewModel.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\PresentationLayer\Models\MaxBaseViewModel.cs" Link="PresentationLayer\Models\MaxBaseViewModel.cs" />
 		<Compile Include="..\MaxFactry.Base-NF-2.0\PresentationLayer\Models\MaxIdGuidViewModel.cs" Link="PresentationLayer\Models\MaxIdGuidViewModel.cs" />
+		<Compile Include="..\MaxFactry.Base-NF-2.0\PresentationLayer\Models\MaxViewModel.cs" Link="PresentationLayer\Models\MaxViewModel.cs" />
 	</ItemGroup>
 
 	<ItemGroup>

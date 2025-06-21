@@ -40,6 +40,7 @@
 // <change date="8/3/2020" author="Brian A. Lakstins" description="Change base class.">
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Happy birthday to my mom.  Sara Jean Lakstins (Cartwright) - 3/20/1944 to 3/14/2019.">
 // <change date="3/23/2024" author="Brian A. Lakstins" description="Updated for change to dependency">
+// <change date="6/21/2025" author="Brian A. Lakstins" description="Update base class">
 // </changelog>
 #endregion
 
@@ -52,7 +53,7 @@ namespace MaxFactry.Base.PresentationLayer
     /// <summary>
     /// View model base
     /// </summary>
-    public abstract class MaxIdGuidViewModel : MaxBaseEntityViewModel
+    public abstract class MaxIdGuidViewModel : MaxBaseViewModel
     {
         /// <summary>
         /// Initializes a new instance of the MaxIdGuidViewModel class

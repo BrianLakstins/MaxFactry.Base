@@ -27,293 +27,351 @@
 
 #region Change Log
 // <changelog>
-// <change date="8/3/2020" author="Brian A. Lakstins" description="Initial creation">
-// <change date="8/3/2020" author="Brian A. Lakstins" description="Add public methods to relate text to the model.">
+// <change date="2/17/2015" author="Brian A. Lakstins" description="Initial Release">
+// <change date="5/27/2015" author="Brian A. Lakstins" description="Added way to keep track of original values.">
+// <change date="4/20/2016" author="Brian A. Lakstins" description="Added methods to get and set text based on keys.">
+// <change date="8/5/2016" author="Brian A. Lakstins" description="Updated change comparison to handle nulls better.">
+// <change date="8/29/2016" author="Brian A. Lakstins" description="Add ability to set MaxIndex.">
+// <change date="10/3/2019" author="Brian A. Lakstins" description="Add support for using functional expressions for getting and setting properties the frameworks that support functional expressions.">
+// <change date="8/3/2020" author="Brian A. Lakstins" description="Change base class and remove duplicated methods.">
+// <change date="1/21/2025" author="Brian A. Lakstins" description="Updated to match MaxBaseEntity.">
+// <change date="6/9/2025" author="Brian A. Lakstins" description="Replace StorageKey with DataKey.  Load entity by DataKey">
+// <change date="6/11/2025" author="Brian A. Lakstins" description="Use method to get DataKey">
+// <change date="6/18/2025" author="Brian A. Lakstins" description="Renamed from MaxBaseEntityViewModel to MaxBaseViewModel">
 // </changelog>
 #endregion Change Log
 
 namespace MaxFactry.Base.PresentationLayer
 {
     using System;
-#if net4_52 || netcore1 || netstandard1_2
-    using System.Linq.Expressions;
-#endif
     using MaxFactry.Core;
     using MaxFactry.Base.BusinessLayer;
 
     /// <summary>
     /// View model base
     /// </summary>
-    public abstract class MaxBaseViewModel : System.ComponentModel.INotifyPropertyChanged
+    public abstract class MaxBaseViewModel : MaxViewModel
     {
         /// <summary>
-        /// Internal storage of original values
+        /// Internal storage of list of this class
         /// </summary>
-        private MaxIndex _oOriginalValues = new MaxIndex();
+        private MaxIndex _oEntityIndex = null;
 
         /// <summary>
-        /// Internal storage of view data
+        /// Indicates that the entity has been successfully loaded from external storage.
         /// </summary>
-        private MaxIndex _oValueIndex = new MaxIndex();
+        private bool _bIsEntityLoaded = false;
 
         /// <summary>
-        /// Initializes a new instance of the MaxBaseViewModel class.
+        /// Initializes a new instance of the MaxViewModel class.
         /// </summary>
         public MaxBaseViewModel()
         {
+            this.CreateEntity();
         }
 
         /// <summary>
-        /// Gets or sets original values for comparison after updates
+        /// Initializes a new instance of the MaxViewModel class
         /// </summary>
-        public MaxIndex OriginalValues
+        /// <param name="loEntity">Entity to use as data.</param>
+        public MaxBaseViewModel(MaxEntity loEntity)
+        {
+            this.Entity = loEntity;
+            this.IsEntityLoaded = true;
+            this.MapFromEntity();
+        }
+
+        /// <summary>
+        /// Gets the date last updated.  Not changed through view model.
+        /// </summary>
+        public virtual string DataKey
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets or sets the date created. Set at record creation.
+        /// </summary>
+        public virtual string CreatedDate
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets the date last updated.  Not changed through view model.
+        /// </summary>
+        public virtual DateTime LastUpdateDate
         {
             get
             {
-                return this._oOriginalValues;
+                if (this.Entity is MaxBaseEntity)
+                {
+                    return MaxConvertLibrary.ConvertToDateTimeFromUtc(typeof(object), ((MaxBaseEntity)this.Entity).LastUpdateDate);
+                }
+
+                return DateTime.MinValue;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the current entity is active.
+        /// </summary>
+        public virtual string Active { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the current entity is active.
+        /// </summary>
+        public virtual bool IsActive
+        {
+            get
+            {
+                object loR = this.Get("IsActive");
+                if (loR is bool)
+                {
+                    return (bool)loR;
+                }
+                else if (null != this.Active && string.Empty != this.Active)
+                {
+                    return MaxConvertLibrary.ConvertToBoolean(typeof(object), this.Active);
+                }
+
+                return false;
             }
 
             set
             {
-                this._oOriginalValues = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets a value using the format for a property
-        /// </summary>
-        /// <param name="lsPropertyName">Name of the property</param>
-        /// <param name="loValue">Value to format</param>
-        /// <returns>Formatted text</returns>
-        protected virtual string GetFormatted(string lsPropertyName, object loValue)
-        {
-            if (loValue is double && (double)loValue == double.MinValue)
-            {
-                return string.Empty;
-            }
-
-            string lsR = loValue.ToString(); ;
-            string lsFormat = MaxMetaLibrary.GetMetaText(typeof(object), this, lsPropertyName, "MaxMeta.Format");
-            if (null != lsFormat && lsFormat.Length > 0)
-            {
-                lsR = MaxConvertLibrary.Format(typeof(object), loValue, lsFormat);
-            }
-
-            return lsR;
-        }
-
-        /// <summary>
-        /// Sets some text related to a key.
-        /// </summary>
-        /// <param name="lsKey">The key to use for lookup</param>
-        /// <param name="lsValue">The value of the variable</param>
-        public virtual void SetText(string lsKey, string lsValue)
-        {
-            this._oValueIndex.Add(lsKey, lsValue);
-        }
-
-        /// <summary>
-        /// Gets some text related to the key
-        /// </summary>
-        /// <param name="lsKey">Key used for lookup</param>
-        /// <param name="lsDefault">A default value if the key does not exist.</param>
-        /// <returns>Text related to the key.</returns>
-        public virtual string GetText(string lsKey, string lsDefault)
-        {
-            return this._oValueIndex.GetValueString(lsKey, lsDefault);
-        }
-
-        /// <summary>
-        /// Gets the label text used when a value for the property is requested
-        /// </summary>
-        /// <param name="lsProperty">Name of the property</param>
-        /// <returns>Text to use as the label</returns>
-        public virtual string GetLabelText(string lsProperty)
-        {
-            string lsR = MaxMetaLibrary.GetMetaText(typeof(object), this, lsProperty, "MaxMeta.Label");
-            if (null == lsR || lsR.Length == 0)
-            {
-                lsR = MaxMetaLibrary.GetMetaText(typeof(object), this, lsProperty, "MaxMeta.Name");
-            }
-
-            if (null == lsR || lsR.Length == 0)
-            {
-                lsR = MaxMetaLibrary.GetMetaText(typeof(object), this, lsProperty, "Display.Name");
-            }
-
-            return lsR;
-        }
-
-        /// <summary>
-        /// Gets the header text for the property when shown in a list
-        /// </summary>
-        /// <param name="lsProperty">Name of the property</param>
-        /// <returns>Text to use as the header</returns>
-        public virtual string GetListHeaderText(string lsProperty)
-        {
-            string lsR = MaxMetaLibrary.GetMetaText(typeof(object), this, lsProperty, "MaxMeta.ListHeader");
-
-            if (null == lsR || lsR.Length == 0)
-            {
-                lsR = MaxMetaLibrary.GetMetaText(typeof(object), this, lsProperty, "Display.ShortName");
-            }
-
-            return lsR;
-        }
-
-        /// <summary>
-        /// Gets the description text for the property
-        /// </summary>
-        /// <param name="lsProperty">Name of the property</param>
-        /// <returns>Text to use as the description</returns>
-        public virtual string GetDescriptionText(string lsProperty)
-        {
-            string lsR = MaxMetaLibrary.GetMetaText(typeof(object), this, lsProperty, "MaxMeta.Description");
-
-            if (null == lsR || lsR.Length == 0)
-            {
-                lsR = MaxMetaLibrary.GetMetaText(typeof(object), this, lsProperty, "Display.Description");
-            }
-
-            return lsR;
-        }
-
-        /// <summary>
-        /// Gets the hint text for the property
-        /// </summary>
-        /// <param name="lsProperty">Name of the property</param>
-        /// <returns>Text to use as the hint</returns>
-        public virtual string GetHintText(string lsProperty)
-        {
-            string lsR = MaxMetaLibrary.GetMetaText(typeof(object), this, lsProperty, "MaxMeta.Hint");
-
-            if (null == lsR || lsR.Length == 0)
-            {
-                lsR = MaxMetaLibrary.GetMetaText(typeof(object), this, lsProperty, "Display.Prompt");
-            }
-
-            return lsR;
-        }
-
-        /// <summary>
-        /// Gets the maximum value that should be used for the property
-        /// </summary>
-        /// <param name="lsProperty">Name of the property</param>
-        /// <returns>Maximum value (double.MinValue if none is set)</returns>
-        public virtual double GetRangeMax(string lsProperty)
-        {
-            double lnR = double.MinValue;
-            string lsValue = MaxMetaLibrary.GetMetaText(typeof(object), this, lsProperty, "MaxMeta.Maximum");
-
-            if (null == lsValue || lsValue.Length == 0)
-            {
-                lsValue = MaxMetaLibrary.GetMetaText(typeof(object), this, lsProperty, "Range.Maximum");
-            }
-
-            if (null != lsValue && lsValue.Length > 0)
-            {
-                lnR = MaxConvertLibrary.ConvertToDouble(typeof(object), lsValue);
-            }
-
-            return lnR;
-        }
-
-        /// <summary>
-        /// Gets the minimum value that should be used for the property
-        /// </summary>
-        /// <param name="lsProperty">Name of the property</param>
-        /// <returns>Minimum value (double.MaxValue if none is set)</returns>
-        public virtual double GetRangeMin(string lsProperty)
-        {
-            double lnR = double.MaxValue;
-            string lsValue = MaxMetaLibrary.GetMetaText(typeof(object), this, lsProperty, "MaxMeta.Minimum");
-
-            if (null == lsValue || lsValue.Length == 0)
-            {
-                lsValue = MaxMetaLibrary.GetMetaText(typeof(object), this, lsProperty, "Range.Minimum");
-            }
-
-            if (null != lsValue && lsValue.Length > 0)
-            {
-                lnR = MaxConvertLibrary.ConvertToDouble(typeof(object), lsValue);
-            }
-
-            return lnR;
-        }
-
-        /// <summary>
-        /// Gets the increment value that should be used when the value is changed
-        /// </summary>
-        /// <param name="lsProperty">Name of the property</param>
-        /// <returns>Increment value (0 if none is set)</returns>
-        public virtual double GetIncrement(string lsProperty)
-        {
-            double lnR = 0;
-            string lsValue = MaxMetaLibrary.GetMetaText(typeof(object), this, lsProperty, "MaxMeta.Increment");
-
-            if (null == lsValue || lsValue.Length == 0)
-            {
-                lsValue = MaxMetaLibrary.GetMetaText(typeof(object), this, lsProperty, "Range.Minimum");
-            }
-
-            if (null != lsValue && lsValue.Length > 0)
-            {
-                lnR = MaxConvertLibrary.ConvertToDouble(typeof(object), lsValue);
-            }
-
-            return lnR;
-        }
-
-        /// <summary>
-        /// Gets the list of properties to display
-        /// </summary>
-        /// <returns>Array of text with property names</returns>
-        public virtual string[] GetPropertyDisplayList()
-        {
-            MaxIndex loIndex = MaxMetaLibrary.GetPropertyDisplayList(typeof(object), this);
-            string[] laKey = loIndex.GetSortedKeyList();
-            string[] laR = new string[laKey.Length];
-            for (int lnR = 0; lnR < laR.Length; lnR++)
-            {
-                laR[lnR] = MaxConvertLibrary.ConvertToString(typeof(object), loIndex[laKey[lnR]]);
-            }
-
-            return laR;
-        }
-
-        /// <summary>
-        /// Sets a value for the property 
-        /// </summary>
-        /// <param name="lsPropertyName">Name of the property</param>
-        /// <param name="loValue">Value to set</param>
-        /// <returns>True if the value is updated.  False if it is the same.</returns>
-        protected virtual bool Set(string lsPropertyName, object loValue)
-        {
-            bool lbUpdate = true;
-            string lsKey = MaxMetaLibrary.GetKey(typeof(object), this, lsPropertyName);
-            if (this._oValueIndex.Contains(lsKey))
-            {
-                lbUpdate = false;
-                object loCurrent = this._oValueIndex[lsKey];
-                if (null != loCurrent || null != loValue)
+                if (value)
                 {
-                    lbUpdate = true;
-                    if (null != loCurrent && null != loValue && loCurrent.Equals(loValue))
+                    this.Active = "Yes";
+                    this.Set("IsActive", true);
+                }
+                else
+                {
+                    this.Active = "No";
+                    this.Set("IsActive", false);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the Attribute property to be stored.
+        /// </summary>
+        [MaxMeta(Name = "Attributes")]
+        public virtual string AttributeIndexText
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets the Attribute key value pair information for this entity
+        /// </summary>
+        public MaxIndex AttributeIndex
+        {
+            get
+            {
+                if (this.Entity is MaxBaseEntity)
+                {
+                    return ((MaxBaseEntity)this.Entity).AttributeIndex;
+                }
+
+                return new MaxIndex();
+            }
+        }
+
+        /// <summary>
+        /// Override this to create the entity for the specific ViewModel
+        /// </summary>
+        protected virtual void CreateEntity()
+        {
+        }
+
+        /// <summary>
+        /// Gets or sets the MaxEntity related to this ViewModel.
+        /// </summary>
+        protected MaxEntity Entity { get; set; }
+
+        /// <summary>
+        /// Gets or sets the list of all entities of this type.
+        /// </summary>
+        protected virtual MaxIndex EntityIndex
+        {
+            get
+            {
+                if (null == this._oEntityIndex)
+                {
+                    this._oEntityIndex = new MaxIndex();
+                    if (null != this.Entity)
                     {
-                        lbUpdate = false;
+                        MaxEntityList loEntityList = this.Entity.LoadAllCache();
+                        this._oEntityIndex = new MaxIndex(loEntityList.Count - 1);
+                        for (int lnE = 0; lnE < loEntityList.Count; lnE++)
+                        {
+                            this._oEntityIndex.AddWithoutKeyCheck(loEntityList[lnE].GetDefaultSortString(), loEntityList[lnE]);
+                        }
+                    }
+                }
+
+                return this._oEntityIndex;
+            }
+
+            set
+            {
+                this._oEntityIndex = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether that the entity has been loaded.
+        /// </summary>
+        protected bool IsEntityLoaded
+        {
+            get
+            {
+                return this._bIsEntityLoaded;
+            }
+
+            set
+            {
+                this._bIsEntityLoaded = value;
+            }
+        }
+
+        /// <summary>
+        /// Loads the content of the Entity associated with this ViewModel
+        /// </summary>
+        /// <returns>true if successful</returns>
+        public virtual bool EntityLoad()
+        {
+            bool lbR = this.IsEntityLoaded && null != this.Entity;
+            if (!lbR)
+            {
+                if (null != this.DataKey && string.Empty != this.DataKey && this.Entity is MaxBaseEntity)
+                {
+                    if (((MaxBaseEntity)this.Entity).LoadByDataKeyCache(this.DataKey))
+                    {
+                        this.IsEntityLoaded = true;
+                        lbR = true;
                     }
                 }
             }
 
-            if (lbUpdate)
+            return lbR;
+        }
+
+        /// <summary>
+        /// Maps the fields in the view model from the entity.
+        /// </summary>
+        /// <returns>True if the load was successful.</returns>
+        public virtual bool Load()
+        {
+            bool lbR = false;
+            if (this.EntityLoad())
             {
-                if (!this._oOriginalValues.Contains(lsKey))
+                lbR = this.MapFromEntity();
+            }
+
+            return lbR;
+        }
+
+        /// <summary>
+        /// Maps the fields in the view model from the entity.
+        /// </summary>
+        /// <returns>True if the load was successful.</returns>
+        public virtual bool Load(MaxEntity loEntity)
+        {
+            bool lbR = false;
+            if (null != loEntity)
+            {
+                this.Entity = loEntity;
+                this.IsEntityLoaded = true;
+                lbR = this.MapFromEntity();
+            }
+
+            return lbR;
+        }
+
+        /// <summary>
+        /// Saves the model
+        /// </summary>
+        /// <returns>true if successful</returns>
+        public virtual bool Save()
+        {
+            if (this.MapToEntity())
+            {
+                if (this.Entity is MaxBaseEntity)
                 {
-                    this._oOriginalValues.Add(lsKey, loValue);
+                    MaxBaseEntity loEntity = (MaxBaseEntity)this.Entity;
+                    bool lbR = false;
+                    if (loEntity.Insert())
+                    {
+                        lbR = this.Load();
+                    }
+
+                    return lbR;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Deletes the model
+        /// </summary>
+        /// <returns>true if successful</returns>
+        public virtual bool Delete()
+        {
+            if (this.Entity is MaxBaseEntity && this.Load())
+            {
+                MaxBaseEntity loEntity = (MaxBaseEntity)this.Entity;
+                return loEntity.Delete();
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Loads the entity based on the Id property.
+        /// Maps the current values of properties in the ViewModel to the Entity.
+        /// </summary>
+        /// <returns>True if successful. False if it cannot be mapped.</returns>
+        protected virtual bool MapToEntity()
+        {
+            if (this.Entity is MaxBaseEntity)
+            {
+                MaxBaseEntity loEntity = (MaxBaseEntity)this.Entity;
+                if (null != this.Active && this.Active.Length > 0)
+                {
+                    loEntity.IsActive = MaxConvertLibrary.ConvertToBoolean(typeof(object), this.Active);
                 }
 
-                this._oValueIndex.Add(lsKey, loValue);
-                this.OnPropertyChanged(lsPropertyName);
+                string lsAttributeIndexText = this.AttributeIndexText;
+                if (string.IsNullOrEmpty(lsAttributeIndexText))
+                {
+                    lsAttributeIndexText = string.Empty;
+                }
+
+                loEntity.AttributeIndex.Clear();
+                if (lsAttributeIndexText.Contains("="))
+                {
+                    string[] laAttributeIndexText = lsAttributeIndexText.Split('\n');
+                    foreach (string lsAttributeKeyValue in laAttributeIndexText)
+                    {
+                        if (lsAttributeKeyValue.IndexOf('=') > 0)
+                        {
+                            string lsKey = lsAttributeKeyValue.Substring(0, lsAttributeKeyValue.IndexOf('='));
+                            string lsValue = lsAttributeKeyValue.Substring(lsAttributeKeyValue.IndexOf('=') + 1);
+                            loEntity.AttributeIndex.Add(lsKey.Trim(), lsValue.Trim());
+                        }
+                    }
+                }
+                else if (lsAttributeIndexText.Length > 0)
+                {
+                    loEntity.AttributeIndex.Add("all", lsAttributeIndexText);
+                }
+
                 return true;
             }
 
@@ -321,95 +379,39 @@ namespace MaxFactry.Base.PresentationLayer
         }
 
         /// <summary>
-        /// Gets the value of a property
+        /// Maps the properties of the Entity to the properties of the ViewModel.
         /// </summary>
-        /// <param name="lsPropertyName">Name of the property</param>
-        /// <returns>object value of the property</returns>
-        protected virtual object Get(string lsPropertyName)
+        /// <returns>True if the entity exists.</returns>
+        protected virtual bool MapFromEntity()
         {
-            object loR = null;
-            string lsKey = MaxMetaLibrary.GetKey(typeof(object), this, lsPropertyName);
-            bool lbHasKey = this._oValueIndex.Contains(lsKey);
-            if (lbHasKey)
+            if (this.Entity is MaxBaseEntity)
             {
-                loR = this._oValueIndex[lsKey];
-            }
-
-            return loR;
-        }
-
-        #region INotifyPropertyChanged Members
-        /// <summary>
-        /// Event to handle when a property is changed
-        /// </summary>
-        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
-
-        /// <summary>
-        /// For when a property value is changed
-        /// </summary>
-        /// <param name="lsPropertyName">Name of the property</param>
-        protected virtual void OnPropertyChanged(string lsPropertyName)
-        {
-            if (this.PropertyChanged != null)
-            {
-                System.ComponentModel.PropertyChangedEventArgs loArgs = new System.ComponentModel.PropertyChangedEventArgs(lsPropertyName);
-                this.PropertyChanged(this, loArgs);
-            }
-        }
-
-        #endregion
-
-        /// <summary>
-        /// Gets a name that can be used in a DataTable column
-        /// </summary>
-        /// <param name="lsName">Current name</param>
-        /// <returns>Name with special characters removed</returns>
-        public string GetDataTableColumnName(string lsName)
-        {
-            return lsName.Replace("(", string.Empty).Replace(")", string.Empty).Replace("[", string.Empty).Replace("]", string.Empty).Replace(".", string.Empty).Replace("/", string.Empty).Replace(@"\", string.Empty);
-        }
-
-#if net4_52 || netcore1 || netstandard1_2
-
-        /// <summary>
-        /// Gets a property name when specified with a function to the property
-        /// </summary>
-        /// <typeparam name="T">Generic placeholder for the property type</typeparam>
-        /// <param name="loFunction">Function that specifies the type</param>
-        /// <returns>Name of the property</returns>
-        public string GetPropertyName<T>(Expression<Func<T>> loFunction)
-        {
-            string lsR = string.Empty;
-            if (null != loFunction)
-            {
-                MemberExpression loBody = loFunction.Body as MemberExpression;
-                if (null != loBody)
+                MaxBaseEntity loEntity = (MaxBaseEntity)this.Entity;
+                this.DataKey = loEntity.DataKey;
+                if (loEntity.CreatedDate > DateTime.MinValue)
                 {
-                    lsR = loBody.Member.Name;
+                    this.CreatedDate = MaxConvertLibrary.ConvertToDateTimeFromUtc(typeof(object), loEntity.CreatedDate).ToString("G");
+                    this.OriginalValues.Add("CreatedDate", this.CreatedDate);
                 }
+
+                if (loEntity.LastUpdateDate > DateTime.MinValue)
+                {
+                    this.OriginalValues.Add("LastUpdateDate", this.LastUpdateDate);
+                }
+
+                this.OriginalValues.Add("IsActive", this.IsActive);
+                this.IsActive = loEntity.IsActive;
+                this.OriginalValues.Add("Active", this.Active);
+                string[] laKey = loEntity.AttributeIndex.GetSortedKeyList();
+                foreach (string lsKey in laKey)
+                {
+                    this.AttributeIndexText += lsKey + "=" + loEntity.AttributeIndex[lsKey] + "\r\n";
+                }
+
+                return true;
             }
 
-            return lsR;
+            return false;
         }
-
-        protected virtual bool Set<T>(Expression<Func<T>> loFunction, T loValue)
-        {
-            string lsName = this.GetPropertyName(loFunction);
-            return this.Set(lsName, loValue);
-        }
-
-        protected virtual T Get<T>(Expression<Func<T>> loFunction)
-        {
-            string lsName = this.GetPropertyName(loFunction);
-            object loValue = this.Get(lsName);
-            if (null != loValue)
-            {
-                return (T)loValue;
-            }
-
-            return default(T);
-        }
-
-#endif
     }
 }

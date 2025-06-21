@@ -37,6 +37,7 @@
 // <change date="1/21/2025" author="Brian A. Lakstins" description="Updated to match MaxBaseEntity.">
 // <change date="6/9/2025" author="Brian A. Lakstins" description="Replace StorageKey with DataKey.  Load entity by DataKey">
 // <change date="6/11/2025" author="Brian A. Lakstins" description="Use method to get DataKey">
+// <change date="6/18/2025" author="Brian A. Lakstins" description="Changed base to MaxViewModel.  This class is being replaced with MaxBaseViewModel.">
 // </changelog>
 #endregion Change Log
 
@@ -49,7 +50,7 @@ namespace MaxFactry.Base.PresentationLayer
     /// <summary>
     /// View model base
     /// </summary>
-    public abstract class MaxBaseEntityViewModel : MaxBaseViewModel
+    public abstract class MaxBaseEntityViewModel : MaxViewModel
     {
         /// <summary>
         /// Internal storage of list of this class
