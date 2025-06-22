@@ -29,6 +29,7 @@
 // <changelog>
 // <change date="4/9/2025" author="Brian A. Lakstins" description="Initial creation">
 // <change date="6/3/2025" author="Brian A. Lakstins" description="Add generic DataKey support">
+// <change date="6/22/2025" author="Brian A. Lakstins" description="Remove override because not needed">
 // </changelog>
 #endregion
 
@@ -55,13 +56,6 @@ namespace MaxFactry.Base.DataLayer
             : base()
         {
             this.AddDataKey(this.Id, typeof(Guid));
-        }
-
-        public override string[] GetStreamPath(MaxData loData)
-        {
-            List<string> loR = new List<string>(base.GetStreamPath(loData));
-            loR.Add(MaxConvertLibrary.ConvertToString(typeof(object), loData.Get(this.Id)));
-            return loR.ToArray();
         }
     }
 }
