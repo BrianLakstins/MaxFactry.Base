@@ -34,6 +34,7 @@
 // <change date="4/14/2025" author="Brian A. Lakstins" description="Open the file stream for reading in a way that other processes can open the same strem.">
 // <change date="5/21/2025" author="Brian A. Lakstins" description="Update to handle one field of one element at a time and send flag based return codes">
 // <change date="6/21/2025" author="Brian A. Lakstins" description="Update stream path handling">
+// <change date="6/23/2025" author="Brian A. Lakstins" description="Fix issues with Streampath using DataName multiple times in the path">
 // </changelog>
 #endregion
 
@@ -43,6 +44,7 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
     using MaxFactry.Core;
     using MaxFactry.Base.DataLayer.Library;
     using System;
+    using System.Collections.Generic;
 
     /// <summary>
     /// Provides methods to manipulate storage of streams
@@ -96,35 +98,43 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
         /// <returns></returns>
         protected virtual string[] GetStreamPath(MaxData loData, string lsDataName)
         {
-            string[] laR = loData.GetStreamPath();
-            string lsStreamPathLatest = Path.Combine(this.GetStreamPath(laR), lsDataName);
-            bool lbR = File.Exists(lsStreamPathLatest);
-            if (!lbR)
+            string[] laStreamDirectory = loData.GetStreamPath();
+            List<string> loR = new List<string>(laStreamDirectory);
+            if (null != lsDataName && lsDataName.Length > 0)
             {
-                for (int lnS = MaxDataModel.StreamPathTypeList.Length - 2; lnS >= 0 && !lbR; lnS--)
+                loR.Add(lsDataName);
+                string lsStreamDirectory = Path.Combine(this.DataFolder, this.GetStreamPath(laStreamDirectory));
+                string lsStreamFile = Path.Combine(lsStreamDirectory, lsDataName);
+                if (!File.Exists(lsStreamFile))
                 {
-                    string lsStreamPathType = MaxDataModel.StreamPathTypeList[lnS];
-                    loData.Set("_StreamPathType", lsStreamPathType);
-                    string[] laStreamPath = loData.GetStreamPath();
-                    string lsStreamPath = this.GetStreamPath(laStreamPath) + "/" + lsDataName;
-                    lbR = File.Exists(lsStreamPath);
-                    if (!lbR)
+                    string lsStreamFileLatest = lsStreamFile;
+                    bool lbIsStreamFound = false;
+                    for (int lnS = MaxDataModel.StreamPathTypeList.Length - 2; lnS >= 0 && !lbIsStreamFound; lnS--)
                     {
-                        lsStreamPath = this.GetStreamPath(laStreamPath) + "_" + lsDataName;
-                        lbR = File.Exists(lsStreamPath);
-                    }
+                        string lsStreamPathType = MaxDataModel.StreamPathTypeList[lnS];
+                        loData.Set("_StreamPathType", lsStreamPathType);
+                        laStreamDirectory = loData.GetStreamPath();
+                        lsStreamDirectory = Path.Combine(this.DataFolder, this.GetStreamPath(laStreamDirectory));
+                        lsStreamFile = Path.Combine(lsStreamDirectory, lsDataName);
+                        lbIsStreamFound = File.Exists(lsStreamFile);
+                        if (!lbIsStreamFound)
+                        {
+                            lsStreamFile = Path.Combine(this.DataFolder, this.GetStreamPath(laStreamDirectory) + "_" + lsDataName);
+                            lbIsStreamFound = File.Exists(lsStreamFile);
+                        }
 
-                    if (lbR)
-                    {
-                        //// copy the stream to the latest convention
-                        File.Copy(lsStreamPath, lsStreamPathLatest, true);
-                        //// Delete it from the previous convention
-                        File.Delete(lsStreamPath);
+                        if (lbIsStreamFound)
+                        {
+                            //// copy the stream to the latest convention
+                            File.Copy(lsStreamFile, lsStreamFileLatest, true);
+                            //// Delete it from the previous convention
+                            File.Delete(lsStreamFile);                            
+                        }
                     }
                 }
             }
 
-            return laR;
+            return loR.ToArray();
         }
 
         /// <summary>
@@ -167,17 +177,17 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
 
                             if (null != loStream && loStream.CanRead)
                             {
-                                string[] laStreamPath = this.GetStreamPath(loData, lsDataName);
-                                string lsStreamPath = Path.Combine(this.GetStreamPath(laStreamPath), lsDataName);
-                                string lsStorageLocation = Path.Combine(this.DataFolder, lsStreamPath);
-                                if (!Directory.Exists(lsStorageLocation))
+                                string[] laStreamDirectory = this.GetStreamPath(loData, string.Empty);
+                                string lsStreamDirectory = Path.Combine(this.DataFolder, this.GetStreamPath(laStreamDirectory));
+                                if (!Directory.Exists(lsStreamDirectory))
                                 {
-                                    Directory.CreateDirectory(lsStorageLocation);
+                                    Directory.CreateDirectory(lsStreamDirectory);
                                 }
 
-                                string lsFullPath = Path.Combine(lsStorageLocation, lsDataName);
+                                string[] laStreamPath = this.GetStreamPath(loData, lsDataName);
+                                string lsStreamFile = Path.Combine(this.DataFolder, this.GetStreamPath(laStreamPath));
                                 bool lbIsChanged = true;
-                                if (File.Exists(lsFullPath))
+                                if (File.Exists(lsStreamFile))
                                 {
                                     lbIsChanged = false;
                                     if (loStream.CanSeek)
@@ -185,7 +195,7 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
                                         loStream.Seek(0, SeekOrigin.Begin);
                                     }
 
-                                    using (FileStream loFileStream = File.OpenRead(lsFullPath))
+                                    using (FileStream loFileStream = File.OpenRead(lsStreamFile))
                                     {
                                         //// 50K chunks.
                                         int lnBufferSize = 50 * 1024;
@@ -222,7 +232,7 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
 
                                     if (lbIsChanged)
                                     {
-                                        File.Move(lsFullPath, lsFullPath + "-" + DateTime.UtcNow.Ticks.ToString());
+                                        File.Move(lsStreamFile, lsStreamFile + "-" + DateTime.UtcNow.Ticks.ToString());
                                     }
                                 }
 
@@ -236,7 +246,7 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
                                     //// 50K chunks.
                                     int lnBufferSize = 50 * 1024;
                                     byte[] laBuffer = new byte[lnBufferSize];
-                                    using (FileStream loFile = File.Create(lsFullPath, lnBufferSize))
+                                    using (FileStream loFile = File.Create(lsStreamFile, lnBufferSize))
                                     {
                                         int lnRead = loStream.Read(laBuffer, 0, lnBufferSize);
                                         while (lnRead > 0)
@@ -302,12 +312,10 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
         public virtual Stream StreamOpen(MaxData loData, string lsDataName)
         {
             string[] laStreamPath = this.GetStreamPath(loData, lsDataName);
-            string lsStreamPath = Path.Combine(this.GetStreamPath(laStreamPath), lsDataName);
-            string lsStorageLocation = Path.Combine(this.DataFolder, lsStreamPath);
-            string lsFullPath = Path.Combine(lsStorageLocation, lsDataName);
-            if (File.Exists(lsFullPath))
+            string lsStreamFile = Path.Combine(this.DataFolder, this.GetStreamPath(laStreamPath));
+            if (File.Exists(lsStreamFile))
             {
-                FileStream loStream = File.Open(lsFullPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                FileStream loStream = File.Open(lsStreamFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
                 return loStream;
             }
 
@@ -324,14 +332,12 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
         {
             int lnR = 0;
             string[] laStreamPath = this.GetStreamPath(loData, lsDataName);
-            string lsStreamPath = Path.Combine(this.GetStreamPath(laStreamPath), lsDataName);
             try
             {
-                string lsStorageLocation = Path.Combine(this.DataFolder, lsStreamPath);
-                string lsFullPath = Path.Combine(lsStorageLocation, lsDataName);
-                if (File.Exists(lsFullPath))
+                string lsStreamFile = Path.Combine(this.DataFolder, this.GetStreamPath(laStreamPath));
+                if (File.Exists(lsStreamFile))
                 {
-                    File.Delete(lsFullPath);
+                    File.Delete(lsStreamFile);
                 }
                 else
                 {

@@ -99,6 +99,7 @@
 // <change date="6/12/2025" author="Brian A. Lakstins" description="Move CacheKey method into DataModel">
 // <change date="6/17/2025" author="Brian A. Lakstins" description="Try to prevent exception when parsing a guid">
 // <change date="6/18/2025" author="Brian A. Lakstins" description="Fix and add some cache clearing">
+// <change date="6/23/2025" author="Brian A. Lakstins" description="Remove cache clearing that is not needed.">
 
 // </changelog>
 #endregion
@@ -1442,31 +1443,6 @@ namespace MaxFactry.Base.BusinessLayer
             foreach (string lsDataName in laKey)
             {
                 this.SetObject(lsDataName, this._oUnSerializedObjectIndex[lsDataName]);
-            }
-
-            if (this.IsDataChanged)
-            {
-                foreach (string lsDataName in this.Data.DataModel.DataNameStreamList)
-                {
-                    try
-                    {
-                        //// Clear Cache
-                        string[] laStreamPath = this.Data.GetStreamPath();
-                        string lsStreamPath = laStreamPath[0];
-                        for (int lnP = 1; lnP < laStreamPath.Length; lnP++)
-                        {
-                            lsStreamPath += "/" + laStreamPath[lnP];
-                        }
-
-                        lsStreamPath += "/" + lsDataName;
-                        string lsCacheDataKey = this.GetCacheKey("GetString/" + lsStreamPath);
-                        MaxCacheRepository.Remove(this.GetType(), lsCacheDataKey);
-                    }
-                    catch (Exception loE)
-                    {
-                        MaxLogLibrary.Log(new MaxLogEntryStructure(this.GetType(), "SetProperties", MaxEnumGroup.LogError, "Clearing cache stream for {DataName}", loE, lsDataName));
-                    }
-                }
             }
         }
 
