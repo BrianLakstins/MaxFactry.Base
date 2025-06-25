@@ -100,7 +100,7 @@
 // <change date="6/17/2025" author="Brian A. Lakstins" description="Try to prevent exception when parsing a guid">
 // <change date="6/18/2025" author="Brian A. Lakstins" description="Fix and add some cache clearing">
 // <change date="6/23/2025" author="Brian A. Lakstins" description="Remove cache clearing that is not needed.">
-
+// <change date="6/24/2025" author="Brian A. Lakstins" description="Clear all cache on update.">
 // </changelog>
 #endregion
 
@@ -433,10 +433,13 @@ namespace MaxFactry.Base.BusinessLayer
                 if (lbR)
                 {
                     this.Data.ClearChanged();
+                    //// Clear everything for this entity from the cache
+                    string lsCacheKey = this.GetCacheKey("LoadAll*");
+                    MaxCacheRepository.Remove(this.GetType(), lsCacheKey);
                     if (null != this.DataKey && this.DataKey.Length > 0)
                     {
                         //// Clear everything that has this DataKey from cache
-                        string lsCacheKey = this.GetCacheKey("LoadByDataKey/" + this.DataKey + "*");
+                        lsCacheKey = this.GetCacheKey("LoadByDataKey/" + this.DataKey + "*");
                         MaxCacheRepository.Remove(this.GetType(), lsCacheKey);
                     }
 
