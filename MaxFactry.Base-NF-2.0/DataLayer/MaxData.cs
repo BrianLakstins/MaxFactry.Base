@@ -366,7 +366,7 @@ namespace MaxFactry.Base.DataLayer
             }
             catch (Exception loE)
             {
-                MaxLogLibrary.Log(new MaxLogEntryStructure("MaxData.Set", MaxEnumGroup.LogError, "Error in MaxData.Set for {lsKey}, {loValue}, {DataModel}", loE, lsDataName, loValue, this.DataModel));
+                MaxLogLibrary.Log(new MaxLogEntryStructure(this.GetType(), "Set", MaxEnumGroup.LogError, "Error in MaxData.Set for {lsKey}, {loValue}, {DataModel}", loE, lsDataName, loValue, this.DataModel));
             }
         }
 

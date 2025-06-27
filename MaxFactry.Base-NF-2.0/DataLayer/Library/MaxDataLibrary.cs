@@ -142,7 +142,7 @@ namespace MaxFactry.Base.DataLayer.Library
             TimeSpan loDuration = DateTime.UtcNow - ldStart;
             if (loDuration.TotalMilliseconds > 500)
             {
-                MaxFactry.Core.MaxLogLibrary.Log(new MaxLogEntryStructure("GetApplicationKey", MaxEnumGroup.LogWarning, "GetApplicationKey() took {Duration} ms for key {lsR} using {Provider}.", loDuration.TotalMilliseconds, lsR, Provider.GetType()));
+                MaxFactry.Core.MaxLogLibrary.Log(new MaxLogEntryStructure(Provider.GetType(), "GetApplicationKey", MaxEnumGroup.LogWarning, "GetApplicationKey() took {Duration} ms for key {lsR}.", loDuration.TotalMilliseconds, lsR));
             }
 
             return lsR;
