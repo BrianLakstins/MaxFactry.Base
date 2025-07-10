@@ -101,6 +101,7 @@
 // <change date="6/18/2025" author="Brian A. Lakstins" description="Fix and add some cache clearing">
 // <change date="6/23/2025" author="Brian A. Lakstins" description="Remove cache clearing that is not needed.">
 // <change date="6/24/2025" author="Brian A. Lakstins" description="Clear all cache on update.">
+// <change date="7/10/2025" author="Brian A. Lakstins" description="Make method virtual so it can be overridden.">
 // </changelog>
 #endregion
 
@@ -1240,7 +1241,7 @@ namespace MaxFactry.Base.BusinessLayer
         /// <param name="lsDataKey"></param>
         /// <param name="laPropertyNameList"></param>
         /// <returns></returns>
-        public bool LoadByDataKeyCache(string lsDataKey, params string[] laPropertyNameList)
+        public virtual bool LoadByDataKeyCache(string lsDataKey, params string[] laPropertyNameList)
         {
             bool lbR = false;
             if (!string.IsNullOrEmpty(lsDataKey))
