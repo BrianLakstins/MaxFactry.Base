@@ -30,6 +30,7 @@
 // <change date="1/21/2025" author="Brian A. Lakstins" description="Initial creation">
 // <change date="6/9/2025" author="Brian A. Lakstins" description="Update method used to load when Id is available">
 // <change date="6/21/2025" author="Brian A. Lakstins" description="Update base class">
+// <change date="7/25/2025" author="Brian A. Lakstins" description="Fix issue loading after insert">
 // </changelog>
 #endregion
 
@@ -142,6 +143,7 @@ namespace MaxFactry.Base.PresentationLayer
                     {
                         if (loEntity.Insert())
                         {
+                            this.DataKey = loEntity.DataKey;
                             lbR = this.Load();
                         }
                     }
