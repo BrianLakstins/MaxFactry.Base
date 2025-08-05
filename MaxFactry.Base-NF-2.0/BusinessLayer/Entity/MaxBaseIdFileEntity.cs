@@ -45,6 +45,7 @@
 // <change date="5/23/2025" author="Brian A. Lakstins" description="Use StreamLibrary directly.">
 // <change date="6/3/2025" author="Brian A. Lakstins" description="Remove need for custom repository">
 // <change date="6/4/2025" author="Brian A. Lakstins" description="Change base to GuidKey">
+// <change date="8/5/2025" author="Brian A. Lakstins" description="Fix required field">
 // </changelog>
 #endregion
 
@@ -251,6 +252,7 @@ namespace MaxFactry.Base.BusinessLayer
                 FileInfo loFile = new FileInfo(this.FromFileName);
                 this.ContentName = loFile.Name;
                 this.Name = loFile.Name;
+                this.FileName = loFile.Name;
                 this.ContentDate = loFile.CreationTime;
                 this.ContentType = this.GetMimeType(loFile.FullName);
                 this.MimeType = this.ContentType;
