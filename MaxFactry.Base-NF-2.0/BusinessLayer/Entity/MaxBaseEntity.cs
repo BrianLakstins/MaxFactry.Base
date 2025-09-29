@@ -39,6 +39,7 @@
 // <change date="6/3/2025" author="Brian A. Lakstins" description="Remove special handling of StorageKey. Make sure CreatedDate is unique.  Override GetDataQuery to filter out deleted records.">
 // <change date="6/4/2025" author="Brian A. Lakstins" description="Fix IsDeleted filter">
 // <change date="6/11/2025" author="Brian A. Lakstins" description="Use new method to get StorageKey">
+// <change date="9/29/2025" author="Brian A. Lakstins" description="Make AttributeIndex readonly">
 // </changelog>
 #endregion
 
@@ -156,11 +157,6 @@ namespace MaxFactry.Base.BusinessLayer
                 }
 
                 return loR;
-            }
-
-            set
-            {
-                this.SetObject(this.MaxBaseDataModel.AttributeIndexText, value);
             }
         }
 
@@ -292,7 +288,7 @@ namespace MaxFactry.Base.BusinessLayer
         {
             MaxIndex loAttributeIndex = this.AttributeIndex;
             loAttributeIndex.Add(lsName, loValue);
-            this.AttributeIndex = loAttributeIndex;
+            this.SetObject(this.MaxBaseDataModel.AttributeIndexText, loAttributeIndex);
         }
 
         /// <summary>
