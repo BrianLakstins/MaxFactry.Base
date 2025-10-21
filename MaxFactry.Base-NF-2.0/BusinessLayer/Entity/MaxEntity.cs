@@ -103,6 +103,7 @@
 // <change date="6/24/2025" author="Brian A. Lakstins" description="Clear all cache on update.">
 // <change date="7/10/2025" author="Brian A. Lakstins" description="Make method virtual so it can be overridden.">
 // <change date="9/9/2025" author="Brian A. Lakstins" description="Make sure DataNames that make up the PropertyName DataKey are included.">
+// <change date="10/21/2025" author="Brian A. Lakstins" description="Change DataKey handling so it's always included.">
 // </changelog>
 #endregion
 
@@ -811,14 +812,8 @@ namespace MaxFactry.Base.BusinessLayer
             MaxIndex loDataNameIndex = new MaxIndex();
             if (null != laPropertyNameList && laPropertyNameList.Length > 0)
             {
-                bool lbHasDataKey = false;
                 foreach (string lsPropertyName in laPropertyNameList)
                 {
-                    if (lsPropertyName == "DataKey")
-                    {
-                        lbHasDataKey = true;
-                    }
-
                     string lsDataName = this.GetDataName(loDataModel, lsPropertyName);
                     if (!string.IsNullOrEmpty(lsDataName))
                     {
@@ -830,15 +825,12 @@ namespace MaxFactry.Base.BusinessLayer
                     }
                 }
 
-                //// If DataKey is included in laPropertyNameList, then make sure everything that makes up the DataKey is also included
-                if (lbHasDataKey)
+                //// Make sure everything that makes up the DataKey is also included so that Streams can be loaded
+                foreach (string lsDataName in this.Data.DataModel.DataNameKeyList)
                 {
-                    foreach (string lsDataName in this.Data.DataModel.DataNameKeyList)
+                    if (!loDataNameIndex.Contains(lsDataName))
                     {
-                        if (!loDataNameIndex.Contains(lsDataName))
-                        {
-                            loDataNameIndex.Add(lsDataName, true);
-                        }
+                        loDataNameIndex.Add(lsDataName, true);
                     }
                 }
             }
