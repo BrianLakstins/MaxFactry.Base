@@ -3,9 +3,9 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
 	  <RootNamespace>MaxFactry.Base</RootNamespace>
-	  <Version>1.0.24.77</Version>
-	  <AssemblyVersion>1.0.24.77</AssemblyVersion>
-	  <FileVersion>2025.09.29.01</FileVersion>
+	  <Version>1.0.24.79</Version>
+	  <AssemblyVersion>1.0.24.79</AssemblyVersion>
+	  <FileVersion>2025.10.21.01</FileVersion>
 	  <SignAssembly>True</SignAssembly>
 	  <AssemblyOriginatorKeyFile>MaxFactry.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
