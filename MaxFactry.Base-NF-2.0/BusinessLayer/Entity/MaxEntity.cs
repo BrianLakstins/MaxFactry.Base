@@ -104,6 +104,7 @@
 // <change date="7/10/2025" author="Brian A. Lakstins" description="Make method virtual so it can be overridden.">
 // <change date="9/9/2025" author="Brian A. Lakstins" description="Make sure DataNames that make up the PropertyName DataKey are included.">
 // <change date="10/21/2025" author="Brian A. Lakstins" description="Change DataKey handling so it's always included.">
+// <change date="11/6/2025" author="Brian A. Lakstins" description="Adding MapIndexList to allow an entity to generate a list based on property names.">
 // </changelog>
 #endregion
 
@@ -120,6 +121,8 @@ namespace MaxFactry.Base.BusinessLayer
     using MaxFactry.Base.DataLayer;
     using MaxFactry.Base.DataLayer.Library;
     using System.Text.RegularExpressions;
+    using System.Collections.Generic;
+    using System.Linq;
 
     /// <summary>
     /// Base Business Layer Entity
@@ -564,7 +567,7 @@ namespace MaxFactry.Base.BusinessLayer
         /// </summary>
         /// <param name="laPropertyNameList"></param>
         /// <returns></returns>
-        public virtual MaxIndex MapIndex(params string[] laFilteredPropertyNameList)
+        public virtual MaxIndex MapIndex(params string[] laPropertyNameList)
         {
             MaxIndex loR = new MaxIndex();
             MaxIndex loPropertyIndex = MaxFactry.Core.MaxFactryLibrary.GetPropertyList(this);
@@ -579,13 +582,13 @@ namespace MaxFactry.Base.BusinessLayer
                 }
             }
 
-            string[] laPropertyNameList = laFilteredPropertyNameList;
-            if (null == laPropertyNameList || laPropertyNameList.Length == 0)
+            string[] laIncludedPropertyNameList = laPropertyNameList;
+            if (null == laIncludedPropertyNameList || laIncludedPropertyNameList.Length == 0)
             {
-                laPropertyNameList = laPropertyNameIndex;
+                laIncludedPropertyNameList = laPropertyNameIndex;
             }
 
-            foreach (string lsPropertyName in laPropertyNameList)
+            foreach (string lsPropertyName in laIncludedPropertyNameList)
             {
                 string lsName = lsPropertyName;
                 if (lsPropertyName.Contains("."))
@@ -600,7 +603,7 @@ namespace MaxFactry.Base.BusinessLayer
                     object loValue = ((PropertyInfo)loProperty).GetValue(this, null);
                     if (loValue is MaxEntity)
                     {
-                        loR.Add(lsName, ((MaxEntity)loValue).MapIndex(laPropertyNameList));
+                        loR.Add(lsName, ((MaxEntity)loValue).MapIndex(laIncludedPropertyNameList));
                     }
                     else if (loValue is double)
                     {
@@ -639,6 +642,182 @@ namespace MaxFactry.Base.BusinessLayer
             }
 
             return loR;
+        }
+
+        /// <summary>
+        /// Creates a list of indexes from a list of entities
+        /// </summary>
+        /// <param name="loList">List of entities</param>
+        /// <param name="laPropertyNameList">List of property names to include</param>
+        /// <returns></returns>
+        public virtual MaxIndex[] MapIndexList(MaxEntityList loList, params string[] laPropertyNameList)
+        {
+            MaxIndex[] laR = new MaxIndex[0];
+            //// Check for properties that need special handling
+            //// Function properties are indicated by @
+            Dictionary<string, List<string>> loFunctionPropertyIndex = new Dictionary<string, List<string>>();
+            //// Filter properties are indicated by :
+            Dictionary<string, string> loFilterPropertyIndex = new Dictionary<string, string>();
+            //// Index properties are any other properties that are not in the key
+            List<string> loIndexPropertyList = new List<string>();
+            List<string> loDataNameKeyList = new List<string>(this.Data.DataModel.DataNameKeyList);
+            foreach (string lsPropertyName in laPropertyNameList)
+            {
+                string[] laPropertyName = lsPropertyName.Split(new char[] { '@' }, StringSplitOptions.RemoveEmptyEntries);
+                if (laPropertyName.Length == 2)
+                {
+                    if (!loFunctionPropertyIndex.ContainsKey(laPropertyName[0]))
+                    {
+                        loFunctionPropertyIndex.Add(laPropertyName[0], new List<string>());
+                    }
+
+                    loFunctionPropertyIndex[laPropertyName[0]].Add(laPropertyName[1]);
+                }
+                else
+                {
+                    laPropertyName = lsPropertyName.Split(new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries);
+                    if (laPropertyName.Length == 2)
+                    {
+                        loFilterPropertyIndex.Add(laPropertyName[0], laPropertyName[1]);
+                    }
+                    else
+                    {
+                        string lsDataName = this.GetDataName(this.Data.DataModel, lsPropertyName);
+                        if (!string.IsNullOrEmpty(lsDataName) && !loDataNameKeyList.Contains(lsDataName))
+                        {
+                            Type loType = this.Data.DataModel.GetValueType(lsDataName);
+                            if (loType != typeof(MaxLongString))
+                            {
+                                loIndexPropertyList.Add(lsPropertyName);
+                            }
+                        }                        
+                    }
+                }
+            }
+
+            if (loFunctionPropertyIndex.Count > 0)
+            {
+                Dictionary<string, MaxIndex> loIndexDictionary = new Dictionary<string, MaxIndex>();
+                for (int lnE = 0; lnE < loList.Count; lnE++)
+                {
+                    MaxEntity loEntity = loList[lnE] as MaxEntity;
+                    MaxIndex loIndex = loEntity.MapIndex(laPropertyNameList);
+                    string lsIndexKey = string.Empty;
+                    foreach (string lsIndexProperty in loIndexPropertyList)
+                    {
+                        if (!loFilterPropertyIndex.ContainsKey(lsIndexProperty) && !loFunctionPropertyIndex.ContainsKey(lsIndexProperty))
+                        {
+                            string lsValue = loIndex.GetValueString(lsIndexProperty);
+                            lsIndexKey += lsValue;
+                        }
+                    }
+
+                    foreach (string lsFilterProperty in loFilterPropertyIndex.Keys)
+                    {
+                        string lsValue = loIndex.GetValueString(lsFilterProperty);
+                        string lsFormat = loFilterPropertyIndex[lsFilterProperty];
+                        loIndex.Add(lsFilterProperty + ":" + lsFormat, lsValue);
+                        string lsDataName = this.GetDataName(this.Data.DataModel, lsFilterProperty);
+                        Type loType = this.Data.DataModel.GetValueType(lsDataName);
+                        if (loType == typeof(DateTime))
+                        {
+                            DateTime ldDateTime = MaxConvertLibrary.ConvertToDateTimeUtc(typeof(object), lsValue);
+                            if (lsFormat.Contains(";"))
+                            {
+                                string[] laFormat = lsFormat.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+                                if (laFormat.Length == 2)
+                                {
+                                    lsFormat = laFormat[0];
+                                    string lsOffsetTZ = laFormat[1];
+                                    //// Check to see if it's a number
+                                    if (double.TryParse(lsOffsetTZ, out double lnOffset))
+                                    {
+                                        ldDateTime = ldDateTime.AddHours(lnOffset);
+                                    }
+                                    else
+                                    {
+                                        /// Check to see if it's a timezone abbreviation
+                                        TimeZoneInfo loTZ = TimeZoneInfo.FindSystemTimeZoneById(lsOffsetTZ);
+                                        ldDateTime.AddMinutes(loTZ.GetUtcOffset(ldDateTime).Minutes);
+                                    }
+                                }
+                            }
+                           
+                            loIndex.Add(lsFilterProperty, ldDateTime.Date.ToString("o", CultureInfo.InvariantCulture));
+                            lsValue = ldDateTime.ToString(lsFormat);                            
+                        }
+
+                        loIndex.Add(lsFilterProperty + ":IndexKey", lsValue);
+                        lsIndexKey += lsValue;
+                    }
+
+                    foreach (string lsFunctionProperty in loFunctionPropertyIndex.Keys)
+                    {
+                        foreach (string lsFunction in loFunctionPropertyIndex[lsFunctionProperty])
+                        {
+                            loIndex.Add(lsFunctionProperty + "@" + lsFunction, loIndex[lsFunctionProperty]);
+                            if (lsFunction == "COUNT")
+                            {
+                                loIndex[lsFunctionProperty + "@" + lsFunction] = 1;
+                            }
+                        }
+                    }
+
+                    if (loIndexDictionary.ContainsKey(lsIndexKey))
+                    {
+                        foreach (string lsFunctionProperty in loFunctionPropertyIndex.Keys)
+                        {
+                            foreach (string lsFunction in loFunctionPropertyIndex[lsFunctionProperty])
+                            {
+                                if (lsFunction == "SUM" || lsFunction == "COUNT")
+                                {
+                                    double lnValue = MaxConvertLibrary.ConvertToDouble(typeof(object), loIndex[lsFunctionProperty + "@" + lsFunction]);
+                                    double lnValueExisting = MaxConvertLibrary.ConvertToDouble(typeof(object), loIndexDictionary[lsIndexKey][lsFunctionProperty + "@" + lsFunction]);
+                                    loIndexDictionary[lsIndexKey][lsFunctionProperty + "@" + lsFunction] = lnValueExisting + lnValue;
+                                    if (lsFunction == "SUM")
+                                    {
+                                        loIndexDictionary[lsIndexKey][lsFunctionProperty] = lnValueExisting + lnValue;
+                                    }
+                                }
+                            }
+
+                            foreach (string lsFunction in loFunctionPropertyIndex[lsFunctionProperty])
+                            {
+                                if (lsFunction == "AVERAGE")
+                                {
+                                    double lnSum = MaxConvertLibrary.ConvertToDouble(typeof(object), loIndexDictionary[lsIndexKey][lsFunctionProperty + "@SUM"]);
+                                    double lnCount = MaxConvertLibrary.ConvertToDouble(typeof(object), loIndexDictionary[lsIndexKey][lsFunctionProperty + "@COUNT"]);
+                                    if (lnCount > 0)
+                                    {
+                                        loIndexDictionary[lsIndexKey][lsFunctionProperty + "@" + lsFunction] = lnSum / lnCount;
+                                    }
+                                    else
+                                    {
+                                        loIndexDictionary[lsIndexKey][lsFunctionProperty + "@" + lsFunction] = 0;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        loIndexDictionary.Add(lsIndexKey, loIndex);
+                    }
+                }
+
+                laR = loIndexDictionary.Values.ToArray();
+
+            }
+            else
+            {
+                laR = new MaxIndex[loList.Count];
+                for (int lnIndex = 0; lnIndex < loList.Count; lnIndex++)
+                {
+                    laR[lnIndex] = loList[lnIndex].MapIndex(laPropertyNameList);
+                }
+            }
+
+            return laR;
         }
 
         /// <summary>
