@@ -106,6 +106,7 @@
 // <change date="10/21/2025" author="Brian A. Lakstins" description="Change DataKey handling so it's always included.">
 // <change date="11/6/2025" author="Brian A. Lakstins" description="Adding MapIndexList to allow an entity to generate a list based on property names.">
 // <change date="11/7/2025" author="Brian A. Lakstins" description="Fix offset handling.">
+// <change date="11/7/2025" author="Brian A. Lakstins" description="Fix null exception.">
 // </changelog>
 #endregion
 
@@ -661,36 +662,39 @@ namespace MaxFactry.Base.BusinessLayer
             //// Index properties are any other properties that are not in the key
             List<string> loIndexPropertyList = new List<string>();
             List<string> loDataNameKeyList = new List<string>(this.Data.DataModel.DataNameKeyList);
-            foreach (string lsPropertyName in laPropertyNameList)
+            if (null != laPropertyNameList)
             {
-                string[] laPropertyName = lsPropertyName.Split(new char[] { '@' }, StringSplitOptions.RemoveEmptyEntries);
-                if (laPropertyName.Length == 2)
+                foreach (string lsPropertyName in laPropertyNameList)
                 {
-                    if (!loFunctionPropertyIndex.ContainsKey(laPropertyName[0]))
-                    {
-                        loFunctionPropertyIndex.Add(laPropertyName[0], new List<string>());
-                    }
-
-                    loFunctionPropertyIndex[laPropertyName[0]].Add(laPropertyName[1]);
-                }
-                else
-                {
-                    laPropertyName = lsPropertyName.Split(new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries);
+                    string[] laPropertyName = lsPropertyName.Split(new char[] { '@' }, StringSplitOptions.RemoveEmptyEntries);
                     if (laPropertyName.Length == 2)
                     {
-                        loFilterPropertyIndex.Add(laPropertyName[0], laPropertyName[1]);
+                        if (!loFunctionPropertyIndex.ContainsKey(laPropertyName[0]))
+                        {
+                            loFunctionPropertyIndex.Add(laPropertyName[0], new List<string>());
+                        }
+
+                        loFunctionPropertyIndex[laPropertyName[0]].Add(laPropertyName[1]);
                     }
                     else
                     {
-                        string lsDataName = this.GetDataName(this.Data.DataModel, lsPropertyName);
-                        if (!string.IsNullOrEmpty(lsDataName) && !loDataNameKeyList.Contains(lsDataName))
+                        laPropertyName = lsPropertyName.Split(new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries);
+                        if (laPropertyName.Length == 2)
                         {
-                            Type loType = this.Data.DataModel.GetValueType(lsDataName);
-                            if (loType != typeof(MaxLongString))
+                            loFilterPropertyIndex.Add(laPropertyName[0], laPropertyName[1]);
+                        }
+                        else
+                        {
+                            string lsDataName = this.GetDataName(this.Data.DataModel, lsPropertyName);
+                            if (!string.IsNullOrEmpty(lsDataName) && !loDataNameKeyList.Contains(lsDataName))
                             {
-                                loIndexPropertyList.Add(lsPropertyName);
+                                Type loType = this.Data.DataModel.GetValueType(lsDataName);
+                                if (loType != typeof(MaxLongString))
+                                {
+                                    loIndexPropertyList.Add(lsPropertyName);
+                                }
                             }
-                        }                        
+                        }
                     }
                 }
             }
