@@ -123,7 +123,6 @@ namespace MaxFactry.Base.BusinessLayer
     using MaxFactry.Base.DataLayer.Library;
     using System.Text.RegularExpressions;
     using System.Collections.Generic;
-    using System.Linq;
 
     /// <summary>
     /// Base Business Layer Entity
@@ -738,8 +737,12 @@ namespace MaxFactry.Base.BusinessLayer
                                     }
                                     else
                                     {
+#if net4_52 || netcore2_1
                                         TimeZoneInfo loTZ = TimeZoneInfo.FindSystemTimeZoneById(laFormat[1]);
                                         lnOffset = loTZ.GetUtcOffset(ldDateTime).TotalHours;
+#else
+                                        throw new MaxException("Time zone format not supported in this framework.");
+#endif
                                     }
 
                                     ldDateTime = ldDateTime.AddHours(lnOffset);
@@ -808,8 +811,8 @@ namespace MaxFactry.Base.BusinessLayer
                     }
                 }
 
-                laR = loIndexDictionary.Values.ToArray();
-
+                laR = new MaxIndex[loIndexDictionary.Values.Count];
+                loIndexDictionary.Values.CopyTo(laR, 0);
             }
             else
             {
