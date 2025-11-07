@@ -105,6 +105,7 @@
 // <change date="9/9/2025" author="Brian A. Lakstins" description="Make sure DataNames that make up the PropertyName DataKey are included.">
 // <change date="10/21/2025" author="Brian A. Lakstins" description="Change DataKey handling so it's always included.">
 // <change date="11/6/2025" author="Brian A. Lakstins" description="Adding MapIndexList to allow an entity to generate a list based on property names.">
+// <change date="11/7/2025" author="Brian A. Lakstins" description="Fix offset handling.">
 // </changelog>
 #endregion
 
@@ -722,28 +723,30 @@ namespace MaxFactry.Base.BusinessLayer
                         if (loType == typeof(DateTime))
                         {
                             DateTime ldDateTime = MaxConvertLibrary.ConvertToDateTimeUtc(typeof(object), lsValue);
+                            double lnOffset = 0;
                             if (lsFormat.Contains(";"))
                             {
                                 string[] laFormat = lsFormat.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
                                 if (laFormat.Length == 2)
                                 {
                                     lsFormat = laFormat[0];
-                                    string lsOffsetTZ = laFormat[1];
-                                    //// Check to see if it's a number
-                                    if (double.TryParse(lsOffsetTZ, out double lnOffset))
+                                    //// Use Regex to determine if offset is a number
+                                    Regex loRegex = new Regex(@"^-?[0-9]?[0-9\.]*$");
+                                    if (loRegex.IsMatch(laFormat[1]))
                                     {
-                                        ldDateTime = ldDateTime.AddHours(lnOffset);
+                                        lnOffset = MaxConvertLibrary.ConvertToDouble(typeof(object), laFormat[1]);
                                     }
                                     else
                                     {
-                                        /// Check to see if it's a timezone abbreviation
-                                        TimeZoneInfo loTZ = TimeZoneInfo.FindSystemTimeZoneById(lsOffsetTZ);
-                                        ldDateTime.AddMinutes(loTZ.GetUtcOffset(ldDateTime).Minutes);
+                                        TimeZoneInfo loTZ = TimeZoneInfo.FindSystemTimeZoneById(laFormat[1]);
+                                        lnOffset = loTZ.GetUtcOffset(ldDateTime).TotalHours;
                                     }
+
+                                    ldDateTime = ldDateTime.AddHours(lnOffset);
                                 }
                             }
                            
-                            loIndex.Add(lsFilterProperty, ldDateTime.Date.ToString("o", CultureInfo.InvariantCulture));
+                            loIndex.Add(lsFilterProperty, ldDateTime.Date.AddHours(-1 * lnOffset).ToString("o", CultureInfo.InvariantCulture));
                             lsValue = ldDateTime.ToString(lsFormat);                            
                         }
 
