@@ -109,6 +109,7 @@
 // <change date="11/7/2025" author="Brian A. Lakstins" description="Fix null exception.">
 // <change date="11/23/2025" author="Brian A. Lakstins" description="Handling per property filters and calculations">
 // <change date="11/24/2025" author="Brian A. Lakstins" description="Sum multiple values for same index if numbers.  Add ABS function support.">
+// <change date="11/24/2025" author="Brian A. Lakstins" description="Getting aggregate functions working.">
 // </changelog>
 #endregion
 
@@ -769,7 +770,7 @@ namespace MaxFactry.Base.BusinessLayer
         public virtual object EvaluateFunction(MaxIndex loIndex, string lsFunction)
         {
             object loR = null;
-            List<string> loFunctionNameList = new List<string>(new string[] { "MULTIPLY", "SUBTRACT", "ADD", "ABS" });
+            List<string> loFunctionNameList = new List<string>(new string[] { "MULTIPLY", "SUBTRACT", "ADD", "ABS", "FORMAT" });
             string lsMethod = lsFunction.Substring(0, lsFunction.IndexOf("(")).ToUpper();
             string lsParams = lsFunction.Substring(lsFunction.IndexOf("(") + 1, lsFunction.Length - lsFunction.IndexOf("(") - 2);
             if (loFunctionNameList.Contains(lsMethod))
@@ -862,6 +863,175 @@ namespace MaxFactry.Base.BusinessLayer
 
                             double lnValue = MaxConvertLibrary.ConvertToDouble(typeof(object), loValue);
                             lnR = Math.Abs(lnValue);
+                        }
+
+                        loR = lnR;
+                    }
+                    else if (lsMethod == "FORMAT")
+                    {
+                        string lsR = string.Empty;
+                        foreach (string lsParam in loParamList)
+                        {
+                            object loValue = null;
+                            if (lsParam.Contains("("))
+                            {
+                                loValue = this.EvaluateFunction(loIndex, lsParam);
+                            }
+                            else 
+                            {
+                                string[] laParam = lsParam.Split(new char[] { '#' }, StringSplitOptions.RemoveEmptyEntries);
+                                if (laParam.Length >= 2)
+                                {
+                                    string lsPropertyName = laParam[0];
+                                    string lsFormat = laParam[1];
+                                    string lsDataName = this.GetDataName(this.Data.DataModel, lsPropertyName);
+                                    Type loType = this.Data.DataModel.GetValueType(lsDataName);
+                                    if (loType == typeof(DateTime))
+                                    {
+                                        DateTime ldDateTime = MaxConvertLibrary.ConvertToDateTimeUtc(typeof(object), loIndex[lsPropertyName]);
+                                        double lnOffset = 0;
+                                        if (laParam.Length >= 3)
+                                        {
+                                            string lsOffsetParam = laParam[2];
+                                            //// Use Regex to determine if offset is a number
+                                            Regex loRegex = new Regex(@"^-?[0-9]?[0-9\.]*$");
+                                            if (loRegex.IsMatch(lsOffsetParam))
+                                            {
+                                                lnOffset = MaxConvertLibrary.ConvertToDouble(typeof(object), lsOffsetParam);
+                                            }
+                                            else
+                                            {
+#if net4_52 || netcore2_1
+                                                TimeZoneInfo loTZ = TimeZoneInfo.FindSystemTimeZoneById(lsOffsetParam);
+                                                lnOffset = loTZ.GetUtcOffset(ldDateTime).TotalHours;
+#else
+                                        throw new MaxException("Time zone format not supported in this framework.");
+#endif
+                                            }
+
+                                            ldDateTime = ldDateTime.AddHours(lnOffset);
+                                        }
+
+                                        loValue = ldDateTime.ToString(lsFormat);
+                                    }
+                                }
+                            }
+
+                            string lsValue = MaxConvertLibrary.ConvertToString(typeof(object), loValue);
+                            lsR += lsValue;
+                        }
+
+                        loR = lsR;
+                    }
+                }
+            }
+
+            return loR;
+        }
+
+        /// <summary>
+        /// MULTIPLY(PropertyName1, PropertyName1)
+        /// SUBTRACT(ADD(PropertyName1,PropertyName2,PropertyName3,PropertyName4),PropertyName5)
+        /// MULTIPLY(SUBTRACT(PropertyName1, PropertyName2),PropertyName3)
+        /// </summary>
+        /// <param name="loIndex"></param>
+        /// <param name="lsFunction"></param>
+        /// <returns></returns>
+        public virtual object EvaluateAggregateFunction(MaxIndex loExistingIndex, string lsAlias, MaxIndex loIndex, string lsFunction)
+        {
+            object loR = null;
+            List<string> loFunctionNameList = new List<string>(new string[] { "GROUPBY", "SUM", "AVG" });
+            string lsMethod = lsFunction.Substring(0, lsFunction.IndexOf("(")).ToUpper();
+            string lsParams = lsFunction.Substring(lsFunction.IndexOf("(") + 1, lsFunction.Length - lsFunction.IndexOf("(") - 2);
+            if (loFunctionNameList.Contains(lsMethod))
+            {
+                List<string> loParamList = new List<string>(this.ParseParamList(lsParams));
+                if (loParamList.Count > 0)
+                {
+                    if (lsMethod == "GROUPBY")
+                    {
+                        string lsR = string.Empty;
+                        foreach (string lsParam in loParamList)
+                        {
+                            object loValue = null;
+                            if (lsParam.Contains("("))
+                            {
+                                loValue = this.EvaluateFunction(loIndex, lsParam);
+                            }
+                            else
+                            {
+                                loValue = loIndex[lsParam];
+                            }
+
+                            string lsValue = MaxConvertLibrary.ConvertToString(typeof(object), loValue);
+                            lsR += lsValue;
+                        }
+
+                        loR = lsR;
+                    }
+                    else if (lsMethod == "SUM")
+                    {
+                        double lnR = 0;
+                        if (loExistingIndex.Contains(lsAlias))
+                        {
+                            object loValue = loExistingIndex[lsAlias];
+                            if (loValue is double || (loValue is string && !string.IsNullOrEmpty((string)loValue)))
+                            {
+                                lnR += MaxConvertLibrary.ConvertToDouble(typeof(object), loValue);
+                            }
+                        }
+                        
+                        foreach (string lsParam in loParamList)
+                        {
+                            object loValue = null;
+                            if (lsParam.Contains("("))
+                            {
+                                loValue = this.EvaluateFunction(loIndex, lsParam);
+                            }
+                            else
+                            {
+                                loValue = loIndex[lsParam];
+                            }
+
+                            if (loValue is double || (loValue is string && !string.IsNullOrEmpty((string)loValue)))
+                            {
+                                lnR += MaxConvertLibrary.ConvertToDouble(typeof(object), loValue);
+                            }
+                        }
+
+                        loR = lnR;
+                    }
+                    else if (lsMethod == "AVG")
+                    {
+                        double lnR = 0;
+                        int lnAggregateCount = 0;
+                        if (loExistingIndex.Contains(lsAlias))
+                        {
+                            object loExistingValue = loExistingIndex[lsAlias];
+                            if (loExistingValue is double || (loExistingValue is string && !string.IsNullOrEmpty((string)loExistingValue)))
+                            {
+                                lnR += MaxConvertLibrary.ConvertToDouble(typeof(object), loExistingValue);
+                                lnAggregateCount = MaxConvertLibrary.ConvertToInt(typeof(object), loExistingIndex["_AggregateCount"]);
+                            }                           
+                        }
+
+                        foreach (string lsParam in loParamList)
+                        {
+                            object loValue = null;
+                            if (lsParam.Contains("("))
+                            {
+                                loValue = this.EvaluateFunction(loIndex, lsParam);
+                            }
+                            else
+                            {
+                                loValue = loIndex[lsParam];
+                            }
+
+                            if (loValue is double || (loValue is string && !string.IsNullOrEmpty((string)loValue)))
+                            {
+                                double lnValue = MaxConvertLibrary.ConvertToDouble(typeof(object), loValue);
+                                lnR = ((lnR * lnAggregateCount) + lnValue) / (lnAggregateCount + 1);
+                            }
                         }
 
                         loR = lnR;
@@ -969,16 +1139,16 @@ namespace MaxFactry.Base.BusinessLayer
                             {
                                 string lsValue = MaxConvertLibrary.ConvertToString(typeof(object), loValue);
                                 //// Use a Regular expression to determine if the value is numeric
-                                if (loRegex.IsMatch(lsValue))
+                                if (!string.IsNullOrEmpty(lsValue) && loRegex.IsMatch(lsValue))
                                 {
                                     double lnValue = MaxConvertLibrary.ConvertToDouble(typeof(object), loValue);
                                     double lnExistingValue = MaxConvertLibrary.ConvertToDouble(typeof(object), loExistingIndex[lsPropertyName]);
                                     loExistingIndex[lsPropertyName] = lnValue + lnExistingValue;
                                 }
                             }
-                            else
+                            else if (null != loValue)
                             {
-                                loExistingIndex.Add(lsPropertyName, loIndex[lsPropertyName]);
+                                loExistingIndex.Add(lsPropertyName, loValue);
                             }
                         }
                     }
@@ -987,6 +1157,7 @@ namespace MaxFactry.Base.BusinessLayer
                 //// Process any function properties
                 //// MULTIPLY(PropertyName1;PropertyName1):PropertyAlias
                 //// SUBTRACT(ADD(PropertyName1;PropertyName2;PropertyName3;PropertyName4);PropertyName5):PropertyAlias
+                bool lbHasAggregate = false;
                 foreach (string lsKey in loIndexDictionary.Keys)
                 {
                     MaxIndex loIndex = loIndexDictionary[lsKey];
@@ -1007,10 +1178,89 @@ namespace MaxFactry.Base.BusinessLayer
                             {
                                 loIndex.Add(lsAlias, loValue);
                             }
+
+                            if (lsFunction.StartsWith("GROUPBY("))
+                            {
+                                lbHasAggregate = true;
+                            }
                         }
                     }
                 }
 
+                if (lbHasAggregate)
+                {
+                    Dictionary<string, MaxIndex> loAggregateIndexDictionary = new Dictionary<string, MaxIndex>();
+                    foreach (string lsKey in loIndexDictionary.Keys)
+                    {
+                        MaxIndex loIndex = loIndexDictionary[lsKey];
+                        string lsAggregateKey = string.Empty;
+                        foreach (string lsName in laPropertyNameList)
+                        {
+                            if (lsName.Contains("(") && lsName.Contains("GROUPBY("))
+                            {
+                                string lsAlias = lsName;
+                                string lsFunction = lsName;
+                                if (lsName.Contains(":"))
+                                {
+                                    lsAlias = lsName.Substring(lsName.IndexOf(":") + 1);
+                                    lsFunction = lsName.Substring(0, lsName.IndexOf(":"));
+                                }
+
+                                object loValue = this.EvaluateAggregateFunction(null, lsAlias, loIndex, lsFunction);
+                                if (null != loValue)
+                                { 
+                                    string lsValue = MaxConvertLibrary.ConvertToString(typeof(object), loValue);
+                                    lsAggregateKey += lsValue;
+                                    loIndex.Add(lsAlias, lsValue);
+                                }
+                            }
+                        }
+
+                        int lnAggregateCount = 1;
+                        MaxIndex loExistingIndex = new MaxIndex();
+                        loIndex.Add("_AggregateCount", lnAggregateCount);
+                        if (!loAggregateIndexDictionary.ContainsKey(lsAggregateKey))
+                        {
+                            string[] laKey = loIndex.GetSortedKeyList();
+                            foreach (string lsKeyPart in laKey)
+                            {
+                                loExistingIndex.Add(lsKeyPart, loIndex[lsKeyPart]);
+                            }
+
+                            loAggregateIndexDictionary.Add(lsAggregateKey, loExistingIndex);
+                        }
+                        else
+                        {
+                            loExistingIndex = loAggregateIndexDictionary[lsAggregateKey];
+                            lnAggregateCount = MaxConvertLibrary.ConvertToInt(typeof(object), loExistingIndex["_AggregateCount"]);
+                        }
+
+                        foreach (string lsName in laPropertyNameList)
+                        {
+                            if (lsName.Contains("(") && !lsName.Contains("GROUPBY("))
+                            {
+                                string lsAlias = lsName;
+                                string lsFunction = lsName;
+                                if (lsName.Contains(":"))
+                                {
+                                    lsAlias = lsName.Substring(lsName.IndexOf(":") + 1);
+                                    lsFunction = lsName.Substring(0, lsName.IndexOf(":"));
+                                }
+
+                                object loValue = this.EvaluateAggregateFunction(loExistingIndex, lsAlias, loIndex, lsFunction);
+                                if (null != loValue)
+                                {
+                                    loExistingIndex.Add(lsAlias, loValue);
+                                }
+                            }
+                        }
+
+                        loExistingIndex["_AggregateCount"] = lnAggregateCount + 1;
+                        
+                    }
+
+                    loIndexDictionary = loAggregateIndexDictionary;
+                }
 
                 laR = new MaxIndex[loIndexDictionary.Values.Count];
                 loIndexDictionary.Values.CopyTo(laR, 0);
