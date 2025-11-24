@@ -108,6 +108,7 @@
 // <change date="11/7/2025" author="Brian A. Lakstins" description="Fix offset handling.">
 // <change date="11/7/2025" author="Brian A. Lakstins" description="Fix null exception.">
 // <change date="11/23/2025" author="Brian A. Lakstins" description="Handling per property filters and calculations">
+// <change date="11/24/2025" author="Brian A. Lakstins" description="Sum multiple values for same index if numbers.  Add ABS function support.">
 // </changelog>
 #endregion
 
@@ -768,7 +769,7 @@ namespace MaxFactry.Base.BusinessLayer
         public virtual object EvaluateFunction(MaxIndex loIndex, string lsFunction)
         {
             object loR = null;
-            List<string> loFunctionNameList = new List<string>(new string[] { "MULTIPLY", "SUBTRACT", "ADD" });
+            List<string> loFunctionNameList = new List<string>(new string[] { "MULTIPLY", "SUBTRACT", "ADD", "ABS" });
             string lsMethod = lsFunction.Substring(0, lsFunction.IndexOf("(")).ToUpper();
             string lsParams = lsFunction.Substring(lsFunction.IndexOf("(") + 1, lsFunction.Length - lsFunction.IndexOf("(") - 2);
             if (loFunctionNameList.Contains(lsMethod))
@@ -840,6 +841,27 @@ namespace MaxFactry.Base.BusinessLayer
 
                             double lnValue = MaxConvertLibrary.ConvertToDouble(typeof(object), loValue);
                             lnR += lnValue;
+                        }
+
+                        loR = lnR;
+                    }
+                    else if (lsMethod == "ABS")
+                    {
+                        double lnR = 0;
+                        foreach (string lsParam in loParamList)
+                        {
+                            object loValue = null;
+                            if (lsParam.Contains("("))
+                            {
+                                loValue = this.EvaluateFunction(loIndex, lsParam);
+                            }
+                            else
+                            {
+                                loValue = loIndex[lsParam];
+                            }
+
+                            double lnValue = MaxConvertLibrary.ConvertToDouble(typeof(object), loValue);
+                            lnR = Math.Abs(lnValue);
                         }
 
                         loR = lnR;
@@ -917,6 +939,7 @@ namespace MaxFactry.Base.BusinessLayer
 
                 Dictionary<string, MaxIndex> loIndexDictionary = new Dictionary<string, MaxIndex>();
                 //// Create an Index of indexes using filtered properties and key properties
+                Regex loRegex = new Regex(@"^-?[0-9]?[0-9\.]*$");
                 for (int lnE = 0; lnE < loList.Count; lnE++)
                 {
                     MaxEntity loEntity = loList[lnE] as MaxEntity;
@@ -940,8 +963,23 @@ namespace MaxFactry.Base.BusinessLayer
                     {
                         MaxIndex loExistingIndex = loIndexDictionary[lsIndexKey];
                         foreach (string lsPropertyName in loIndex.GetSortedKeyList())
-                        {
-                            loExistingIndex.Add(lsPropertyName, loIndex[lsPropertyName]);
+                        {   
+                            object loValue = loIndex[lsPropertyName];
+                            if (loExistingIndex.Contains(lsPropertyName))
+                            {
+                                string lsValue = MaxConvertLibrary.ConvertToString(typeof(object), loValue);
+                                //// Use a Regular expression to determine if the value is numeric
+                                if (loRegex.IsMatch(lsValue))
+                                {
+                                    double lnValue = MaxConvertLibrary.ConvertToDouble(typeof(object), loValue);
+                                    double lnExistingValue = MaxConvertLibrary.ConvertToDouble(typeof(object), loExistingIndex[lsPropertyName]);
+                                    loExistingIndex[lsPropertyName] = lnValue + lnExistingValue;
+                                }
+                            }
+                            else
+                            {
+                                loExistingIndex.Add(lsPropertyName, loIndex[lsPropertyName]);
+                            }
                         }
                     }
                 }
