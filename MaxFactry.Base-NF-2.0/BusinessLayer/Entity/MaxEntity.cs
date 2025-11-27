@@ -128,6 +128,7 @@ namespace MaxFactry.Base.BusinessLayer
     using System.Text.RegularExpressions;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Collections;
 
     /// <summary>
     /// Base Business Layer Entity
@@ -228,6 +229,8 @@ namespace MaxFactry.Base.BusinessLayer
             this._oDataModelType = loDataModelType;
         }
 
+        protected static Dictionary<Type, string[]> _oPropertyNameKeyListIndex = new Dictionary<Type, string[]>();
+
         /// <summary>
         /// Gets a list of property names needed for the DataKey
         /// </summary>
@@ -237,22 +240,33 @@ namespace MaxFactry.Base.BusinessLayer
             {
                 if (null == this._aPropertyNameKeyList)
                 {
-                    MaxIndex loPropertyNameIndex = new MaxIndex();
-                    PropertyInfo[] laPropertyInfo = this.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public);
-                    foreach (string lsDataName in this.Data.DataModel.DataNameKeyList)
+                    if (!_oPropertyNameKeyListIndex.ContainsKey(this.GetType()))
                     {
-                        foreach (PropertyInfo loPropertyInfo in laPropertyInfo)
+                        lock (_oLock)
                         {
-                            //// The property name has to match the DataName for it to be considered part of the key.  
-                            //// This property can be overridden if that is not the case.
-                            if (lsDataName == this.GetDataName(this.Data.DataModel, loPropertyInfo.Name))
+                            if (!_oPropertyNameKeyListIndex.ContainsKey(this.GetType()))
                             {
-                                loPropertyNameIndex.Add(loPropertyInfo.Name, true);
+                                MaxIndex loPropertNameKeyList = new MaxIndex();
+                                foreach (string lsDataName in this.Data.DataModel.DataNameKeyList)
+                                {
+                                    foreach (string lsPropertyName in this.PropertyIndex.Keys)
+                                    {
+                                        //// The property name has to match the DataName for it to be considered part of the key.  
+                                        //// This property can be overridden if that is not the case.
+                                        if (lsDataName == this.GetDataName(this.Data.DataModel, lsPropertyName))
+                                        {
+                                            loPropertNameKeyList.Add(lsPropertyName, true);
+                                        }
+                                    }
+                                }
+
+                                _oPropertyNameKeyListIndex.Add(this.GetType(), loPropertNameKeyList.GetSortedKeyList());
                             }
                         }
+
                     }
 
-                    this._aPropertyNameKeyList = loPropertyNameIndex.GetSortedKeyList();
+                    this._aPropertyNameKeyList = _oPropertyNameKeyListIndex[this.GetType()];
                 }
 
                 return this._aPropertyNameKeyList;
@@ -639,7 +653,6 @@ namespace MaxFactry.Base.BusinessLayer
 
             public TProperty GetValue<TProperty>(TDeclaring loEntity, PropertyInfo loProperty)
             {
-                Watch1.Start();
                 if (!this._oFunctionIndex.ContainsKey(loProperty))
                 {
                     lock (this._oLock)
@@ -651,19 +664,16 @@ namespace MaxFactry.Base.BusinessLayer
                         }
                     }
                 }
-                Watch1.Stop();
-
-                Watch2.Start();
                 Func<TDeclaring, TProperty> loFunction = (Func<TDeclaring, TProperty>)this._oFunctionIndex[loProperty];
-                Watch2.Stop();
-                Watch3.Start();
                 TProperty loR = (TProperty)loFunction(loEntity);
-                Watch3.Stop();
                 return loR;
             }
         }
 
         protected static readonly Dictionary<PropertyInfo, Delegate> _oAccessorIndex = new Dictionary<PropertyInfo, Delegate>();
+
+
+        private static Dictionary<PropertyInfo, Stopwatch> WatcherIndex = new Dictionary<PropertyInfo, Stopwatch>();
 
         protected static Delegate GetDelegate(PropertyInfo loProperty)
         {
@@ -700,12 +710,19 @@ namespace MaxFactry.Base.BusinessLayer
         public T GetValue<T>(PropertyInfo loProperty)
         {
             T loR = default;
+            if (!WatcherIndex.ContainsKey(loProperty))
+            {
+                WatcherIndex.Add(loProperty, new Stopwatch());
+            }
+
+            WatcherIndex[loProperty].Start();
+
             loR = this.GetAcessorValue<T>(loProperty);
             if (!_oAccessorIndex.ContainsKey(loProperty))
             {
                 loR = (T)loProperty.GetValue(this);
             }
-
+            WatcherIndex[loProperty].Stop();
             return loR;
         }
 
@@ -1367,6 +1384,7 @@ namespace MaxFactry.Base.BusinessLayer
                 Watch1.Reset();
                 Watch2.Reset();
                 Watch3.Reset();
+                WatcherIndex = new Dictionary<PropertyInfo, Stopwatch>();
                 List<string> loPropertyNameList = new List<string>(laPropertyNameList);
                 List<string> loDataNameKeyList = new List<string>(this.Data.DataModel.DataNameKeyList);
                 //// Get all properties that have a filter and combine them into on row per key
@@ -1404,6 +1422,7 @@ namespace MaxFactry.Base.BusinessLayer
                     }
                 }
 
+                
                 //// Add any properties that are part of the index but not part of the key or filtered properties
                 List<string> loIndexPropertyList = new List<string>();
                 foreach (string lsName in laPropertyNameList)
@@ -1421,14 +1440,17 @@ namespace MaxFactry.Base.BusinessLayer
                     }
                 }
 
+
+                Watch3.Start();
                 Dictionary<string, MaxIndex> loIndexDictionary = new Dictionary<string, MaxIndex>();
                 //// Create an Index of indexes using filtered properties and key properties
                 Regex loRegex = new Regex(@"^-?[0-9]?[0-9\.]*$");
-                //// TODO: Try to speed this up
                 for (int lnE = 0; lnE < loList.Count; lnE++)
                 {
+                    
                     MaxEntity loEntity = loList[lnE] as MaxEntity;
                     MaxIndex loIndex = loEntity.MapIndex(laPropertyNameList);
+                    
                     string lsIndexKey = loEntity.DataKey;
                     if (loFilteredPropertyList.Count > 0)
                     {
@@ -1439,11 +1461,11 @@ namespace MaxFactry.Base.BusinessLayer
                             lsIndexKey += lsValue;
                         }
                     }
-
                     loIndex.Add("_IndexKey", lsIndexKey);
                     if (!loIndexDictionary.ContainsKey(lsIndexKey))
                     {
                         loIndexDictionary.Add(lsIndexKey, loIndex);
+                        
                     }
                     else
                     {
@@ -1451,7 +1473,9 @@ namespace MaxFactry.Base.BusinessLayer
                         foreach (string lsPropertyName in loIndex.GetSortedKeyList())
                         {
                             if (!(lsPropertyName.StartsWith("_")))
-                            { 
+                            {
+
+                                Watch2.Start();
                                 object loValue = loIndex[lsPropertyName];
                                 if (loExistingIndex.Contains(lsPropertyName))
                                 {
@@ -1468,7 +1492,9 @@ namespace MaxFactry.Base.BusinessLayer
                                 {
                                     loExistingIndex.Add(lsPropertyName, loValue);
                                 }
+                                Watch2.Stop();
 
+                                Watch1.Start();
                                 //// Add to filter property indexes
                                 string lsFilterPropertyName = "_Filter_" + lsPropertyName;
                                 if (loIndex.Contains(lsFilterPropertyName) && loIndex[lsFilterPropertyName] is MaxIndex)
@@ -1492,10 +1518,13 @@ namespace MaxFactry.Base.BusinessLayer
                                         loExistingIndex.Remove(lsPropertyName);
                                     }
                                 }
+
+                                Watch1.Stop();
                             }
                         }
                     }
                 }
+                Watch3.Stop();
 
                 //// Process any function properties
                 //// MULTIPLY(PropertyName1;PropertyName1):PropertyAlias
@@ -1632,7 +1661,8 @@ namespace MaxFactry.Base.BusinessLayer
 
                 laR = new MaxIndex[loIndexDictionary.Values.Count];
                 loIndexDictionary.Values.CopyTo(laR, 0);
-                MaxLogLibrary.Log(new MaxLogEntryStructure(this.GetType(), "MapIndexList", MaxEnumGroup.LogInfo, "Watch 1 took {Watch1} and Watch2 took {Watch2} and Watch3 took {Watch3}", Watch1.ElapsedMilliseconds, Watch2.ElapsedMilliseconds, Watch3.ElapsedMilliseconds));
+                
+                MaxLogLibrary.Log(new MaxLogEntryStructure(this.GetType(), "MapIndexList", MaxEnumGroup.LogStatic, "Watch 1 took {Watch1} and Watch2 took {Watch2} and Watch3 took {Watch3} and WatcherIndex", Watch1.ElapsedMilliseconds, Watch2.ElapsedMilliseconds, Watch3.ElapsedMilliseconds, WatcherIndex));
             }
             else
             {
