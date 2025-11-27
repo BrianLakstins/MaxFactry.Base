@@ -45,10 +45,11 @@
 
 namespace MaxFactry.Base.BusinessLayer
 {
-    using System;
-    using MaxFactry.Core;
     using MaxFactry.Base.DataLayer;
     using MaxFactry.Base.DataLayer.Library;
+    using MaxFactry.Core;
+    using System;
+    using System.Reflection;
 
     /// <summary>
     /// Base Business Layer Entity with general properties and methods
@@ -430,6 +431,18 @@ namespace MaxFactry.Base.BusinessLayer
             }
 
             base.SetProperties();
+        }
+
+        private static readonly PropertyAccessorCache<MaxBaseEntity> _oAccessorBaseCache = new PropertyAccessorCache<MaxBaseEntity>();
+
+        protected override T GetAcessorValue<T>(PropertyInfo loProperty)
+        {
+            if (loProperty.DeclaringType == typeof(MaxBaseEntity))
+            {
+                return _oAccessorBaseCache.GetValue<T>(this, loProperty);
+            }
+
+            return base.GetAcessorValue<T>(loProperty);
         }
     }
 }

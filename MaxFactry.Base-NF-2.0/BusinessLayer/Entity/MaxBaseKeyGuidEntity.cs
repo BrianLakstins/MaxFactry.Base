@@ -33,10 +33,11 @@
 
 namespace MaxFactry.Base.BusinessLayer
 {
-    using System;
     using MaxFactry.Base.DataLayer;
     using MaxFactry.Base.DataLayer.Library;
     using MaxFactry.Core;
+    using System;
+    using System.Reflection;
 
     /// <summary>
     /// Base Business Layer Entity.  Designed to replace MaxBaseIdEntity to use Key in a generic fashion instead of Id.
@@ -105,6 +106,18 @@ namespace MaxFactry.Base.BusinessLayer
             MaxData loData = new MaxData(this.Data.DataModel);
             loData.Set(this.MaxBaseKeyGuidDataModel.Id, loId);
             return this.LoadByDataKeyCache(loData.DataModel.GetDataKey(loData));
+        }
+
+        private static readonly PropertyAccessorCache<MaxBaseKeyGuidEntity> _oAccessorBaseKeyCache = new PropertyAccessorCache<MaxBaseKeyGuidEntity>();
+
+        protected override T GetAcessorValue<T>(PropertyInfo loProperty)
+        {
+            if (loProperty.DeclaringType == typeof(MaxBaseKeyGuidEntity))
+            {
+                return _oAccessorBaseKeyCache.GetValue<T>(this, loProperty);
+            }
+
+            return base.GetAcessorValue<T>(loProperty);
         }
     }
 }
