@@ -629,20 +629,37 @@ namespace MaxFactry.Base.BusinessLayer
 
         protected class PropertyAccessorCache<TDeclaring>
         {
+            protected readonly Dictionary<PropertyInfo, object> _oFunctionIndex = new Dictionary<PropertyInfo, object>();
+
+            protected object _oLock = new object();
+
             public PropertyAccessorCache()
             {
             }
 
-            public TProperty GetValue<TProperty>(TDeclaring instance, PropertyInfo prop)
+            public TProperty GetValue<TProperty>(TDeclaring loEntity, PropertyInfo loProperty)
             {
-                var getter = (Func<TDeclaring, TProperty>)GetDelegate(prop);
-                return getter(instance);
-            }
+                Watch1.Start();
+                if (!this._oFunctionIndex.ContainsKey(loProperty))
+                {
+                    lock (this._oLock)
+                    {
+                        if (!this._oFunctionIndex.ContainsKey(loProperty))
+                        {
+                            Func<TDeclaring, TProperty> loFunctionDelegate = (Func<TDeclaring, TProperty>)GetDelegate(loProperty);
+                            this._oFunctionIndex.Add(loProperty, loFunctionDelegate);
+                        }
+                    }
+                }
+                Watch1.Stop();
 
-            // For hot paths: expose strongly typed accessors
-            public Func<TDeclaring, TProperty> GetTypedGetter<TProperty>(PropertyInfo prop)
-            {
-                return (Func<TDeclaring, TProperty>)GetDelegate(prop);
+                Watch2.Start();
+                Func<TDeclaring, TProperty> loFunction = (Func<TDeclaring, TProperty>)this._oFunctionIndex[loProperty];
+                Watch2.Stop();
+                Watch3.Start();
+                TProperty loR = (TProperty)loFunction(loEntity);
+                Watch3.Stop();
+                return loR;
             }
         }
 
@@ -667,7 +684,6 @@ namespace MaxFactry.Base.BusinessLayer
             return loDelegate;
         }
 
-
         private static readonly PropertyAccessorCache<MaxEntity> _oAccessorCache = new PropertyAccessorCache<MaxEntity>();
 
         protected virtual T GetAcessorValue<T>(PropertyInfo loProperty)
@@ -684,16 +700,12 @@ namespace MaxFactry.Base.BusinessLayer
         public T GetValue<T>(PropertyInfo loProperty)
         {
             T loR = default;
-            Watch1.Start();
             loR = this.GetAcessorValue<T>(loProperty);
             if (!_oAccessorIndex.ContainsKey(loProperty))
             {
-                Watch2.Start();
                 loR = (T)loProperty.GetValue(this);
-                Watch2.Stop();
             }
 
-            Watch1.Stop();
             return loR;
         }
 
@@ -1413,7 +1425,6 @@ namespace MaxFactry.Base.BusinessLayer
                 //// Create an Index of indexes using filtered properties and key properties
                 Regex loRegex = new Regex(@"^-?[0-9]?[0-9\.]*$");
                 //// TODO: Try to speed this up
-                Watch3.Start();
                 for (int lnE = 0; lnE < loList.Count; lnE++)
                 {
                     MaxEntity loEntity = loList[lnE] as MaxEntity;
@@ -1485,8 +1496,6 @@ namespace MaxFactry.Base.BusinessLayer
                         }
                     }
                 }
-
-                Watch3.Stop();
 
                 //// Process any function properties
                 //// MULTIPLY(PropertyName1;PropertyName1):PropertyAlias
