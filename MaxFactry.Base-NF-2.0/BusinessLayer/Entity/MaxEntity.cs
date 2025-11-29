@@ -112,6 +112,7 @@
 // <change date="11/24/2025" author="Brian A. Lakstins" description="Getting aggregate functions working.">
 // <change date="11/29/2025" author="Brian A. Lakstins" description="Create single internal access to entity property list.  Cache Key property information.">
 // <change date="11/29/2025" author="Brian A. Lakstins" description="Use Internal property list.  Reduced mapping time by about 60%.">
+// <change date="11/29/2025" author="Brian A. Lakstins" description="Centralize getting value for a property and make it return a typed response.">
 // </changelog>
 #endregion
 
@@ -640,6 +641,23 @@ namespace MaxFactry.Base.BusinessLayer
             }
         }
 
+        /// <summary>
+        /// Get the value of a property as a typed variable
+        /// </summary>
+        /// <typeparam name="TValue">Type of the property</typeparam>
+        /// <param name="loProperty">The property info</param>
+        /// <returns></returns>
+        protected TValue GetValue<TValue>(PropertyInfo loProperty)
+        {
+            TValue loR = default(TValue);
+            if (loProperty.PropertyType == typeof(TValue) || typeof(object) == typeof(TValue))
+            {
+                loR = (TValue)loProperty.GetValue(this, null);
+            }
+
+            return loR;
+        }
+
         public virtual bool MatchesFilter(string lsFilter)
         {
             bool lbR = true;
@@ -656,27 +674,29 @@ namespace MaxFactry.Base.BusinessLayer
                         if (this.PropertyIndex.ContainsKey(lsPropertyName))
                         {
                             PropertyInfo loProperty = this.PropertyIndex[lsPropertyName];
-                            object loValue = loProperty.GetValue(this, null);
-                            if (loValue is double)
+                            if (loProperty.PropertyType == typeof(double))
                             {
+                                double lnValue = this.GetValue<double>(loProperty);
                                 double lnCheckValue = MaxConvertLibrary.ConvertToDouble(typeof(object), laFilterProperty[1]);
-                                if (lnCheckValue != (double)loValue)
+                                if (lnCheckValue != lnValue)
                                 {
                                     lbR = false;
                                 }
                             }
-                            else if (loValue is int)
+                            else if (loProperty.PropertyType == typeof(int))
                             {
+                                int lnValue = this.GetValue<int>(loProperty);
                                 int lnCheckValue = MaxConvertLibrary.ConvertToInt(typeof(object), laFilterProperty[1]);
-                                if (lnCheckValue != (int)loValue)
+                                if (lnCheckValue != lnValue)
                                 {
                                     lbR = false;
                                 }
                             }
-                            else if (loValue is Guid)
+                            else if (loProperty.PropertyType == typeof(Guid))
                             {
+                                Guid loValue = this.GetValue<Guid>(loProperty);
                                 Guid loCheckValue = MaxConvertLibrary.ConvertToGuid(typeof(object), laFilterProperty[1]);
-                                if (loCheckValue != (Guid)loValue)
+                                if (loCheckValue != loValue)
                                 {
                                     lbR = false;
                                 }
@@ -728,43 +748,61 @@ namespace MaxFactry.Base.BusinessLayer
                     if (this.PropertyIndex.ContainsKey(lsProperty))
                     {
                         PropertyInfo loProperty = this.PropertyIndex[lsProperty];
-                        object loValue = loProperty.GetValue(this, null);
-                        if (loValue is MaxEntity)
+                        if (loProperty.PropertyType == typeof(MaxEntity))
                         {
-                            loR.Add(lsName, ((MaxEntity)loValue).MapIndex(laIncludedPropertyNameList));
+                            MaxEntity loValue = this.GetValue<MaxEntity>(loProperty);
+                            loR.Add(lsName, loValue.MapIndex(laIncludedPropertyNameList));
                         }
-                        else if (loValue is double)
+                        else if (loProperty.PropertyType == typeof(double))
                         {
-                            if (double.MinValue != (double)loValue)
+                            double lnValue = this.GetValue<double>(loProperty);
+                            if (double.MinValue != lnValue)
+                            {
+                                loR.Add(lsName, lnValue);
+                            }
+                        }
+                        else if (loProperty.PropertyType == typeof(int))
+                        {
+                            int lnValue = this.GetValue<int>(loProperty);
+                            if (int.MinValue != lnValue)
+                            {
+                                loR.Add(lsName, lnValue);
+                            }
+                        }
+                        else if (loProperty.PropertyType == typeof(Guid))
+                        {
+                            Guid loValue = this.GetValue<Guid>(loProperty);
+                            if (Guid.Empty != loValue)
                             {
                                 loR.Add(lsName, loValue);
                             }
                         }
-                        else if (loValue is int)
+                        else if (loProperty.PropertyType == typeof(DateTime))
                         {
-                            if (int.MinValue != (int)loValue)
-                            {
-                                loR.Add(lsName, loValue);
-                            }
-                        }
-                        else if (loValue is Guid)
-                        {
-                            if (Guid.Empty != (Guid)loValue)
-                            {
-                                loR.Add(lsName, loValue);
-                            }
-                        }
-                        else if (loValue is DateTime)
-                        {
-                            if ((DateTime)loValue > DateTime.MinValue)
+                            DateTime ldValue = this.GetValue<DateTime>(loProperty);
+                            if (ldValue > DateTime.MinValue)
                             {
                                 //// Use same format as javascript date .toISOString()
-                                loR.Add(lsName, MaxConvertLibrary.ConvertToDateTimeUtc(typeof(object), loValue).ToString("o", CultureInfo.InvariantCulture));
+                                loR.Add(lsName, MaxConvertLibrary.ConvertToDateTimeUtc(typeof(object), ldValue).ToString("o", CultureInfo.InvariantCulture));
                             }
                         }
-                        else if (loValue != null && !(loValue is Stream))
+                        else if (loProperty.PropertyType == typeof(bool))
                         {
-                            loR.Add(lsName, loValue);
+                            bool lbValue = this.GetValue<bool>(loProperty);
+                            loR.Add(lsName, lbValue);
+                        }
+                        else if (loProperty.PropertyType == typeof(string))
+                        {
+                            string lsValue = this.GetValue<string>(loProperty);
+                            loR.Add(lsName, lsValue);
+                        }
+                        else if (loProperty.PropertyType != typeof(Stream))
+                        {
+                            object loValue = this.GetValue<object>(loProperty);
+                            if (null != loValue)
+                            {
+                                loR.Add(lsName, loValue);
+                            }
                         }
                     }
                     else
@@ -1774,7 +1812,6 @@ namespace MaxFactry.Base.BusinessLayer
         /// </summary>
         /// <param name="loList">List of entities to be stored</param>
         /// <param name="lsPropertySort">Property information used to sort</param>
-        /// <param name="lsOrderBy">Order by query used to to get the list of entities</param>
         /// <returns></returns>
         protected virtual MaxEntityList GetSorted(MaxEntityList loList, string lsPropertySort)
         {
@@ -1790,20 +1827,21 @@ namespace MaxFactry.Base.BusinessLayer
                 //// TODO: Allow for descending sorts
                 for (int lnE = 0; lnE < loList.Count; lnE++)
                 {
+                    MaxEntity loEntity = loList[lnE];
                     string lsSort = string.Empty;
                     foreach (string lsProperty in laPropertySort)
                     {
                         string[] laProperty = lsProperty.Split(' ');
-                        PropertyInfo loPropertyInfo = loList[lnE].GetType().GetProperty(laProperty[0].Trim());
-                        if (null != loPropertyInfo)
+                        string lsPropertyName = laProperty[0].Trim();
+                        if (this.PropertyIndex.ContainsKey(lsPropertyName))
                         {
-                            object loValue = loPropertyInfo.GetValue(loList[lnE], null);
+                            object loValue = loEntity.GetValue<object>(this.PropertyIndex[lsPropertyName]);
                             lsSort += MaxConvertLibrary.ConvertToSortString(typeof(object), loValue);
                         }
                     }
 
-                    lsSort += loList[lnE].GetDefaultSortString();
-                    loSortedList.Add(lsSort, loList[lnE]);
+                    lsSort += loEntity.GetDefaultSortString();
+                    loSortedList.Add(lsSort, loEntity);
                 }
 
                 foreach (MaxEntity loEntity in loSortedList.Values)
