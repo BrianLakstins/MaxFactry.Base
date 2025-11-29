@@ -111,6 +111,7 @@
 // <change date="11/24/2025" author="Brian A. Lakstins" description="Sum multiple values for same index if numbers.  Add ABS function support.">
 // <change date="11/24/2025" author="Brian A. Lakstins" description="Getting aggregate functions working.">
 // <change date="11/29/2025" author="Brian A. Lakstins" description="Create single internal access to entity property list.  Cache Key property information.">
+// <change date="11/29/2025" author="Brian A. Lakstins" description="Use Internal property list.  Reduced mapping time by about 60%.">
 // </changelog>
 #endregion
 
@@ -651,11 +652,11 @@ namespace MaxFactry.Base.BusinessLayer
                     string[] laFilterProperty = lsFilterPart.Split(new char[] { '=' }, StringSplitOptions.RemoveEmptyEntries);
                     if (laFilterProperty.Length == 2)
                     {
-                        MaxIndex loPropertyIndex = MaxFactry.Core.MaxFactryLibrary.GetPropertyList(this);
-                        object loProperty = loPropertyIndex[laFilterProperty[0]];
-                        if (loProperty is PropertyInfo)
+                        string lsPropertyName = laFilterProperty[0];
+                        if (this.PropertyIndex.ContainsKey(lsPropertyName))
                         {
-                            object loValue = ((PropertyInfo)loProperty).GetValue(this, null);
+                            PropertyInfo loProperty = this.PropertyIndex[lsPropertyName];
+                            object loValue = loProperty.GetValue(this, null);
                             if (loValue is double)
                             {
                                 double lnCheckValue = MaxConvertLibrary.ConvertToDouble(typeof(object), laFilterProperty[1]);
@@ -679,7 +680,7 @@ namespace MaxFactry.Base.BusinessLayer
                                 {
                                     lbR = false;
                                 }
-                            }
+                            }                            
                         }
                     }
                 }
@@ -696,28 +697,16 @@ namespace MaxFactry.Base.BusinessLayer
         public virtual MaxIndex MapIndex(params string[] laPropertyNameList)
         {
             MaxIndex loR = new MaxIndex();
-            MaxIndex loPropertyIndex = MaxFactry.Core.MaxFactryLibrary.GetPropertyList(this);
-            string[] laPropertyNameIndex = loPropertyIndex.GetSortedKeyList();
-            foreach (string lsPropertyName in laPropertyNameIndex)
-            {
-                object loProperty = loPropertyIndex[lsPropertyName];
-                if (loProperty is PropertyInfo)
-                {
-                    loPropertyIndex.Add(((PropertyInfo)loProperty).Name, loProperty);
-                    loPropertyIndex.Add(this.GetType().ToString() + "." + ((PropertyInfo)loProperty).Name, loProperty);
-                }
-            }
-
             string[] laIncludedPropertyNameList = laPropertyNameList;
             if (null == laIncludedPropertyNameList || laIncludedPropertyNameList.Length == 0)
             {
-                laIncludedPropertyNameList = laPropertyNameIndex;
+                laIncludedPropertyNameList = new List<string>(this.PropertyIndex.Keys).ToArray();
             }
 
             foreach (string lsPropertyName in laIncludedPropertyNameList)
             {
                 string lsName = lsPropertyName;
-                object loProperty = loPropertyIndex[lsPropertyName];
+                string lsProperty = lsPropertyName;
                 string lsFilter = string.Empty;
                 if (lsPropertyName.Contains("."))
                 {
@@ -725,7 +714,7 @@ namespace MaxFactry.Base.BusinessLayer
                 }
                 else if (lsPropertyName.Contains(":"))
                 {
-                    loProperty = loPropertyIndex[lsPropertyName.Substring(0, lsPropertyName.IndexOf(":"))];
+                    lsProperty = lsPropertyName.Substring(0, lsPropertyName.IndexOf(":"));
                     lsName = lsPropertyName.Substring(lsPropertyName.IndexOf(":") + 1);
                     if (lsName.Contains("?"))
                     {
@@ -736,9 +725,10 @@ namespace MaxFactry.Base.BusinessLayer
 
                 if (this.MatchesFilter(lsFilter))
                 {
-                    if (loProperty is PropertyInfo)
+                    if (this.PropertyIndex.ContainsKey(lsProperty))
                     {
-                        object loValue = ((PropertyInfo)loProperty).GetValue(this, null);
+                        PropertyInfo loProperty = this.PropertyIndex[lsProperty];
+                        object loValue = loProperty.GetValue(this, null);
                         if (loValue is MaxEntity)
                         {
                             loR.Add(lsName, ((MaxEntity)loValue).MapIndex(laIncludedPropertyNameList));
