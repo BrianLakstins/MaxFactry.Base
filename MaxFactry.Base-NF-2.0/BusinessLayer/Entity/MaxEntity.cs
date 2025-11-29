@@ -110,6 +110,7 @@
 // <change date="11/23/2025" author="Brian A. Lakstins" description="Handling per property filters and calculations">
 // <change date="11/24/2025" author="Brian A. Lakstins" description="Sum multiple values for same index if numbers.  Add ABS function support.">
 // <change date="11/24/2025" author="Brian A. Lakstins" description="Getting aggregate functions working.">
+// <change date="11/29/2025" author="Brian A. Lakstins" description="Create single internal access to entity property list.  Cache Key property information.">
 // </changelog>
 #endregion
 
@@ -133,7 +134,30 @@ namespace MaxFactry.Base.BusinessLayer
     /// </summary>
     public abstract class MaxEntity
     {
+        /// <summary>
+        /// Locking object
+        /// </summary>
+        private static object _oLock = new object();
+
+        /// <summary>
+        /// Index of property names that make up the key for each entity type.
+        /// </summary>
+        private static Dictionary<Type, string[]> _oPropertyNameKeyListIndex = new Dictionary<Type, string[]>();
+
+        /// <summary>
+        /// Property Names that make up the key for the entity.
+        /// </summary>
         private string[] _aPropertyNameKeyList = null;
+        
+        /// <summary>
+        /// Index of property info for each entity type.
+        /// </summary>
+        private static Dictionary<Type, Dictionary<string, PropertyInfo>> _oPropertyIndexIndex = new Dictionary<Type, Dictionary<string, PropertyInfo>>();
+
+        /// <summary>
+        /// Index of peroperty info for this entity.
+        /// </summary>
+        private Dictionary<string, PropertyInfo> _oPropertyIndex = null;
 
         /// <summary>
         /// Index of objects that have been un serialized.
@@ -230,22 +254,32 @@ namespace MaxFactry.Base.BusinessLayer
             {
                 if (null == this._aPropertyNameKeyList)
                 {
-                    MaxIndex loPropertyNameIndex = new MaxIndex();
-                    PropertyInfo[] laPropertyInfo = this.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public);
-                    foreach (string lsDataName in this.Data.DataModel.DataNameKeyList)
+                    if (!_oPropertyNameKeyListIndex.ContainsKey(this.GetType()))
                     {
-                        foreach (PropertyInfo loPropertyInfo in laPropertyInfo)
+                        lock (_oLock)
                         {
-                            //// The property name has to match the DataName for it to be considered part of the key.  
-                            //// This property can be overridden if that is not the case.
-                            if (lsDataName == this.GetDataName(this.Data.DataModel, loPropertyInfo.Name))
+                            if (!_oPropertyNameKeyListIndex.ContainsKey(this.GetType()))
                             {
-                                loPropertyNameIndex.Add(loPropertyInfo.Name, true);
+                                MaxIndex loPropertyNameIndex = new MaxIndex();
+                                foreach (string lsDataName in this.Data.DataModel.DataNameKeyList)
+                                {
+                                    foreach (string lsPropertyName in this.PropertyIndex.Keys)
+                                    {
+                                        //// The property name has to match the DataName for it to be considered part of the key.  
+                                        //// This property can be overridden if that is not the case.
+                                        if (lsDataName == this.GetDataName(this.Data.DataModel, lsPropertyName))
+                                        {
+                                            loPropertyNameIndex.Add(lsPropertyName, true);
+                                        }
+                                    }
+                                }
+
+                                _oPropertyNameKeyListIndex.Add(this.GetType(), loPropertyNameIndex.GetSortedKeyList());
                             }
                         }
                     }
 
-                    this._aPropertyNameKeyList = loPropertyNameIndex.GetSortedKeyList();
+                    this._aPropertyNameKeyList = _oPropertyNameKeyListIndex[this.GetType()];
                 }
 
                 return this._aPropertyNameKeyList;
@@ -320,6 +354,45 @@ namespace MaxFactry.Base.BusinessLayer
             }
         }
 
+        /// <summary>
+        /// Gets the index of property info for this entity.
+        /// </summary>
+        protected Dictionary<string, PropertyInfo> PropertyIndex
+        {
+            get
+            {
+                if (null == _oPropertyIndex)
+                {
+                    if (!_oPropertyIndexIndex.ContainsKey(this.GetType()))
+                    {
+                        lock (_oLock)
+                        {
+                            if (!_oPropertyIndexIndex.ContainsKey(this.GetType()))
+                            {
+                                Dictionary<string, PropertyInfo> loR = new Dictionary<string, PropertyInfo>();
+                                MaxIndex loPropertyList = MaxFactry.Core.MaxFactryLibrary.GetPropertyList(this);
+                                string[] laPropertyNameIndex = loPropertyList.GetSortedKeyList();
+                                foreach (string lsPropertyName in laPropertyNameIndex)
+                                {
+                                    object loProperty = loPropertyList[lsPropertyName];
+                                    if (loProperty is PropertyInfo)
+                                    {
+                                        loR.Add(((PropertyInfo)loProperty).Name, (PropertyInfo)loProperty);
+                                        loR.Add(this.GetType().ToString() + "." + ((PropertyInfo)loProperty).Name, (PropertyInfo)loProperty);
+                                    }
+                                }
+
+                                _oPropertyIndexIndex.Add(this.GetType(), loR);
+                            }
+                        }
+                    }
+
+                    _oPropertyIndex = _oPropertyIndexIndex[this.GetType()];
+                }
+
+                return _oPropertyIndex;
+            }
+        }
 
         /// <summary>
         /// Clears the data associated with the entity to it's blank state
