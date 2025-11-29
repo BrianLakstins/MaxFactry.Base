@@ -114,6 +114,7 @@
 // <change date="11/29/2025" author="Brian A. Lakstins" description="Use Internal property list.  Reduced mapping time by about 60%.">
 // <change date="11/29/2025" author="Brian A. Lakstins" description="Centralize getting value for a property and make it return a typed response.">
 // <change date="11/29/2025" author="Brian A. Lakstins" description="Remove previous mapping method">
+// <change date="11/29/2025" author="Brian A. Lakstins" description="Make static definition for function names.  Add more aggregate functions.  Parse filter from propertyname first.">
 // </changelog>
 #endregion
 
@@ -161,6 +162,16 @@ namespace MaxFactry.Base.BusinessLayer
         /// Index of peroperty info for this entity.
         /// </summary>
         private Dictionary<string, PropertyInfo> _oPropertyIndex = null;
+
+        /// <summary>
+        /// List of function names
+        /// </summary>
+        protected static List<string> _oFunctionNameList = new List<string>(new string[] { "MULTIPLY", "SUBTRACT", "ADD", "ABS", "FORMAT" });
+
+        /// <summary>
+        /// List of aggregate function names.
+        /// </summary>
+        protected static List<string> _oAggregateFunctionNameList = new List<string>(new string[] { "GROUPBY", "SUM", "AVG", "FIRST", "LAST", "MIN", "MAX", "COUNT" });
 
         /// <summary>
         /// Index of objects that have been un serialized.
@@ -666,8 +677,9 @@ namespace MaxFactry.Base.BusinessLayer
             {
                 //// TODO: Handle AND and OR conditions
                 string[] laFilterPart = lsFilter.Split(new char[] { '&' }, StringSplitOptions.RemoveEmptyEntries);
-                foreach (string lsFilterPart in laFilterPart)
+                for (int lnF = 0; lnF < laFilterPart.Length && lbR; lnF++)
                 {
+                    string lsFilterPart = laFilterPart[lnF];
                     string[] laFilterProperty = lsFilterPart.Split(new char[] { '=' }, StringSplitOptions.RemoveEmptyEntries);
                     if (laFilterProperty.Length == 2)
                     {
@@ -726,89 +738,93 @@ namespace MaxFactry.Base.BusinessLayer
 
             foreach (string lsPropertyName in laIncludedPropertyNameList)
             {
-                string lsName = lsPropertyName;
-                string lsProperty = lsPropertyName;
-                string lsFilter = string.Empty;
-                if (lsPropertyName.Contains("."))
+                if (!lsPropertyName.Contains("("))
                 {
-                    lsName = lsPropertyName.Substring(lsPropertyName.LastIndexOf(".") + 1);
-                }
-                else if (lsPropertyName.Contains(":"))
-                {
-                    lsProperty = lsPropertyName.Substring(0, lsPropertyName.IndexOf(":"));
-                    lsName = lsPropertyName.Substring(lsPropertyName.IndexOf(":") + 1);
-                    if (lsName.Contains("?"))
+                    string lsAlias = lsPropertyName;
+                    string lsProperty = lsPropertyName;
+                    string lsFilter = string.Empty;
+                    if (lsPropertyName.Contains("?"))
                     {
-                        lsName = lsName.Substring(0, lsName.IndexOf("?"));
+                        lsProperty = lsPropertyName.Substring(0, lsPropertyName.IndexOf("?"));
                         lsFilter = lsPropertyName.Substring(lsPropertyName.IndexOf("?") + 1);
                     }
-                }
 
-                if (this.MatchesFilter(lsFilter))
-                {
-                    if (this.PropertyIndex.ContainsKey(lsProperty))
+                    if (lsProperty.Contains(":"))
                     {
-                        PropertyInfo loProperty = this.PropertyIndex[lsProperty];
-                        if (loProperty.PropertyType == typeof(MaxEntity))
-                        {
-                            MaxEntity loValue = this.GetValue<MaxEntity>(loProperty);
-                            loR.Add(lsName, loValue.MapIndex(laIncludedPropertyNameList));
-                        }
-                        else if (loProperty.PropertyType == typeof(double))
-                        {
-                            double lnValue = this.GetValue<double>(loProperty);
-                            if (double.MinValue != lnValue)
-                            {
-                                loR.Add(lsName, lnValue);
-                            }
-                        }
-                        else if (loProperty.PropertyType == typeof(int))
-                        {
-                            int lnValue = this.GetValue<int>(loProperty);
-                            if (int.MinValue != lnValue)
-                            {
-                                loR.Add(lsName, lnValue);
-                            }
-                        }
-                        else if (loProperty.PropertyType == typeof(Guid))
-                        {
-                            Guid loValue = this.GetValue<Guid>(loProperty);
-                            if (Guid.Empty != loValue)
-                            {
-                                loR.Add(lsName, loValue);
-                            }
-                        }
-                        else if (loProperty.PropertyType == typeof(DateTime))
-                        {
-                            DateTime ldValue = this.GetValue<DateTime>(loProperty);
-                            if (ldValue > DateTime.MinValue)
-                            {
-                                //// Use same format as javascript date .toISOString()
-                                loR.Add(lsName, MaxConvertLibrary.ConvertToDateTimeUtc(typeof(object), ldValue).ToString("o", CultureInfo.InvariantCulture));
-                            }
-                        }
-                        else if (loProperty.PropertyType == typeof(bool))
-                        {
-                            bool lbValue = this.GetValue<bool>(loProperty);
-                            loR.Add(lsName, lbValue);
-                        }
-                        else if (loProperty.PropertyType == typeof(string))
-                        {
-                            string lsValue = this.GetValue<string>(loProperty);
-                            loR.Add(lsName, lsValue);
-                        }
-                        else if (loProperty.PropertyType != typeof(Stream))
-                        {
-                            object loValue = this.GetValue<object>(loProperty);
-                            if (null != loValue)
-                            {
-                                loR.Add(lsName, loValue);
-                            }
-                        }
+                        lsAlias = lsProperty.Substring(lsProperty.IndexOf(":") + 1);
+                        lsProperty = lsProperty.Substring(0, lsProperty.IndexOf(":"));
                     }
-                    else
+                    else if (lsProperty.Contains("."))
                     {
-                        loR.Add(lsName, string.Empty);
+                        lsProperty = lsProperty.Substring(lsProperty.LastIndexOf(".") + 1);
+                    }
+
+                    if (this.MatchesFilter(lsFilter))
+                    {
+                        if (this.PropertyIndex.ContainsKey(lsProperty))
+                        {
+                            PropertyInfo loProperty = this.PropertyIndex[lsProperty];
+                            if (loProperty.PropertyType == typeof(MaxEntity))
+                            {
+                                MaxEntity loValue = this.GetValue<MaxEntity>(loProperty);
+                                loR.Add(lsAlias, loValue.MapIndex(laIncludedPropertyNameList));
+                            }
+                            else if (loProperty.PropertyType == typeof(double))
+                            {
+                                double lnValue = this.GetValue<double>(loProperty);
+                                if (double.MinValue != lnValue)
+                                {
+                                    loR.Add(lsAlias, lnValue);
+                                }
+                            }
+                            else if (loProperty.PropertyType == typeof(int))
+                            {
+                                int lnValue = this.GetValue<int>(loProperty);
+                                if (int.MinValue != lnValue)
+                                {
+                                    loR.Add(lsAlias, lnValue);
+                                }
+                            }
+                            else if (loProperty.PropertyType == typeof(Guid))
+                            {
+                                Guid loValue = this.GetValue<Guid>(loProperty);
+                                if (Guid.Empty != loValue)
+                                {
+                                    loR.Add(lsAlias, loValue);
+                                }
+                            }
+                            else if (loProperty.PropertyType == typeof(DateTime))
+                            {
+                                DateTime ldValue = this.GetValue<DateTime>(loProperty);
+                                if (ldValue > DateTime.MinValue)
+                                {
+                                    //// Use same format as javascript date .toISOString()
+                                    loR.Add(lsAlias, MaxConvertLibrary.ConvertToDateTimeUtc(typeof(object), ldValue).ToString("o", CultureInfo.InvariantCulture));
+                                }
+                            }
+                            else if (loProperty.PropertyType == typeof(bool))
+                            {
+                                bool lbValue = this.GetValue<bool>(loProperty);
+                                loR.Add(lsAlias, lbValue);
+                            }
+                            else if (loProperty.PropertyType == typeof(string))
+                            {
+                                string lsValue = this.GetValue<string>(loProperty);
+                                loR.Add(lsAlias, lsValue);
+                            }
+                            else if (loProperty.PropertyType != typeof(Stream))
+                            {
+                                object loValue = this.GetValue<object>(loProperty);
+                                if (null != loValue)
+                                {
+                                    loR.Add(lsAlias, loValue);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            loR.Add(lsAlias, string.Empty);
+                        }
                     }
                 }
             }
@@ -872,10 +888,9 @@ namespace MaxFactry.Base.BusinessLayer
         public virtual object EvaluateFunction(MaxIndex loIndex, string lsFunction)
         {
             object loR = null;
-            List<string> loFunctionNameList = new List<string>(new string[] { "MULTIPLY", "SUBTRACT", "ADD", "ABS", "FORMAT" });
             string lsMethod = lsFunction.Substring(0, lsFunction.IndexOf("(")).ToUpper();
             string lsParams = lsFunction.Substring(lsFunction.IndexOf("(") + 1, lsFunction.Length - lsFunction.IndexOf("(") - 2);
-            if (loFunctionNameList.Contains(lsMethod))
+            if (_oFunctionNameList.Contains(lsMethod))
             {
                 List<string> loParamList = new List<string>(this.ParseParamList(lsParams));
                 if (loParamList.Count > 0)
@@ -1042,10 +1057,9 @@ namespace MaxFactry.Base.BusinessLayer
         public virtual object EvaluateAggregateFunction(MaxIndex loExistingIndex, string lsAlias, MaxIndex loIndex, string lsFunction)
         {
             object loR = null;
-            List<string> loFunctionNameList = new List<string>(new string[] { "GROUPBY", "SUM", "AVG" });
             string lsMethod = lsFunction.Substring(0, lsFunction.IndexOf("(")).ToUpper();
             string lsParams = lsFunction.Substring(lsFunction.IndexOf("(") + 1, lsFunction.Length - lsFunction.IndexOf("(") - 2);
-            if (loFunctionNameList.Contains(lsMethod))
+            if (_oAggregateFunctionNameList.Contains(lsMethod))
             {
                 List<string> loParamList = new List<string>(this.ParseParamList(lsParams));
                 if (loParamList.Count > 0)
@@ -1138,6 +1152,148 @@ namespace MaxFactry.Base.BusinessLayer
 
                         loR = lnR;
                     }
+                    else if (lsMethod == "FIRST")
+                    {
+                        if (!loExistingIndex.Contains(lsAlias))
+                        {
+                            foreach (string lsParam in loParamList)
+                            {
+                                object loValue = null;
+                                if (lsParam.Contains("("))
+                                {
+                                    loValue = this.EvaluateFunction(loIndex, lsParam);
+                                }
+                                else
+                                {
+                                    loValue = loIndex[lsParam];
+                                }
+
+                                loR = loValue;
+                            }
+                        }
+                    }
+                    else if (lsMethod == "LAST")
+                    {
+                        foreach (string lsParam in loParamList)
+                        {
+                            object loValue = null;
+                            if (lsParam.Contains("("))
+                            {
+                                loValue = this.EvaluateFunction(loIndex, lsParam);
+                            }
+                            else
+                            {
+                                loValue = loIndex[lsParam];
+                            }
+
+                            loR = loValue;
+                        }
+                    }
+                    else if (lsMethod == "MIN")
+                    {
+                        double lnR = 0;
+                        if (loExistingIndex.Contains(lsAlias))
+                        {
+                            object loExistingValue = loExistingIndex[lsAlias];
+                            if (loExistingValue is double || (loExistingValue is string && !string.IsNullOrEmpty((string)loExistingValue)))
+                            {
+                                lnR = MaxConvertLibrary.ConvertToDouble(typeof(object), loExistingValue);
+                            }
+                        }
+
+                        foreach (string lsParam in loParamList)
+                        {
+                            object loValue = null;
+                            if (lsParam.Contains("("))
+                            {
+                                loValue = this.EvaluateFunction(loIndex, lsParam);
+                            }
+                            else
+                            {
+                                loValue = loIndex[lsParam];
+                            }
+
+                            if (loValue is double || (loValue is string && !string.IsNullOrEmpty((string)loValue)))
+                            {
+                                double lnValue = MaxConvertLibrary.ConvertToDouble(typeof(object), loValue);
+                                if (lnValue < lnR)
+                                {
+                                    lnR = lnValue;
+                                }
+                            }
+                        }
+
+                        loR = lnR;
+                    }
+                    else if (lsMethod == "MAX")
+                    {
+                        double lnR = 0;
+                        if (loExistingIndex.Contains(lsAlias))
+                        {
+                            object loExistingValue = loExistingIndex[lsAlias];
+                            if (loExistingValue is double || (loExistingValue is string && !string.IsNullOrEmpty((string)loExistingValue)))
+                            {
+                                lnR = MaxConvertLibrary.ConvertToDouble(typeof(object), loExistingValue);
+                            }
+                        }
+
+                        foreach (string lsParam in loParamList)
+                        {
+                            object loValue = null;
+                            if (lsParam.Contains("("))
+                            {
+                                loValue = this.EvaluateFunction(loIndex, lsParam);
+                            }
+                            else
+                            {
+                                loValue = loIndex[lsParam];
+                            }
+
+                            if (loValue is double || (loValue is string && !string.IsNullOrEmpty((string)loValue)))
+                            {
+                                double lnValue = MaxConvertLibrary.ConvertToDouble(typeof(object), loValue);
+                                if (lnValue > lnR)
+                                {
+                                    lnR = lnValue;
+                                }
+                            }
+                        }
+
+                        loR = lnR;
+                    }
+                    else if (lsMethod == "COUNT")
+                    {
+                        double lnR = 0;
+                        if (loExistingIndex.Contains(lsAlias))
+                        {
+                            object loExistingValue = loExistingIndex[lsAlias];
+                            if (loExistingValue is int || (loExistingValue is string && !string.IsNullOrEmpty((string)loExistingValue)))
+                            {
+                                lnR = MaxConvertLibrary.ConvertToInt(typeof(object), loExistingValue);
+                            }
+                        }
+
+                        foreach (string lsParam in loParamList)
+                        {
+                            object loValue = null;
+                            if (lsParam.Contains("("))
+                            {
+                                loValue = this.EvaluateFunction(loIndex, lsParam);
+                            }
+                            else
+                            {
+                                loValue = loIndex[lsParam];
+                            }
+
+                            if (null != loValue)
+                            {
+                                lnR += 1;
+                            }
+                        }
+
+                        loR = lnR;
+
+                    }
                 }
             }
 
@@ -1153,7 +1309,7 @@ namespace MaxFactry.Base.BusinessLayer
         public virtual MaxIndex[] MapIndexList(MaxEntityList loList, params string[] laPropertyNameList)
         {
             MaxIndex[] laR = new MaxIndex[0];
-            if (null != laPropertyNameList && laPropertyNameList.Length > 0)
+            if (null != laPropertyNameList && laPropertyNameList.Length > 0 && loList.Count > 0)
             {
                 List<string> loPropertyNameList = new List<string>(laPropertyNameList);
                 List<string> loDataNameKeyList = new List<string>(this.Data.DataModel.DataNameKeyList);
@@ -1235,22 +1391,25 @@ namespace MaxFactry.Base.BusinessLayer
                     {
                         MaxIndex loExistingIndex = loIndexDictionary[lsIndexKey];
                         foreach (string lsPropertyName in loIndex.GetSortedKeyList())
-                        {   
-                            object loValue = loIndex[lsPropertyName];
-                            if (loExistingIndex.Contains(lsPropertyName))
+                        {
+                            if (!lsPropertyName.StartsWith("_"))
                             {
-                                string lsValue = MaxConvertLibrary.ConvertToString(typeof(object), loValue);
-                                //// Use a Regular expression to determine if the value is numeric
-                                if (!string.IsNullOrEmpty(lsValue) && loRegex.IsMatch(lsValue))
+                                object loValue = loIndex[lsPropertyName];
+                                if (loExistingIndex.Contains(lsPropertyName))
                                 {
-                                    double lnValue = MaxConvertLibrary.ConvertToDouble(typeof(object), loValue);
-                                    double lnExistingValue = MaxConvertLibrary.ConvertToDouble(typeof(object), loExistingIndex[lsPropertyName]);
-                                    loExistingIndex[lsPropertyName] = lnValue + lnExistingValue;
+                                    string lsValue = MaxConvertLibrary.ConvertToString(typeof(object), loValue);
+                                    //// Use a Regular expression to determine if the value is numeric
+                                    if (!string.IsNullOrEmpty(lsValue) && loRegex.IsMatch(lsValue))
+                                    {
+                                        double lnValue = MaxConvertLibrary.ConvertToDouble(typeof(object), loValue);
+                                        double lnExistingValue = MaxConvertLibrary.ConvertToDouble(typeof(object), loExistingIndex[lsPropertyName]);
+                                        loExistingIndex[lsPropertyName] = lnValue + lnExistingValue;
+                                    }
                                 }
-                            }
-                            else if (null != loValue)
-                            {
-                                loExistingIndex.Add(lsPropertyName, loValue);
+                                else if (null != loValue)
+                                {
+                                    loExistingIndex.Add(lsPropertyName, loValue);
+                                }
                             }
                         }
                     }
@@ -1310,7 +1469,7 @@ namespace MaxFactry.Base.BusinessLayer
 
                                 object loValue = this.EvaluateAggregateFunction(null, lsAlias, loIndex, lsFunction);
                                 if (null != loValue)
-                                { 
+                                {
                                     string lsValue = MaxConvertLibrary.ConvertToString(typeof(object), loValue);
                                     lsAggregateKey += lsValue;
                                     loIndex.Add(lsAlias, lsValue);
@@ -1358,7 +1517,7 @@ namespace MaxFactry.Base.BusinessLayer
                         }
 
                         loExistingIndex["_AggregateCount"] = lnAggregateCount + 1;
-                        
+
                     }
 
                     loIndexDictionary = loAggregateIndexDictionary;
