@@ -720,7 +720,7 @@ namespace MaxFactry.Base.BusinessLayer
             loR = this.GetAcessorValue<T>(loProperty);
             if (!_oAccessorIndex.ContainsKey(loProperty))
             {
-                loR = (T)loProperty.GetValue(this);
+                loR = (T)loProperty.GetValue(this, null);
             }
             WatcherIndex[loProperty].Stop();
             return loR;
