@@ -66,6 +66,7 @@
 // <change date="6/9/2025" author="Brian A. Lakstins" description="Update DataKey to get from current data if not already set">
 // <change date="6/11/2025" author="Brian A. Lakstins" description="Remove DataKey as a property and use a method instead.  Add a StorageKey method. Set StorageKey based on Application Key if used and not set.">
 // <change date="6/12/2025" author="Brian A. Lakstins" description="Add method to get Cache Key.">
+// <change date="12/1/2025" author="Brian A. Lakstins" description="Add method to more quickly set initial values. Check to make sure value is null before checking extended..">
 // </changelog>
 #endregion
 
@@ -329,7 +330,7 @@ namespace MaxFactry.Base.DataLayer
         public object Get(string lsDataName)
         {
             object loR = this._oIndex[lsDataName];
-            if (this._oExtendedIndex.Contains(lsDataName))
+            if (null == loR && this._oExtendedIndex.Contains(lsDataName))
             {
                 loR = this._oExtendedIndex[lsDataName];
             }
@@ -361,6 +362,33 @@ namespace MaxFactry.Base.DataLayer
                     else
                     {
                         this._oExtendedIndex.Add(lsDataName, loValue);
+                    }
+                }
+            }
+            catch (Exception loE)
+            {
+                MaxLogLibrary.Log(new MaxLogEntryStructure(this.GetType(), "Set", MaxEnumGroup.LogError, "Error in MaxData.Set for {lsKey}, {loValue}, {DataModel}", loE, lsDataName, loValue, this.DataModel));
+            }
+        }
+
+        /// <summary>
+        /// Sets a value
+        /// </summary>
+        /// <param name="lsDataName">Name to use for matching data</param>
+        /// <param name="loValue">The value to set</param>
+        public void SetInitial(string lsDataName, object loValue)
+        {
+            try
+            {
+                if (null != loValue)
+                {
+                    if (this.DataModel.HasDataName(lsDataName))
+                    {
+                        this._oIndex.AddWithoutKeyCheck(lsDataName, loValue);
+                    }
+                    else
+                    {
+                        this._oExtendedIndex.AddWithoutKeyCheck(lsDataName, loValue);
                     }
                 }
             }
