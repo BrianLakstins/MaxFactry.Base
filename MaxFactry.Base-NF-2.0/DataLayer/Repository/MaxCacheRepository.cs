@@ -32,6 +32,7 @@
 // <change date="3/26/2015" author="Brian A. Lakstins" description="Restructured.">
 // <change date="6/10/2025" author="Brian A. Lakstins" description="Add expire date.  Add MaxData and MaxDataList handling.">
 // <change date="6/12/2025" author="Brian A. Lakstins" description="Update Getting key to use MaxDataMethod">
+// <change date="12/1/2025" author="Brian A. Lakstins" description="Only cache individual when they is not a property list used">
 // </changelog>
 #endregion
 
@@ -97,7 +98,8 @@ namespace MaxFactry.Base.DataLayer
             {
                 List<string> loDataKeyList = null;
                 MaxDataList loDataList = loValue as MaxDataList;
-                if (loDataList.Count > 0 && lsKey.Contains("/"))
+                //// Add individual records to the cached by key only when  there is no filter on the results
+                if (loDataList.Count > 0 && lsKey.Contains("/") && !lsKey.Contains("/PNLH="))
                 {
                     loDataKeyList = new List<string>();
                     string lsKeyFormat = GetDataKeyFormat(lsKey);
