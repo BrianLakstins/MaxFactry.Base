@@ -115,6 +115,7 @@
 // <change date="11/29/2025" author="Brian A. Lakstins" description="Centralize getting value for a property and make it return a typed response.">
 // <change date="11/29/2025" author="Brian A. Lakstins" description="Remove previous mapping method">
 // <change date="11/29/2025" author="Brian A. Lakstins" description="Make static definition for function names.  Add more aggregate functions.  Parse filter from propertyname first.">
+// <change date="12/2/2025" author="Brian A. Lakstins" description="Make property access faster.  Make part of GetMaxIndexList faster.">
 // </changelog>
 #endregion
 
@@ -1392,23 +1393,15 @@ namespace MaxFactry.Base.BusinessLayer
                         MaxIndex loExistingIndex = loIndexDictionary[lsIndexKey];
                         foreach (string lsPropertyName in loIndex.GetSortedKeyList())
                         {
-                            if (!lsPropertyName.StartsWith("_"))
-                            {
-                                object loValue = loIndex[lsPropertyName];
-                                if (loExistingIndex.Contains(lsPropertyName))
+                            if (!lsPropertyName.StartsWith("_") && loIndex.Contains(lsPropertyName))
                                 {
-                                    string lsValue = MaxConvertLibrary.ConvertToString(typeof(object), loValue);
-                                    //// Use a Regular expression to determine if the value is numeric
-                                    if (!string.IsNullOrEmpty(lsValue) && loRegex.IsMatch(lsValue))
+                                if (loExistingIndex.Contains(lsPropertyName) && loExistingIndex[lsPropertyName] is double && loIndex[lsPropertyName] is double)
                                     {
-                                        double lnValue = MaxConvertLibrary.ConvertToDouble(typeof(object), loValue);
-                                        double lnExistingValue = MaxConvertLibrary.ConvertToDouble(typeof(object), loExistingIndex[lsPropertyName]);
-                                        loExistingIndex[lsPropertyName] = lnValue + lnExistingValue;
-                                    }
+                                    loExistingIndex[lsPropertyName] = (double)loIndex[lsPropertyName] + (double)loExistingIndex[lsPropertyName];
                                 }
-                                else if (null != loValue)
+                                else if (!loExistingIndex.Contains(lsPropertyName) && null != loIndex[lsPropertyName])
                                 {
-                                    loExistingIndex.Add(lsPropertyName, loValue);
+                                    loExistingIndex.Add(lsPropertyName, loIndex[lsPropertyName]);
                                 }
                             }
                         }
@@ -2449,6 +2442,11 @@ namespace MaxFactry.Base.BusinessLayer
         protected DateTime GetDateTime(string lsDataName)
         {
             object loValue = this.Get(lsDataName);
+            if (loValue is DateTime)
+            {
+                return (DateTime)loValue;
+            }
+
             return MaxConvertLibrary.ConvertToDateTime(this.DataModelType, loValue);
         }
 
@@ -2461,6 +2459,11 @@ namespace MaxFactry.Base.BusinessLayer
         protected Guid GetGuid(string lsDataName)
         {
             object loValue = this.Get(lsDataName);
+            if (loValue is Guid)
+            {
+                return (Guid)loValue;
+            }
+
             return MaxConvertLibrary.ConvertToGuid(this.DataModelType, loValue);
         }
 
@@ -2550,6 +2553,11 @@ namespace MaxFactry.Base.BusinessLayer
         protected bool GetBoolean(string lsDataName)
         {
             object loValue = this.Get(lsDataName);
+            if (loValue is bool)
+            {
+                return (bool)loValue;
+            }
+
             return MaxConvertLibrary.ConvertToBoolean(this.DataModelType, loValue);
         }
 
@@ -2562,6 +2570,11 @@ namespace MaxFactry.Base.BusinessLayer
         protected int GetInt(string lsDataName)
         {
             object loValue = this.Get(lsDataName);
+            if (loValue is int)
+            {
+                return (int)loValue;
+            }
+
             return MaxConvertLibrary.ConvertToInt(this.DataModelType, loValue);
         }
 
@@ -2574,6 +2587,11 @@ namespace MaxFactry.Base.BusinessLayer
         protected double GetDouble(string lsDataName)
         {
             object loValue = this.Get(lsDataName);
+            if (loValue is double)
+            {
+                return (double)loValue;
+            }
+
             return MaxConvertLibrary.ConvertToDouble(this.DataModelType, loValue);
         }
 
@@ -2586,6 +2604,11 @@ namespace MaxFactry.Base.BusinessLayer
         protected long GetLong(string lsDataName)
         {
             object loValue = this.Get(lsDataName);
+            if (loValue is long)
+            {
+                return (long)loValue;
+            }
+
             return MaxConvertLibrary.ConvertToLong(this.DataModelType, loValue);
         }
 
