@@ -116,6 +116,7 @@
 // <change date="11/29/2025" author="Brian A. Lakstins" description="Remove previous mapping method">
 // <change date="11/29/2025" author="Brian A. Lakstins" description="Make static definition for function names.  Add more aggregate functions.  Parse filter from propertyname first.">
 // <change date="12/2/2025" author="Brian A. Lakstins" description="Make property access faster.  Make part of GetMaxIndexList faster.">
+// <change date="12/2/2025" author="Brian A. Lakstins" description="Cache data values.  Cache Data names.  Add without key check.  Access some properties directly to Map them to index.">
 // </changelog>
 #endregion
 
@@ -238,6 +239,21 @@ namespace MaxFactry.Base.BusinessLayer
         /// Internal storage of EntityList this entity is a part of.
         /// </summary>
         private MaxEntityList _oEntityList = null;
+
+        /// <summary>
+        /// Cache of data from MaxData by data name to speed up Get access
+        /// </summary>
+        private Dictionary<string, object> _oDataNameValueCache = new Dictionary<string, object>();
+
+        /// <summary>
+        /// Cache of dataname by DataModel and Property Name to speed up Get access
+        /// </summary>
+        private static Dictionary<string, string> _oDataNameCache = new Dictionary<string, string>();
+
+        /// <summary>
+        /// DataName by PropertyInfo cache to speed up Get access
+        /// </summary>
+        private static Dictionary<PropertyInfo, string> _oDataNameByPropertyCache = new Dictionary<PropertyInfo, string>();
 
         /// <summary>
         /// Initializes a new instance of the MaxEntity class
@@ -665,7 +681,28 @@ namespace MaxFactry.Base.BusinessLayer
             TValue loR = default(TValue);
             if (loProperty.PropertyType == typeof(TValue) || typeof(object) == typeof(TValue))
             {
-                loR = (TValue)loProperty.GetValue(this, null);
+                if (typeof(TValue) == typeof(Guid) || typeof(TValue) == typeof(double))
+                {
+                    if (!_oDataNameByPropertyCache.ContainsKey(loProperty))
+                    {
+                        string lsDataNameCheck = this.GetDataName(this.Data.DataModel, loProperty.Name);
+                        _oDataNameByPropertyCache.Add(loProperty, lsDataNameCheck);
+                    }
+                    string lsDataName = _oDataNameByPropertyCache[loProperty];
+                    object loValue = this.Get(lsDataName);
+                    if (loValue is Guid)
+                    {
+                        loR = (TValue)loValue;
+                    }
+                    else if (loValue is double)
+                    {
+                        loR = (TValue)loValue;
+                    }
+                }
+                else
+                {
+                    loR = (TValue)loProperty.GetValue(this, null);
+                }
             }
 
             return loR;
@@ -768,14 +805,14 @@ namespace MaxFactry.Base.BusinessLayer
                             if (loProperty.PropertyType == typeof(MaxEntity))
                             {
                                 MaxEntity loValue = this.GetValue<MaxEntity>(loProperty);
-                                loR.Add(lsAlias, loValue.MapIndex(laIncludedPropertyNameList));
+                                loR.AddWithoutKeyCheck(lsAlias, loValue.MapIndex(laIncludedPropertyNameList));
                             }
                             else if (loProperty.PropertyType == typeof(double))
                             {
                                 double lnValue = this.GetValue<double>(loProperty);
                                 if (double.MinValue != lnValue)
                                 {
-                                    loR.Add(lsAlias, lnValue);
+                                    loR.AddWithoutKeyCheck(lsAlias, lnValue);
                                 }
                             }
                             else if (loProperty.PropertyType == typeof(int))
@@ -783,7 +820,7 @@ namespace MaxFactry.Base.BusinessLayer
                                 int lnValue = this.GetValue<int>(loProperty);
                                 if (int.MinValue != lnValue)
                                 {
-                                    loR.Add(lsAlias, lnValue);
+                                    loR.AddWithoutKeyCheck(lsAlias, lnValue);
                                 }
                             }
                             else if (loProperty.PropertyType == typeof(Guid))
@@ -791,7 +828,7 @@ namespace MaxFactry.Base.BusinessLayer
                                 Guid loValue = this.GetValue<Guid>(loProperty);
                                 if (Guid.Empty != loValue)
                                 {
-                                    loR.Add(lsAlias, loValue);
+                                    loR.AddWithoutKeyCheck(lsAlias, loValue);
                                 }
                             }
                             else if (loProperty.PropertyType == typeof(DateTime))
@@ -800,31 +837,45 @@ namespace MaxFactry.Base.BusinessLayer
                                 if (ldValue > DateTime.MinValue)
                                 {
                                     //// Use same format as javascript date .toISOString()
-                                    loR.Add(lsAlias, MaxConvertLibrary.ConvertToDateTimeUtc(typeof(object), ldValue).ToString("o", CultureInfo.InvariantCulture));
+                                    loR.AddWithoutKeyCheck(lsAlias, MaxConvertLibrary.ConvertToDateTimeUtc(typeof(object), ldValue).ToString("o", CultureInfo.InvariantCulture));
                                 }
                             }
                             else if (loProperty.PropertyType == typeof(bool))
                             {
                                 bool lbValue = this.GetValue<bool>(loProperty);
-                                loR.Add(lsAlias, lbValue);
+                                loR.AddWithoutKeyCheck(lsAlias, lbValue);
                             }
                             else if (loProperty.PropertyType == typeof(string))
                             {
-                                string lsValue = this.GetValue<string>(loProperty);
-                                loR.Add(lsAlias, lsValue);
+                                if (loProperty.Name == "DataKey")
+                                {
+                                    loR.AddWithoutKeyCheck(lsAlias, this.DataKey);
+                                }
+                                else
+                                {
+                                    string lsValue = this.GetValue<string>(loProperty);
+                                    loR.AddWithoutKeyCheck(lsAlias, lsValue);
+                                }
                             }
                             else if (loProperty.PropertyType != typeof(Stream))
                             {
-                                object loValue = this.GetValue<object>(loProperty);
-                                if (null != loValue)
+                                if (loProperty.Name == "PropertyNameKeyList")
                                 {
-                                    loR.Add(lsAlias, loValue);
+                                    loR.AddWithoutKeyCheck(lsAlias, this.PropertyNameKeyList);
+                                }
+                                else
+                                {
+                                    object loValue = this.GetValue<object>(loProperty);
+                                    if (null != loValue)
+                                    {
+                                        loR.AddWithoutKeyCheck(lsAlias, loValue);
+                                    }
                                 }
                             }
                         }
                         else
                         {
-                            loR.Add(lsAlias, string.Empty);
+                            loR.AddWithoutKeyCheck(lsAlias, string.Empty);
                         }
                     }
                 }
@@ -1368,7 +1419,6 @@ namespace MaxFactry.Base.BusinessLayer
 
                 Dictionary<string, MaxIndex> loIndexDictionary = new Dictionary<string, MaxIndex>();
                 //// Create an Index of indexes using filtered properties and key properties
-                Regex loRegex = new Regex(@"^-?[0-9]?[0-9\.]*$");
                 for (int lnE = 0; lnE < loList.Count; lnE++)
                 {
                     MaxEntity loEntity = loList[lnE] as MaxEntity;
@@ -1394,9 +1444,9 @@ namespace MaxFactry.Base.BusinessLayer
                         foreach (string lsPropertyName in loIndex.GetSortedKeyList())
                         {
                             if (!lsPropertyName.StartsWith("_") && loIndex.Contains(lsPropertyName))
-                                {
+                            {
                                 if (loExistingIndex.Contains(lsPropertyName) && loExistingIndex[lsPropertyName] is double && loIndex[lsPropertyName] is double)
-                                    {
+                                {
                                     loExistingIndex[lsPropertyName] = (double)loIndex[lsPropertyName] + (double)loExistingIndex[lsPropertyName];
                                 }
                                 else if (!loExistingIndex.Contains(lsPropertyName) && null != loIndex[lsPropertyName])
@@ -1672,22 +1722,35 @@ namespace MaxFactry.Base.BusinessLayer
         protected virtual string GetDataName(MaxDataModel loDataModel, string lsPropertyName)
         {
             string lsR = string.Empty;
-            if (loDataModel.IsStored(lsPropertyName))
+            string lsKey = loDataModel.DataStorageName + lsPropertyName;
+            if (!_oDataNameCache.ContainsKey(lsKey))
             {
-                lsR = lsPropertyName;
-            }
-            else
-            {
-                FieldInfo[] laFieldInfo = loDataModel.GetType().GetFields(BindingFlags.Static | BindingFlags.Public);
-                foreach (FieldInfo loFieldInfo in laFieldInfo)
+                lock (_oLock)
                 {
-                    if (loFieldInfo.Name == lsPropertyName)
+                    if (!_oDataNameCache.ContainsKey(lsKey))
                     {
-                        lsR = loFieldInfo.GetValue(loDataModel) as string;
+                        if (loDataModel.IsStored(lsPropertyName))
+                        {
+                            lsR = lsPropertyName;
+                        }
+                        else
+                        {
+                            FieldInfo[] laFieldInfo = loDataModel.GetType().GetFields(BindingFlags.Static | BindingFlags.Public);
+                            foreach (FieldInfo loFieldInfo in laFieldInfo)
+                            {
+                                if (loFieldInfo.Name == lsPropertyName)
+                                {
+                                    lsR = loFieldInfo.GetValue(loDataModel) as string;
+                                }
+                            }
+                        }
+
+                        _oDataNameCache.Add(lsKey, lsR);
                     }
                 }
             }
 
+            lsR = _oDataNameCache[lsKey];
             return lsR;
         }
 
@@ -2246,6 +2309,12 @@ namespace MaxFactry.Base.BusinessLayer
                 this._oData = loData;
                 this._oDataModelType = loData.DataModel.GetType();
                 this._oUnSerializedObjectIndex = new MaxIndex();
+                this._oDataNameValueCache.Clear();
+                foreach (string lsDataName in loData.DataModel.DataNameList)
+                {
+                    this._oDataNameValueCache.Add(lsDataName, loData.Get(lsDataName));
+                }
+
                 return true;
             }
 
@@ -2394,6 +2463,14 @@ namespace MaxFactry.Base.BusinessLayer
             }
 
             this.Data.Set(lsDataName, loValue);
+            if (this._oDataNameValueCache.ContainsKey(lsDataName))
+            {
+                this._oDataNameValueCache[lsDataName] = loValue;
+            }
+            else
+            {
+                this._oDataNameValueCache.Add(lsDataName, loValue);
+            }
         }
 
         /// <summary>
@@ -2403,7 +2480,17 @@ namespace MaxFactry.Base.BusinessLayer
         /// <returns>Value for the data</returns>
         protected virtual object Get(string lsDataName)
         {
-            return this.Data.Get(lsDataName);
+            object loR = null;
+            if (this._oDataNameValueCache.ContainsKey(lsDataName))
+            {
+                loR = this._oDataNameValueCache[lsDataName];
+            }
+            else
+            {
+                loR = this.Data.Get(lsDataName);
+            }
+
+            return loR;
         }
 
         /// <summary>
