@@ -118,6 +118,7 @@
 // <change date="12/2/2025" author="Brian A. Lakstins" description="Make property access faster.  Make part of GetMaxIndexList faster.">
 // <change date="12/2/2025" author="Brian A. Lakstins" description="Cache data values.  Cache Data names.  Add without key check.  Access some properties directly to Map them to index.">
 // <change date="12/3/2025" author="Brian A. Lakstins" description="Cleaning up filtering and properties returned for GetMaxIndexList and GetMaxIndex.">
+// <change date="12/5/2025" author="Brian A. Lakstins" description="Adding data name caching and cleaning up some logic to prevent running code when not needed.">
 // </changelog>
 #endregion
 
@@ -682,7 +683,7 @@ namespace MaxFactry.Base.BusinessLayer
             TValue loR = default(TValue);
             if (loProperty.PropertyType == typeof(TValue) || typeof(object) == typeof(TValue))
             {
-                if (typeof(TValue) == typeof(Guid) || typeof(TValue) == typeof(double))
+                if (typeof(TValue) == typeof(Guid) || typeof(TValue) == typeof(double) || typeof(TValue) == typeof(int))
                 {
                     if (!_oDataNameByPropertyCache.ContainsKey(loProperty))
                     {
@@ -695,9 +696,25 @@ namespace MaxFactry.Base.BusinessLayer
                     {
                         loR = (TValue)loValue;
                     }
+                    else if (loValue is string && typeof(TValue) == typeof(Guid))
+                    {
+                        loR = (TValue)(object)MaxConvertLibrary.ConvertToGuid(typeof(TValue), loValue);
+                    }
                     else if (loValue is double)
                     {
                         loR = (TValue)loValue;
+                    }
+                    else if (loValue is string && typeof(TValue) == typeof(double))
+                    {
+                        loR = (TValue)(object)MaxConvertLibrary.ConvertToDouble(typeof(TValue), loValue);
+                    }
+                    else if (loValue is int)
+                    {
+                        loR = (TValue)loValue;
+                    }
+                    else if (loValue is string && typeof(TValue) == typeof(int))
+                    {
+                        loR = (TValue)(object)MaxConvertLibrary.ConvertToInt(typeof(TValue), loValue);
                     }
                 }
                 else
@@ -972,18 +989,26 @@ namespace MaxFactry.Base.BusinessLayer
             }
             else
             {
-                foreach (string lsKey in loPropertyAliasedList)
+                if (loPropertyAliasedList.Count > 0)
                 {
-                    loR.Remove(lsKey);
+                    foreach (string lsKey in loPropertyAliasedList)
+                    {
+                        loR.Remove(lsKey);
+                    }
+
+                    loR.AddWithoutKeyCheck("_PropertyAliasedList", loPropertyAliasedList.ToArray());
                 }
 
-                foreach (string lsKey in loPropertyFilteredList)
+                if (loPropertyFilteredList.Count > 0)
                 {
-                    loR.Remove(lsKey);
-                }
+                    foreach (string lsKey in loPropertyFilteredList)
+                    {
+                        loR.Remove(lsKey);
+                    }
 
-                loR.AddWithoutKeyCheck("_PropertyFilteredList", loPropertyFilteredList.ToArray());
-                loR.AddWithoutKeyCheck("_PropertyAliasedList", loPropertyAliasedList.ToArray());
+                    loR.AddWithoutKeyCheck("_PropertyFilteredList", loPropertyFilteredList.ToArray());
+                }
+                
                 loR.Remove("_Filter");
                 loR.Remove("_AliasProperty");
             }
