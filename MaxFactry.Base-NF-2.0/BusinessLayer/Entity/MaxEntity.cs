@@ -119,6 +119,7 @@
 // <change date="12/2/2025" author="Brian A. Lakstins" description="Cache data values.  Cache Data names.  Add without key check.  Access some properties directly to Map them to index.">
 // <change date="12/3/2025" author="Brian A. Lakstins" description="Cleaning up filtering and properties returned for GetMaxIndexList and GetMaxIndex.">
 // <change date="12/5/2025" author="Brian A. Lakstins" description="Adding data name caching and cleaning up some logic to prevent running code when not needed.">
+// <change date="12/12/2025" author="Brian A. Lakstins" description="Fixing issue with property name return names.">
 // </changelog>
 #endregion
 
@@ -826,7 +827,17 @@ namespace MaxFactry.Base.BusinessLayer
             string[] laIncludedPropertyNameList = laPropertyNameList;
             if (null == laIncludedPropertyNameList || laIncludedPropertyNameList.Length == 0)
             {
-                laIncludedPropertyNameList = new List<string>(this.PropertyIndex.Keys).ToArray();
+                List<string> loPropertyDefaultList = new List<string>();
+                //// Get just the property names and not their entire object path
+                foreach (string lsPropertyName in this.PropertyIndex.Keys)
+                {
+                    if (!lsPropertyName.Contains("."))
+                    {
+                        loPropertyDefaultList.Add(lsPropertyName);
+                    }
+                }
+
+                laIncludedPropertyNameList = loPropertyDefaultList.ToArray();
             }
 
             List<string> loPropertyAliasedList = new List<string>();
