@@ -5,9 +5,9 @@
 	  <RootNamespace>MaxFactry.Base</RootNamespace>
 	  <ImplicitUsings>enable</ImplicitUsings>
 	  <Nullable>enable</Nullable>
-	  <Version>1.0.24.88</Version>
-	  <AssemblyVersion>1.0.24.88</AssemblyVersion>
-	  <FileVersion>2025.12.11.01</FileVersion>
+	  <Version>1.0.24.89</Version>
+	  <AssemblyVersion>1.0.24.89</AssemblyVersion>
+	  <FileVersion>2025.12.12.01</FileVersion>
 	  <SignAssembly>True</SignAssembly>
 	  <AssemblyOriginatorKeyFile>MaxFactry.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
