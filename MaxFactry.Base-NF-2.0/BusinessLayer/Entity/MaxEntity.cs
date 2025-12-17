@@ -120,6 +120,7 @@
 // <change date="12/3/2025" author="Brian A. Lakstins" description="Cleaning up filtering and properties returned for GetMaxIndexList and GetMaxIndex.">
 // <change date="12/5/2025" author="Brian A. Lakstins" description="Adding data name caching and cleaning up some logic to prevent running code when not needed.">
 // <change date="12/12/2025" author="Brian A. Lakstins" description="Fixing issue with property name return names.">
+// <change date="12/17/2025" author="Brian A. Lakstins" description="Return all requested properties or all properties when non specified even if values are blank.">
 // </changelog>
 #endregion
 
@@ -137,6 +138,7 @@ namespace MaxFactry.Base.BusinessLayer
     using MaxFactry.Base.DataLayer.Library;
     using System.Text.RegularExpressions;
     using System.Collections.Generic;
+    using System.Diagnostics.Contracts;
 
     /// <summary>
     /// Base Business Layer Entity
@@ -824,6 +826,7 @@ namespace MaxFactry.Base.BusinessLayer
         public virtual MaxIndex MapIndex(params string[] laPropertyNameList)
         {
             MaxIndex loR = new MaxIndex();
+            List<string> loRequestedPropertyList = new List<string>();
             string[] laIncludedPropertyNameList = laPropertyNameList;
             if (null == laIncludedPropertyNameList || laIncludedPropertyNameList.Length == 0)
             {
@@ -838,6 +841,11 @@ namespace MaxFactry.Base.BusinessLayer
                 }
 
                 laIncludedPropertyNameList = loPropertyDefaultList.ToArray();
+                loRequestedPropertyList.AddRange(laIncludedPropertyNameList);
+            }
+            else
+            {
+                loRequestedPropertyList.AddRange(laPropertyNameList);
             }
 
             List<string> loPropertyAliasedList = new List<string>();
@@ -984,6 +992,11 @@ namespace MaxFactry.Base.BusinessLayer
                                         loR.AddWithoutKeyCheck(lsAlias, loValue);
                                     }
                                 }
+                            }
+
+                            if (loRequestedPropertyList.Contains(lsAlias) && !loR.Contains(lsAlias))
+                            {
+                                loR.AddWithoutKeyCheck(lsAlias, string.Empty);
                             }
                         }
                         else
