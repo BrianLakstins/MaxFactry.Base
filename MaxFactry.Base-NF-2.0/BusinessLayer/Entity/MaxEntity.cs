@@ -121,6 +121,7 @@
 // <change date="12/5/2025" author="Brian A. Lakstins" description="Adding data name caching and cleaning up some logic to prevent running code when not needed.">
 // <change date="12/12/2025" author="Brian A. Lakstins" description="Fixing issue with property name return names.">
 // <change date="12/17/2025" author="Brian A. Lakstins" description="Return all requested properties or all properties when non specified even if values are blank.">
+// <change date="12/22/2025" author="Brian A. Lakstins" description="Fix issue with locking and reduce code in GetValue.">
 // </changelog>
 #endregion
 
@@ -680,44 +681,43 @@ namespace MaxFactry.Base.BusinessLayer
         /// <typeparam name="TValue">Type of the property</typeparam>
         /// <param name="loProperty">The property info</param>
         /// <returns></returns>
-        protected TValue GetValue<TValue>(PropertyInfo loProperty)
+        protected virtual TValue GetValue<TValue>(PropertyInfo loProperty)
         {
             TValue loR = default(TValue);
             if (loProperty.PropertyType == typeof(TValue) || typeof(object) == typeof(TValue))
             {
-                if (typeof(TValue) == typeof(Guid) || typeof(TValue) == typeof(double) || typeof(TValue) == typeof(int))
+                if (!_oDataNameByPropertyCache.ContainsKey(loProperty))
                 {
-                    if (!_oDataNameByPropertyCache.ContainsKey(loProperty))
+                    lock (_oLock)
                     {
-                        string lsDataNameCheck = this.GetDataName(this.Data.DataModel, loProperty.Name);
-                        _oDataNameByPropertyCache.Add(loProperty, lsDataNameCheck);
+                        if (!_oDataNameByPropertyCache.ContainsKey(loProperty))
+                        {
+                            string lsDataNameCheck = this.GetDataName(this.Data.DataModel, loProperty.Name);
+                            _oDataNameByPropertyCache.Add(loProperty, lsDataNameCheck);
+                        }
                     }
-                    string lsDataName = _oDataNameByPropertyCache[loProperty];
-                    object loValue = this.Get(lsDataName);
-                    if (loValue is Guid)
-                    {
-                        loR = (TValue)loValue;
-                    }
-                    else if (loValue is string && typeof(TValue) == typeof(Guid))
-                    {
-                        loR = (TValue)(object)MaxConvertLibrary.ConvertToGuid(typeof(TValue), loValue);
-                    }
-                    else if (loValue is double)
-                    {
-                        loR = (TValue)loValue;
-                    }
-                    else if (loValue is string && typeof(TValue) == typeof(double))
-                    {
-                        loR = (TValue)(object)MaxConvertLibrary.ConvertToDouble(typeof(TValue), loValue);
-                    }
-                    else if (loValue is int)
-                    {
-                        loR = (TValue)loValue;
-                    }
-                    else if (loValue is string && typeof(TValue) == typeof(int))
-                    {
-                        loR = (TValue)(object)MaxConvertLibrary.ConvertToInt(typeof(TValue), loValue);
-                    }
+                }
+
+                string lsDataName = _oDataNameByPropertyCache[loProperty];
+                if (typeof(TValue) == typeof(Guid))
+                {
+                    loR = (TValue)(object)this.GetGuid(lsDataName);
+                }
+                else if (typeof(TValue) == typeof(double))
+                {
+                    loR = (TValue)(object)this.GetDouble(lsDataName);
+                }
+                else if (typeof(TValue) == typeof(int))
+                {
+                    loR = (TValue)(object)this.GetInt(lsDataName);
+                }
+                else if (typeof(TValue) == typeof(bool))
+                {
+                    loR = (TValue)(object)this.GetBoolean(lsDataName);
+                }
+                else if (typeof(TValue) == typeof(long))
+                {
+                    loR = (TValue)(object)this.GetLong(lsDataName);
                 }
                 else
                 {
