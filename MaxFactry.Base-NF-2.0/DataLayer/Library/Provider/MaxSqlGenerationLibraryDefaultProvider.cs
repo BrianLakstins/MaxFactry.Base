@@ -43,6 +43,7 @@
 // <change date="3/20/2024" author="Brian A. Lakstins" description="Updated for changes to DataModel.">
 // <change date="5/22/2025" author="Brian A. Lakstins" description="Optimize replacement of sql specific variables in generated sql statements. Review and update for consistency.">
 // <change date="6/3/2025" author="Brian A. Lakstins" description="Use static names instead of strings for attributes">
+// <change date="12/23/2025" author="Brian A. Lakstins" description="Allow direct SQL select statements">
 // </changelog>
 #endregion
 
@@ -545,52 +546,60 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
         public virtual string GetSelect(string lsDataStorageName, params string[] laDataNameList)
         {
             string lsR = string.Empty;
-            MaxIndex loFieldsList = new MaxIndex();
-            if (null != laDataNameList)
+            if (lsDataStorageName.ToLower().StartsWith("select "))
             {
-                foreach (string lsField in laDataNameList)
+                lsR = lsDataStorageName;
+            }
+            else
+            {
+                MaxIndex loFieldsList = new MaxIndex();
+                if (null != laDataNameList)
                 {
-                    if (lsField.Length > 0)
+                    foreach (string lsField in laDataNameList)
                     {
-                        loFieldsList.Add(lsField);
+                        if (lsField.Length > 0)
+                        {
+                            loFieldsList.Add(lsField);
+                        }
                     }
                 }
-            }
 
-            StringBuilder loSqlSelectClause = new StringBuilder();
+                StringBuilder loSqlSelectClause = new StringBuilder();
 
-            MaxIndex loUsedList = new MaxIndex();
-            string[] laFieldsKey = loFieldsList.GetSortedKeyList();
-            for (int lnK = 0; lnK < laFieldsKey.Length; lnK++)
-            {
-                loUsedList.Add(laFieldsKey[lnK]);
-            }
-
-            for (int lnK = 0; lnK < laFieldsKey.Length; lnK++)
-            {
-                string lsKey = laFieldsKey[lnK];
-                if (loUsedList.Contains(lsKey))
+                MaxIndex loUsedList = new MaxIndex();
+                string[] laFieldsKey = loFieldsList.GetSortedKeyList();
+                for (int lnK = 0; lnK < laFieldsKey.Length; lnK++)
                 {
-                    if (0 == loSqlSelectClause.Length)
-                    {
-                        loSqlSelectClause.Append("SELECT ");
-                    }
-                    else
-                    {
-                        loSqlSelectClause.Append(", ");
-                    }
-
-                    loSqlSelectClause.Append(lsKey);
-                    loUsedList.Remove(lsKey);
+                    loUsedList.Add(laFieldsKey[lnK]);
                 }
+
+                for (int lnK = 0; lnK < laFieldsKey.Length; lnK++)
+                {
+                    string lsKey = laFieldsKey[lnK];
+                    if (loUsedList.Contains(lsKey))
+                    {
+                        if (0 == loSqlSelectClause.Length)
+                        {
+                            loSqlSelectClause.Append("SELECT ");
+                        }
+                        else
+                        {
+                            loSqlSelectClause.Append(", ");
+                        }
+
+                        loSqlSelectClause.Append(lsKey);
+                        loUsedList.Remove(lsKey);
+                    }
+                }
+
+                if (0 == loSqlSelectClause.Length)
+                {
+                    loSqlSelectClause.Append("SELECT *");
+                }
+
+                lsR = string.Concat(loSqlSelectClause.ToString(), " FROM [", lsDataStorageName, "] ");
             }
 
-            if (0 == loSqlSelectClause.Length)
-            {
-                loSqlSelectClause.Append("SELECT *");
-            }
-
-            lsR = string.Concat(loSqlSelectClause.ToString(), " FROM [", lsDataStorageName, "] ");
             return lsR;
         }
 
