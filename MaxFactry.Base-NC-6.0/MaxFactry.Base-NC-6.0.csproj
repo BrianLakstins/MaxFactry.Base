@@ -152,7 +152,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="MaxFactry.Core" Version="1.0.24.86" />
+	  <PackageReference Include="MaxFactry.Core" Version="1.0.26.1" />
 	  <PackageReference Include="System.IO.Ports" Version="8.0.0" />
 	</ItemGroup>
 
