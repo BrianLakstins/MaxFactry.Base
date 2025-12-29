@@ -2,9 +2,9 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-    <RootNamespace>MaxFactry.Base</RootNamespace>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+	  <ImplicitUsings>enable</ImplicitUsings>
+	  <Nullable>enable</Nullable>
+	  <RootNamespace>MaxFactry.Base</RootNamespace>
 	  <Version>1.0.24.92</Version>
 	  <AssemblyVersion>1.0.24.92</AssemblyVersion>
 	  <FileVersion>2025.12.23.01</FileVersion>
@@ -12,13 +12,13 @@
 	  <AssemblyOriginatorKeyFile>MaxFactry.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-		<DefineConstants>TRACE;netcore1;netcore2;netcore2_1;netcore3_1;netcore_6</DefineConstants>
-	</PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+	  <DefineConstants>TRACE;netcore1;netcore2;netcore2_1;netcore3_1;netcore_6</DefineConstants>
+  </PropertyGroup>
 
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-		<DefineConstants>TRACE;netcore1;netcore2;netcore2_1;netcore3_1;netcore_6</DefineConstants>
-	</PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+	  <DefineConstants>TRACE;netcore1;netcore2;netcore2_1;netcore3_1;netcore_6</DefineConstants>
+  </PropertyGroup>
 
 	<ItemGroup>
 		<Compile Include="..\MaxFactry.Base-NF-2.0\BusinessLayer\Entity\MaxBaseEmailEntity.cs" Link="BusinessLayer\Entity\MaxBaseEmailEntity.cs" />
