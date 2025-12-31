@@ -33,6 +33,7 @@
 // <change date="3/30/2024" author="Brian A. Lakstins" description="Add fields for Request and Response variable names. Streamlined methods.">
 // <change date="5/3/2024" author="Brian A. Lakstins" description="Add a way to specify a time out.">
 // <change date="1/20/2025" author="Brian A. Lakstins" description="Check request url and use it if it's a string.">
+// <change date="12/31/2025" author="Brian A. Lakstins" description="Handle any response content">
 // </changelog>
 #endregion
 
@@ -404,13 +405,20 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
             {
                 loR = await loContent.ReadAsStreamAsync();
             }
-            else if (loContent is System.Net.Http.StringContent)
-            {
-                loR = await loContent.ReadAsStringAsync();
-            }
             else if (loContent is System.Net.Http.ByteArrayContent)
             {
                 loR = await loContent.ReadAsByteArrayAsync();
+            }
+            else 
+            {
+                try
+                {
+                    loR = await loContent.ReadAsStringAsync();
+                }
+                catch (Exception loE)
+                {
+                    MaxLogLibrary.Log(new MaxLogEntryStructure(this.GetType(), "GetResponseContentConditionalAsync", MaxEnumGroup.LogError, "Error reading content as string", loE));
+                }
             }
 
             return loR;
