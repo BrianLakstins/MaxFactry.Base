@@ -406,7 +406,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="MaxFactry.Core">
-      <Version>1.0.26.2</Version>
+      <Version>1.0.26.3</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
