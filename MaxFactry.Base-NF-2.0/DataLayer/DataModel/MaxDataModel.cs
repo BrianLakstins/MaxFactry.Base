@@ -51,6 +51,7 @@
 // <change date="6/11/2025" author="Brian A. Lakstins" description="Remove using application key when getting StorageKey.  Use Data only.">
 // <change date="6/11/2025" author="Brian A. Lakstins" description="Add method to get CacheKey">
 // <change date="6/21/2025" author="Brian A. Lakstins" description="Add Stream Path handling.  Allow changing attributes.">
+// <change date="1/12/2026" author="Brian A. Lakstins" description="Add an attribute to indicate data should be compressed">
 // </changelog>
 #endregion
 
@@ -74,6 +75,8 @@ namespace MaxFactry.Base.DataLayer
         public const string AttributeIsAllowDBNull = "IsAllowDBNull";
         
         public const string AttributeIsEncrypted = "IsEncrypted";
+
+        public const string AttributeIsCompressed = "IsCompressed";
 
         /// <summary>
         /// Indicates that the data for the string is stored as a stream

@@ -122,6 +122,7 @@
 // <change date="12/12/2025" author="Brian A. Lakstins" description="Fixing issue with property name return names.">
 // <change date="12/17/2025" author="Brian A. Lakstins" description="Return all requested properties or all properties when non specified even if values are blank.">
 // <change date="12/22/2025" author="Brian A. Lakstins" description="Fix issue with locking and reduce code in GetValue.">
+// <change date="1/12/2026" author="Brian A. Lakstins" description="Add a way to store data compressed.">
 // </changelog>
 #endregion
 
@@ -2678,6 +2679,26 @@ namespace MaxFactry.Base.BusinessLayer
                     loValue = Convert.ToBase64String((byte[])loValue);
                 }
             }
+            else if (this.Data.DataModel.GetAttributeSetting(lsDataName, MaxDataModel.AttributeIsCompressed) &&
+                null != loValue && (loValue is string || loValue is byte[]))
+            {
+                // Convert to byte array so it can be compressed
+                if (loValue is string)
+                {
+                    loValue = MaxConvertLibrary.ConvertToByteArray(this.DataModelType, loValue);
+                }
+
+                //// Compress the value
+                loValue = MaxCompressionLibrary.Compress(this.GetType(), (byte[])loValue);
+
+                //// Encode byte[] to string if this compressed value is being stored as a string.
+                if (this.Data.DataModel.GetValueType(lsDataName) == typeof(string) ||
+                    this.Data.DataModel.GetValueType(lsDataName) == typeof(MaxShortString) ||
+                    this.Data.DataModel.GetValueType(lsDataName) == typeof(MaxLongString))
+                {
+                    loValue = Convert.ToBase64String((byte[])loValue);
+                }
+            }
             else if (null == loValue)
             {
                 if (this.Data.DataModel.GetValueType(lsDataName) == typeof(string) ||
@@ -2841,6 +2862,7 @@ namespace MaxFactry.Base.BusinessLayer
             }
 
             bool lbIsEncrypted = false;
+            bool lbIsCompressed = false;
             if (this.Data.DataModel.GetAttributeSetting(lsDataName, MaxDataModel.AttributeIsEncrypted))
             {
                 //// Decode string to byte[] if this encrypted value is being stored as a string.
@@ -2853,8 +2875,27 @@ namespace MaxFactry.Base.BusinessLayer
                 loValue = MaxEncryptionLibrary.Decrypt(this.GetType(), (byte[])loValue);
                 lbIsEncrypted = true;
             }
+            else if (this.Data.DataModel.GetAttributeSetting(lsDataName, MaxDataModel.AttributeIsCompressed))
+            {
+                try
+                {
+                    //// Decode string to byte[] if this compressed value is being stored as a string.
+                    if (loValue is string)
+                    {
+                        loValue = Convert.FromBase64String((string)loValue);
+                    }
 
-            if (lbIsStream || lbIsEncrypted)
+                    //// Decompress the value to a byte array
+                    loValue = MaxCompressionLibrary.Decompress(this.GetType(), (byte[])loValue);
+                    lbIsCompressed = true;
+                }
+                catch (Exception loE)
+                {
+                    MaxLogLibrary.Log(new MaxLogEntryStructure(this.GetType(), "GetString", MaxEnumGroup.LogError, "Error decompressing data for " + lsDataName, loE));
+                }
+            }
+
+            if (lbIsStream || lbIsEncrypted || lbIsCompressed)
             {
                 lsR = MaxConvertLibrary.ConvertToString(this.DataModelType, loValue);
             }
@@ -3051,6 +3092,11 @@ namespace MaxFactry.Base.BusinessLayer
             {
                 //// Decrypt the value 
                 laR = MaxEncryptionLibrary.Decrypt(this.GetType(), laR);
+            }
+            else if (this.Data.DataModel.GetAttributeSetting(lsDataName, MaxDataModel.AttributeIsCompressed))
+            {
+                //// Decompress the value 
+                laR = MaxCompressionLibrary.Decompress(this.GetType(), laR);
             }
 
             return laR;
