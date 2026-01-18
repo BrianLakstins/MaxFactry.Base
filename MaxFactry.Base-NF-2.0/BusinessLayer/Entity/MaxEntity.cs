@@ -123,6 +123,7 @@
 // <change date="12/17/2025" author="Brian A. Lakstins" description="Return all requested properties or all properties when non specified even if values are blank.">
 // <change date="12/22/2025" author="Brian A. Lakstins" description="Fix issue with locking and reduce code in GetValue.">
 // <change date="1/12/2026" author="Brian A. Lakstins" description="Add a way to store data compressed.">
+// <change date="1/18/2026" author="Brian A. Lakstins" description="Making sure Guid is properly handled.">
 // </changelog>
 #endregion
 
@@ -2539,6 +2540,19 @@ namespace MaxFactry.Base.BusinessLayer
             if (null != loData && null != loData.DataModel)
             {
                 this._oData = loData;
+                for (int lnD = 0; lnD < loData.DataModel.DataNameList.Length; lnD++)
+                {
+                    string lsDataName = loData.DataModel.DataNameList[lnD];
+                    if (loData.DataModel.GetValueType(lsDataName) == typeof(Guid))
+                    {
+                        object loValue = loData.Get(lsDataName);
+                        if (loValue is string)
+                        {
+                            loData.Set(lsDataName, new Guid((string)loValue));
+                        }
+                    }
+                }
+
                 this._oDataModelType = loData.DataModel.GetType();
                 this._oUnSerializedObjectIndex = new MaxIndex();
                 this._oDataNameValueCache.Clear();
