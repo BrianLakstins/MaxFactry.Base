@@ -124,6 +124,7 @@
 // <change date="12/22/2025" author="Brian A. Lakstins" description="Fix issue with locking and reduce code in GetValue.">
 // <change date="1/12/2026" author="Brian A. Lakstins" description="Add a way to store data compressed.">
 // <change date="1/18/2026" author="Brian A. Lakstins" description="Making sure Guid is properly handled.">
+// <change date="2/17/2026" author="Brian A. Lakstins" description="Handling fields that are stored as strings before they are marked as being compressed.">
 // </changelog>
 #endregion
 
@@ -2893,15 +2894,28 @@ namespace MaxFactry.Base.BusinessLayer
             {
                 try
                 {
+                    lbIsCompressed = true;
                     //// Decode string to byte[] if this compressed value is being stored as a string.
                     if (loValue is string)
                     {
-                        loValue = Convert.FromBase64String((string)loValue);
+                        string lsValue = (string)loValue;
+                        if (!string.IsNullOrEmpty(lsValue) && lsValue.Length % 4 == 0 && !lsValue.Contains(" ") && !lsValue.Contains("\n") && !lsValue.Contains("\r"))
+                        {
+                            loValue = Convert.FromBase64String(lsValue);
+                        }
+                        else
+                        {
+                            //// Not compressed data, return the original string value.
+                            lbIsCompressed = false;
+                            lsR = lsValue;
+                        }
                     }
 
-                    //// Decompress the value to a byte array
-                    loValue = MaxCompressionLibrary.Decompress(this.GetType(), (byte[])loValue);
-                    lbIsCompressed = true;
+                    if (loValue is byte[])
+                    {
+                        //// Decompress the value to a byte array
+                        loValue = MaxCompressionLibrary.Decompress(this.GetType(), (byte[])loValue);
+                    }
                 }
                 catch (Exception loE)
                 {
