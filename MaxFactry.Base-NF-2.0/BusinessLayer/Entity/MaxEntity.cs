@@ -125,6 +125,7 @@
 // <change date="1/12/2026" author="Brian A. Lakstins" description="Add a way to store data compressed.">
 // <change date="1/18/2026" author="Brian A. Lakstins" description="Making sure Guid is properly handled.">
 // <change date="2/17/2026" author="Brian A. Lakstins" description="Handling fields that are stored as strings before they are marked as being compressed.">
+// <change date="3/26/2026" author="Brian A. Lakstins" description="Make sure all properties are considered changed when doing an insert">
 // </changelog>
 #endregion
 
@@ -2653,6 +2654,8 @@ namespace MaxFactry.Base.BusinessLayer
         /// </summary>
         protected virtual void SetInitial()
         {
+            //// Make sure all properties are considered to be changed
+            this._oData.SetChanged();
         }
 
         /// <summary>
