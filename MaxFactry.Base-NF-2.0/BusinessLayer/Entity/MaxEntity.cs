@@ -126,6 +126,7 @@
 // <change date="1/18/2026" author="Brian A. Lakstins" description="Making sure Guid is properly handled.">
 // <change date="2/17/2026" author="Brian A. Lakstins" description="Handling fields that are stored as strings before they are marked as being compressed.">
 // <change date="3/26/2026" author="Brian A. Lakstins" description="Make sure all properties are considered changed when doing an insert">
+// <change date="3/31/2026" author="Brian A. Lakstins" description="Prevent exception when a string is not a Guid, but using a Guid type data field">
 // </changelog>
 #endregion
 
@@ -2550,7 +2551,8 @@ namespace MaxFactry.Base.BusinessLayer
                         object loValue = loData.Get(lsDataName);
                         if (loValue is string)
                         {
-                            loData.Set(lsDataName, new Guid((string)loValue));
+                            Guid loValueGuid = MaxConvertLibrary.ConvertToGuid(typeof(object), loValue);
+                            loData.Set(lsDataName, loValueGuid);
                         }
                     }
                 }
