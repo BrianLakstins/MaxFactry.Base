@@ -127,6 +127,7 @@
 // <change date="2/17/2026" author="Brian A. Lakstins" description="Handling fields that are stored as strings before they are marked as being compressed.">
 // <change date="3/26/2026" author="Brian A. Lakstins" description="Make sure all properties are considered changed when doing an insert">
 // <change date="3/31/2026" author="Brian A. Lakstins" description="Prevent exception when a string is not a Guid, but using a Guid type data field">
+// <change date="4/10/2026" author="Brian A. Lakstins" description="Added method to get original value of a property">
 // </changelog>
 #endregion
 
@@ -1946,6 +1947,30 @@ namespace MaxFactry.Base.BusinessLayer
             }
 
             return lsR;
+        }
+
+
+        /// <summary>
+        /// Gets the original value of a property before any changes were made to the entity.
+        /// 
+        /// </summary>
+        /// <typeparam name="T">Generic placeholder for the property type</typeparam>
+        /// <param name="loFunction">Function that specifies the type</param>
+        /// <returns>Name of the property</returns>
+        public virtual object GetOriginalValue<T>(Expression<Func<T>> loFunction)
+        {
+            object loR = null;
+            string lsPropertyName = this.GetPropertyName<T>(loFunction);
+            if (!string.IsNullOrEmpty(lsPropertyName))
+            {
+                string lsDataName = this.GetDataName(this.Data.DataModel, lsPropertyName);
+                if (!string.IsNullOrEmpty(lsDataName))
+                {
+                    loR = this.Data.GetOriginal(lsDataName);
+                }
+            }
+
+            return loR;
         }
 #endif
 
