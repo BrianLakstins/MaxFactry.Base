@@ -128,6 +128,7 @@
 // <change date="3/26/2026" author="Brian A. Lakstins" description="Make sure all properties are considered changed when doing an insert">
 // <change date="3/31/2026" author="Brian A. Lakstins" description="Prevent exception when a string is not a Guid, but using a Guid type data field">
 // <change date="4/10/2026" author="Brian A. Lakstins" description="Added method to get original value of a property">
+// <change date="6/23/2026" author="Brian A. Lakstins" description="Add constants for filter usage.  Update filter parsing to include condition for the group in the group instead of in the previous group">
 // </changelog>
 #endregion
 
@@ -235,6 +236,52 @@ namespace MaxFactry.Base.BusinessLayer
         /// Event when failing to delete a record 
         /// </summary>
         public static event EventHandler DeleteFail = delegate { };
+
+        /// <summary>
+        /// Indicates the start of a group in a filter that gets turned into a DataQuery
+        /// </summary>
+        public const string FilterStartGroup = "StartGroup";
+
+        /// <summary>
+        /// Name used in a filter that gets turned into a DataQuery
+        /// </summary>
+        public const string FilterName = "Name";
+
+        /// <summary>
+        /// Operator used in a filter that gets turned into a DataQuery
+        /// </summary>
+        public const string FilterOperator = "Operator";
+
+        public const string FilterOperatorEqual = "=";
+
+        public const string FilterOperatorLike = "LIKE";
+
+        public const string FilterOperatorGreaterThan = ">";
+
+        public const string FilterOperatorGreaterThanOrEqual = ">=";
+
+        public const string FilterOperatorLessThan = "<";
+
+        public const string FilterOperatorLessThanOrEqual = "<=";
+
+        /// <summary>
+        /// Value used in a filter that gets turned into a DataQuery
+        /// </summary>
+        public const string FilterValue = "Value";
+
+        /// <summary>
+        /// Condition used in a filter that gets turned into a DataQuery
+        /// </summary>
+        public const string FilterCondition = "Condition";
+
+        public const string FilterConditionAnd = "AND";
+
+        public const string FilterConditionOr = "OR";
+
+        /// <summary>
+        /// Indicates the end of a group in a filter that gets turned into a DataQuery
+        /// </summary>
+        public const string FilterEndGroup = "EndGroup";
 
         /// <summary>
         /// object to hold data for the entity
@@ -2353,30 +2400,25 @@ namespace MaxFactry.Base.BusinessLayer
                     foreach (string lsKey in laKey)
                     {
                         MaxIndex loDetail = loFilter[lsKey] as MaxIndex;
-                        string lsValue = loDetail.GetValueString("Value");
-                        string lsPropertyName = loDetail.GetValueString("Name");
+                        string lsValue = loDetail.GetValueString(MaxEntity.FilterValue);
+                        string lsPropertyName = loDetail.GetValueString(MaxEntity.FilterName);
                         string lsDataName = this.GetDataName(this.Data.DataModel, lsPropertyName);
-                        if (!string.IsNullOrEmpty(lsDataName) && !string.IsNullOrEmpty(lsValue))
+                        if (!string.IsNullOrEmpty(lsDataName))
                         {
-                            if (!string.IsNullOrEmpty(lsNextCondition)) {
-                                loDataQueryFilter.AddCondition(lsNextCondition);
-                                lsNextCondition = string.Empty;
+                            string lsCondition = loDetail.GetValueString(MaxEntity.FilterCondition);
+                            if (!string.IsNullOrEmpty(lsCondition)) {
+                                loDataQueryFilter.AddCondition(lsCondition);
                             }
 
-                            if (loDetail.Contains("StartGroup"))
+                            if (loDetail.Contains(MaxEntity.FilterStartGroup))
                             {
                                 loDataQueryFilter.StartGroup();
                             }
 
-                            loDataQueryFilter.AddFilter(lsDataName, loDetail.GetValueString("Operator"), lsValue);
-                            if (loDetail.Contains("EndGroup"))
+                            loDataQueryFilter.AddFilter(lsDataName, loDetail.GetValueString(MaxEntity.FilterOperator), lsValue);
+                            if (loDetail.Contains(MaxEntity.FilterEndGroup))
                             {
                                 loDataQueryFilter.EndGroup();
-                            }
-
-                            if (loDetail.Contains("Condition") && !string.IsNullOrEmpty(loDetail.GetValueString("Condition")))
-                            {
-                                lsNextCondition = loDetail.GetValueString("Condition");                                
                             }
                         }
                     }
@@ -2418,26 +2460,26 @@ namespace MaxFactry.Base.BusinessLayer
                     foreach (string lsKey in laKey)
                     {
                         MaxIndex loDetail = loFilter[lsKey] as MaxIndex;
-                        if (loDetail.Contains("StartGroup"))
+                        if (loDetail.Contains(FilterStartGroup))
                         {
                             loDataQueryFilter.StartGroup();
                         }
 
-                        string lsPropertyName = loDetail.GetValueString("Name");
+                        string lsPropertyName = loDetail.GetValueString(FilterName);
                         string lsDataName = this.GetDataName(this.Data.DataModel, lsPropertyName);
                         if (!string.IsNullOrEmpty(lsDataName))
                         {
-                            loDataQueryFilter.AddFilter(lsDataName, loDetail.GetValueString("Operator"), loDetail.GetValueString("Value"));
+                            loDataQueryFilter.AddFilter(lsDataName, loDetail.GetValueString(FilterOperator), loDetail[FilterValue]);
                         }
 
-                        if (loDetail.Contains("EndGroup"))
+                        if (loDetail.Contains(FilterEndGroup))
                         {
                             loDataQueryFilter.EndGroup();
                         }
 
-                        if (loDetail.Contains("Condition") && !string.IsNullOrEmpty(loDetail.GetValueString("Condition")))
+                        if (loDetail.Contains(FilterCondition) && !string.IsNullOrEmpty(loDetail.GetValueString(FilterCondition)))
                         {
-                            loDataQueryFilter.AddCondition(loDetail.GetValueString("Condition"));
+                            loDataQueryFilter.AddCondition(loDetail.GetValueString(FilterCondition));
                         }
                     }
 
