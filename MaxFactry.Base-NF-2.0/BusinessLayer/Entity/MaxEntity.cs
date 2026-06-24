@@ -129,6 +129,7 @@
 // <change date="3/31/2026" author="Brian A. Lakstins" description="Prevent exception when a string is not a Guid, but using a Guid type data field">
 // <change date="4/10/2026" author="Brian A. Lakstins" description="Added method to get original value of a property">
 // <change date="6/23/2026" author="Brian A. Lakstins" description="Add constants for filter usage.  Update filter parsing to include condition for the group in the group instead of in the previous group">
+// <change date="6/24/2026" author="Brian A. Lakstins" description="Centralize code for handling filter to dataquery conversions">
 // </changelog>
 #endregion
 
@@ -2227,6 +2228,64 @@ namespace MaxFactry.Base.BusinessLayer
         }
 
         /// <summary>
+        /// Gets the default data query for this entity
+        /// </summary>
+        /// <returns>Data query for anything with this type</returns>
+        protected virtual MaxDataQuery GetDataQuery(MaxIndex loFilter)
+        {
+            MaxDataQuery loR = this.GetDataQuery();
+            if (loFilter.Count > 0)
+            {
+                string[] laKey = loFilter.GetSortedKeyList();
+                if (laKey.Length > 0)
+                {
+                    MaxDataQuery loDataQueryFilter = new MaxDataQuery();
+                    string lsNextCondition = string.Empty;
+                    foreach (string lsKey in laKey)
+                    {
+                        MaxIndex loDetail = loFilter[lsKey] as MaxIndex;
+                        string lsValue = loDetail.GetValueString(MaxEntity.FilterValue);
+                        string lsPropertyName = loDetail.GetValueString(MaxEntity.FilterName);
+                        string lsDataName = this.GetDataName(this.Data.DataModel, lsPropertyName);
+                        if (!string.IsNullOrEmpty(lsDataName))
+                        {
+                            string lsCondition = loDetail.GetValueString(MaxEntity.FilterCondition);
+                            if (!string.IsNullOrEmpty(lsCondition))
+                            {
+                                loDataQueryFilter.AddCondition(lsCondition);
+                            }
+
+                            if (loDetail.Contains(MaxEntity.FilterStartGroup))
+                            {
+                                loDataQueryFilter.StartGroup();
+                            }
+
+                            loDataQueryFilter.AddFilter(lsDataName, loDetail.GetValueString(MaxEntity.FilterOperator), lsValue);
+                            if (loDetail.Contains(MaxEntity.FilterEndGroup))
+                            {
+                                loDataQueryFilter.EndGroup();
+                            }
+                        }
+                    }
+
+                    Object[] laDataQueryFilter = loDataQueryFilter.GetQuery();
+                    if (laDataQueryFilter.Length > 0)
+                    {
+                        loR.StartGroup();
+                        foreach (object loQuery in laDataQueryFilter)
+                        {
+                            loR.Add(loQuery);
+                        }
+
+                        loR.EndGroup();
+                    }
+                }
+            }
+
+            return loR;
+        }
+
+        /// <summary>
         /// Loads all entities for a particular page using a data query
         /// </summary>
         /// <param name="lnPageIndex"></param>
@@ -2389,54 +2448,7 @@ namespace MaxFactry.Base.BusinessLayer
         /// <returns></returns>
         public virtual MaxEntityList LoadAllByPageFilter(int lnPageIndex, int lnPageSize, string lsPropertySort, MaxIndex loFilter, params string[] laPropertyNameList)
         {
-            MaxDataQuery loDataQuery = this.GetDataQuery();
-            if (loFilter.Count > 0)
-            {
-                string[] laKey = loFilter.GetSortedKeyList();
-                if (laKey.Length > 0)
-                {
-                    MaxDataQuery loDataQueryFilter = new MaxDataQuery();
-                    string lsNextCondition = string.Empty;
-                    foreach (string lsKey in laKey)
-                    {
-                        MaxIndex loDetail = loFilter[lsKey] as MaxIndex;
-                        string lsValue = loDetail.GetValueString(MaxEntity.FilterValue);
-                        string lsPropertyName = loDetail.GetValueString(MaxEntity.FilterName);
-                        string lsDataName = this.GetDataName(this.Data.DataModel, lsPropertyName);
-                        if (!string.IsNullOrEmpty(lsDataName))
-                        {
-                            string lsCondition = loDetail.GetValueString(MaxEntity.FilterCondition);
-                            if (!string.IsNullOrEmpty(lsCondition)) {
-                                loDataQueryFilter.AddCondition(lsCondition);
-                            }
-
-                            if (loDetail.Contains(MaxEntity.FilterStartGroup))
-                            {
-                                loDataQueryFilter.StartGroup();
-                            }
-
-                            loDataQueryFilter.AddFilter(lsDataName, loDetail.GetValueString(MaxEntity.FilterOperator), lsValue);
-                            if (loDetail.Contains(MaxEntity.FilterEndGroup))
-                            {
-                                loDataQueryFilter.EndGroup();
-                            }
-                        }
-                    }
-
-                    Object[] laDataQueryFilter = loDataQueryFilter.GetQuery();
-                    if (laDataQueryFilter.Length > 0)
-                    {
-                        loDataQuery.StartGroup();
-                        foreach (object loQuery in laDataQueryFilter)
-                        {
-                            loDataQuery.Add(loQuery);
-                        }
-
-                        loDataQuery.EndGroup();
-                    }
-                }
-            }
-
+            MaxDataQuery loDataQuery = this.GetDataQuery(loFilter);
             MaxData loData = new MaxData(this.Data);
             MaxEntityList loR = this.LoadAllByPage(loData, lnPageIndex, lnPageSize, lsPropertySort, loDataQuery, laPropertyNameList);
             return loR;
@@ -2445,60 +2457,17 @@ namespace MaxFactry.Base.BusinessLayer
         /// <summary>
         /// Loads all entities for a particular page using a filter
         /// </summary>
+        /// <param name="lnPageIndex"></param>
+        /// <param name="lnPageSize"></param>
+        /// <param name="lsPropertySort"></param>
         /// <param name="loFilter"></param>
         /// <param name="laPropertyNameList"></param>
         /// <returns></returns>
-        public virtual MaxEntityList LoadAllByFilterCache(MaxIndex loFilter, params string[] laPropertyNameList)
+        public virtual MaxEntityList LoadAllByPageFilterCache(int lnPageIndex, int lnPageSize, string lsPropertySort, MaxIndex loFilter, params string[] laPropertyNameList)
         {
-            MaxDataQuery loDataQuery = this.GetDataQuery();
-            if (loFilter.Count > 0)
-            {
-                string[] laKey = loFilter.GetSortedKeyList();
-                if (laKey.Length > 0)
-                {
-                    MaxDataQuery loDataQueryFilter = new MaxDataQuery();
-                    foreach (string lsKey in laKey)
-                    {
-                        MaxIndex loDetail = loFilter[lsKey] as MaxIndex;
-                        if (loDetail.Contains(FilterStartGroup))
-                        {
-                            loDataQueryFilter.StartGroup();
-                        }
-
-                        string lsPropertyName = loDetail.GetValueString(FilterName);
-                        string lsDataName = this.GetDataName(this.Data.DataModel, lsPropertyName);
-                        if (!string.IsNullOrEmpty(lsDataName))
-                        {
-                            loDataQueryFilter.AddFilter(lsDataName, loDetail.GetValueString(FilterOperator), loDetail[FilterValue]);
-                        }
-
-                        if (loDetail.Contains(FilterEndGroup))
-                        {
-                            loDataQueryFilter.EndGroup();
-                        }
-
-                        if (loDetail.Contains(FilterCondition) && !string.IsNullOrEmpty(loDetail.GetValueString(FilterCondition)))
-                        {
-                            loDataQueryFilter.AddCondition(loDetail.GetValueString(FilterCondition));
-                        }
-                    }
-
-                    Object[] laDataQueryFilter = loDataQueryFilter.GetQuery();
-                    if (laDataQueryFilter.Length > 0)
-                    {
-                        loDataQuery.StartGroup();
-                        foreach (object loQuery in laDataQueryFilter)
-                        {
-                            loDataQuery.Add(loQuery);
-                        }
-
-                        loDataQuery.EndGroup();
-                    }
-                }
-            }
-
+            MaxDataQuery loDataQuery = this.GetDataQuery(loFilter);
             MaxData loData = new MaxData(this.Data);
-            MaxEntityList loR = this.LoadAllByPageCache(loData, 0, 0, string.Empty, loDataQuery, laPropertyNameList);
+            MaxEntityList loR = this.LoadAllByPageCache(loData, lnPageIndex, lnPageSize, lsPropertySort, loDataQuery, laPropertyNameList);
             return loR;
         }
 
