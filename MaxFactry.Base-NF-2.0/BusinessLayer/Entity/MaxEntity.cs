@@ -2448,7 +2448,7 @@ namespace MaxFactry.Base.BusinessLayer
             MaxIndex loR = new MaxIndex();
             if (null != loResponseFilter && loResponseFilter.Count > 0)
             {
-                List<string> loPropertyNameFilterList = this.GetPropertyNameFilterList();
+                List<string> loResponseFilterNameList = this.GetResponseFilterNameList();
                 string[] laKey = loResponseFilter.GetSortedKeyList();
                 foreach (string lsKey in laKey)
                 {
@@ -2459,7 +2459,7 @@ namespace MaxFactry.Base.BusinessLayer
                         string[] laFilterKey = loResponseFilterIndex.GetSortedKeyList();
                         foreach (string lsFilterKey in laFilterKey)
                         {
-                            if (loPropertyNameFilterList.Contains(lsFilterKey))
+                            if (loResponseFilterNameList.Contains(lsFilterKey))
                             {
                                 string lsValue = loResponseFilterIndex.GetValueString(lsFilterKey);
                                 if (lsValue.Contains("\t"))
@@ -2533,10 +2533,10 @@ namespace MaxFactry.Base.BusinessLayer
         }
 
         /// <summary>
-        /// Gets a list of property names that can be used for filtering
+        /// Gets a list of response filter names that can be used to create a property filter
         /// </summary>
         /// <returns></returns>
-        public virtual List<string> GetPropertyNameFilterList()
+        public virtual List<string> GetResponseFilterNameList()
         {
             List<string> loR = new List<string>();
             foreach (string lsKey in this.PropertyIndex.Keys)
