@@ -130,6 +130,7 @@
 // <change date="4/10/2026" author="Brian A. Lakstins" description="Added method to get original value of a property">
 // <change date="6/23/2026" author="Brian A. Lakstins" description="Add constants for filter usage.  Update filter parsing to include condition for the group in the group instead of in the previous group">
 // <change date="6/24/2026" author="Brian A. Lakstins" description="Centralize code for handling filter to dataquery conversions">
+// <change date="7/7/2026" author="Brian A. Lakstins" description="Create property filter on Entity so that it can use entity properties and filtering property names can be added.">
 // </changelog>
 #endregion
 
@@ -2231,37 +2232,37 @@ namespace MaxFactry.Base.BusinessLayer
         /// Gets the default data query for this entity
         /// </summary>
         /// <returns>Data query for anything with this type</returns>
-        protected virtual MaxDataQuery GetDataQuery(MaxIndex loFilter)
+        protected virtual MaxDataQuery GetDataQuery(MaxIndex loPropertyFilter)
         {
             MaxDataQuery loR = this.GetDataQuery();
-            if (loFilter.Count > 0)
+            if (loPropertyFilter.Count > 0)
             {
-                string[] laKey = loFilter.GetSortedKeyList();
+                string[] laKey = loPropertyFilter.GetSortedKeyList();
                 if (laKey.Length > 0)
                 {
                     MaxDataQuery loDataQueryFilter = new MaxDataQuery();
                     string lsNextCondition = string.Empty;
                     foreach (string lsKey in laKey)
                     {
-                        MaxIndex loDetail = loFilter[lsKey] as MaxIndex;
-                        string lsValue = loDetail.GetValueString(MaxEntity.FilterValue);
-                        string lsPropertyName = loDetail.GetValueString(MaxEntity.FilterName);
+                        MaxIndex loPropertyFilterIndex = loPropertyFilter[lsKey] as MaxIndex;
+                        string lsValue = loPropertyFilterIndex.GetValueString(MaxEntity.FilterValue);
+                        string lsPropertyName = loPropertyFilterIndex.GetValueString(MaxEntity.FilterName);
                         string lsDataName = this.GetDataName(this.Data.DataModel, lsPropertyName);
                         if (!string.IsNullOrEmpty(lsDataName))
                         {
-                            string lsCondition = loDetail.GetValueString(MaxEntity.FilterCondition);
+                            string lsCondition = loPropertyFilterIndex.GetValueString(MaxEntity.FilterCondition);
                             if (!string.IsNullOrEmpty(lsCondition))
                             {
                                 loDataQueryFilter.AddCondition(lsCondition);
                             }
 
-                            if (loDetail.Contains(MaxEntity.FilterStartGroup))
+                            if (loPropertyFilterIndex.Contains(MaxEntity.FilterStartGroup))
                             {
                                 loDataQueryFilter.StartGroup();
                             }
 
-                            loDataQueryFilter.AddFilter(lsDataName, loDetail.GetValueString(MaxEntity.FilterOperator), lsValue);
-                            if (loDetail.Contains(MaxEntity.FilterEndGroup))
+                            loDataQueryFilter.AddFilter(lsDataName, loPropertyFilterIndex.GetValueString(MaxEntity.FilterOperator), lsValue);
+                            if (loPropertyFilterIndex.Contains(MaxEntity.FilterEndGroup))
                             {
                                 loDataQueryFilter.EndGroup();
                             }
@@ -2438,6 +2439,115 @@ namespace MaxFactry.Base.BusinessLayer
         }
 
         /// <summary>
+        /// Gets a Propertyname based filter from a List of filter indices to be used with LoadAllByPageFilter
+        /// </summary>
+        /// <param name="loResponseFilter"></param>
+        /// <returns></returns>
+        public virtual MaxIndex GetPropertyFilter(MaxIndex loResponseFilter)
+        {
+            MaxIndex loR = new MaxIndex();
+            if (null != loResponseFilter && loResponseFilter.Count > 0)
+            {
+                List<string> loPropertyNameFilterList = this.GetPropertyNameFilterList();
+                string[] laKey = loResponseFilter.GetSortedKeyList();
+                foreach (string lsKey in laKey)
+                {
+                    MaxIndex loResponseFilterIndex = loResponseFilter[lsKey] as MaxIndex;
+                    if (null != loResponseFilterIndex)
+                    {
+                        //// Each filter will only contain one property name and value, but the filter may contain other information such as the operator and condition.  The property name is used to determine if the filter should be included in the data query.
+                        string[] laFilterKey = loResponseFilterIndex.GetSortedKeyList();
+                        foreach (string lsFilterKey in laFilterKey)
+                        {
+                            if (loPropertyNameFilterList.Contains(lsFilterKey))
+                            {
+                                string lsValue = loResponseFilterIndex.GetValueString(lsFilterKey);
+                                if (lsValue.Contains("\t"))
+                                {
+                                    //// Values that contain a tab character are split into multiple values and treated as an OR condition
+                                    string[] laPartValue = lsValue.Split(new char[] { '\t' });
+                                    for (int lnPV = 0; lnPV < laPartValue.Length; lnPV++)
+                                    {
+                                        MaxIndex loFilterPart = new MaxIndex();
+                                        loFilterPart.Add(MaxEntity.FilterCondition, MaxEntity.FilterConditionOr);
+                                        loFilterPart.Add(MaxEntity.FilterName, lsFilterKey);
+                                        loFilterPart.Add(MaxEntity.FilterOperator, MaxEntity.FilterOperatorEqual);
+                                        loFilterPart.Add(MaxEntity.FilterValue, laPartValue[lnPV]);
+                                        if (lnPV == 0)
+                                        {
+                                            loFilterPart.Add(MaxEntity.FilterStartGroup, 1);                                            
+                                            if (loResponseFilterIndex.Contains(lsFilterKey + "Condition"))
+                                            {
+                                                loFilterPart.Add(MaxEntity.FilterCondition, loResponseFilterIndex.GetValueString(lsFilterKey + "Condition"));
+                                            }
+                                            else
+                                            {
+                                                loFilterPart.Add(MaxEntity.FilterCondition, MaxEntity.FilterConditionAnd);
+                                            }
+                                        }
+                                        else if (lnPV == laPartValue.Length - 1)
+                                        {
+                                            loFilterPart.Add(MaxEntity.FilterEndGroup, 1);
+                                        }
+
+                                        loR.Add(loFilterPart);
+                                    }
+                                }
+                                else
+                                {
+                                    MaxIndex loFilterPart = new MaxIndex();
+                                    if (loR.Count > 0)
+                                    {
+                                        if (loResponseFilterIndex.Contains(lsFilterKey + "Condition"))
+                                        {
+                                            loFilterPart.Add(MaxEntity.FilterCondition, loResponseFilterIndex.GetValueString(lsFilterKey + "Condition"));
+                                        }
+                                        else
+                                        {
+                                            loFilterPart.Add(MaxEntity.FilterCondition, MaxEntity.FilterConditionAnd);
+                                        }
+                                    }
+
+                                    loFilterPart.Add(MaxEntity.FilterStartGroup, 1);
+                                    loFilterPart.Add(MaxEntity.FilterName, lsFilterKey);
+                                    if (loResponseFilterIndex.Contains(lsFilterKey + "Operator"))
+                                    {
+                                        loFilterPart.Add(MaxEntity.FilterOperator, loResponseFilterIndex.GetValueString(lsFilterKey + "Operator"));
+                                    }
+                                    else
+                                    {
+                                        loFilterPart.Add(MaxEntity.FilterOperator, MaxEntity.FilterOperatorEqual);
+                                    }
+
+                                    loFilterPart.Add(MaxEntity.FilterValue, lsValue);
+                                    loFilterPart.Add(MaxEntity.FilterEndGroup, 1);
+                                    loR.Add(loFilterPart);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return loR;
+        }
+
+        /// <summary>
+        /// Gets a list of property names that can be used for filtering
+        /// </summary>
+        /// <returns></returns>
+        public virtual List<string> GetPropertyNameFilterList()
+        {
+            List<string> loR = new List<string>();
+            foreach (string lsKey in this.PropertyIndex.Keys)
+            {
+                loR.Add(lsKey);
+            }
+
+            return loR;
+        }
+
+        /// <summary>
         /// Loads all entities for a particular page using a filter
         /// </summary>
         /// <param name="lnPageIndex"></param>
@@ -2446,9 +2556,9 @@ namespace MaxFactry.Base.BusinessLayer
         /// <param name="loFilter"></param>
         /// <param name="laPropertyNameList"></param>
         /// <returns></returns>
-        public virtual MaxEntityList LoadAllByPageFilter(int lnPageIndex, int lnPageSize, string lsPropertySort, MaxIndex loFilter, params string[] laPropertyNameList)
+        public virtual MaxEntityList LoadAllByPageFilter(int lnPageIndex, int lnPageSize, string lsPropertySort, MaxIndex loPropertyFilter, params string[] laPropertyNameList)
         {
-            MaxDataQuery loDataQuery = this.GetDataQuery(loFilter);
+            MaxDataQuery loDataQuery = this.GetDataQuery(loPropertyFilter);
             MaxData loData = new MaxData(this.Data);
             MaxEntityList loR = this.LoadAllByPage(loData, lnPageIndex, lnPageSize, lsPropertySort, loDataQuery, laPropertyNameList);
             return loR;
