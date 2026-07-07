@@ -131,6 +131,7 @@
 // <change date="6/23/2026" author="Brian A. Lakstins" description="Add constants for filter usage.  Update filter parsing to include condition for the group in the group instead of in the previous group">
 // <change date="6/24/2026" author="Brian A. Lakstins" description="Centralize code for handling filter to dataquery conversions">
 // <change date="7/7/2026" author="Brian A. Lakstins" description="Create property filter on Entity so that it can use entity properties and filtering property names can be added.">
+// <change date="7/7/2026" author="Brian A. Lakstins" description="Add filter conditions only when there is already another filter.">
 // </changelog>
 #endregion
 
@@ -2469,20 +2470,27 @@ namespace MaxFactry.Base.BusinessLayer
                                     for (int lnPV = 0; lnPV < laPartValue.Length; lnPV++)
                                     {
                                         MaxIndex loFilterPart = new MaxIndex();
-                                        loFilterPart.Add(MaxEntity.FilterCondition, MaxEntity.FilterConditionOr);
+                                        if (loR.Count > 0)
+                                        {
+                                            loFilterPart.Add(MaxEntity.FilterCondition, MaxEntity.FilterConditionOr);
+                                        }
+
                                         loFilterPart.Add(MaxEntity.FilterName, lsFilterKey);
                                         loFilterPart.Add(MaxEntity.FilterOperator, MaxEntity.FilterOperatorEqual);
                                         loFilterPart.Add(MaxEntity.FilterValue, laPartValue[lnPV]);
                                         if (lnPV == 0)
                                         {
-                                            loFilterPart.Add(MaxEntity.FilterStartGroup, 1);                                            
-                                            if (loResponseFilterIndex.Contains(lsFilterKey + "Condition"))
+                                            loFilterPart.Add(MaxEntity.FilterStartGroup, 1);
+                                            if (loR.Count > 0)
                                             {
-                                                loFilterPart.Add(MaxEntity.FilterCondition, loResponseFilterIndex.GetValueString(lsFilterKey + "Condition"));
-                                            }
-                                            else
-                                            {
-                                                loFilterPart.Add(MaxEntity.FilterCondition, MaxEntity.FilterConditionAnd);
+                                                if (loResponseFilterIndex.Contains(lsFilterKey + "Condition"))
+                                                {
+                                                    loFilterPart.Add(MaxEntity.FilterCondition, loResponseFilterIndex.GetValueString(lsFilterKey + "Condition"));
+                                                }
+                                                else
+                                                {
+                                                    loFilterPart.Add(MaxEntity.FilterCondition, MaxEntity.FilterConditionAnd);
+                                                }
                                             }
                                         }
                                         else if (lnPV == laPartValue.Length - 1)
