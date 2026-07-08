@@ -132,6 +132,7 @@
 // <change date="6/24/2026" author="Brian A. Lakstins" description="Centralize code for handling filter to dataquery conversions">
 // <change date="7/7/2026" author="Brian A. Lakstins" description="Create property filter on Entity so that it can use entity properties and filtering property names can be added.">
 // <change date="7/7/2026" author="Brian A. Lakstins" description="Add filter conditions only when there is already another filter.">
+// <change date="7/8/2026" author="Brian A. Lakstins" description="Update filter handling to use lists of filters as a way to group them.">
 // </changelog>
 #endregion
 
@@ -2454,73 +2455,85 @@ namespace MaxFactry.Base.BusinessLayer
                 foreach (string lsKey in laKey)
                 {
                     MaxIndex loResponseFilterIndex = loResponseFilter[lsKey] as MaxIndex;
-                    if (null != loResponseFilterIndex)
+                    if (null != loResponseFilterIndex && loResponseFilterIndex.Count > 0)
                     {
-                        //// Each filter will only contain one property name and value, but the filter may contain other information such as the operator and condition.  The property name is used to determine if the filter should be included in the data query.
                         string[] laFilterKey = loResponseFilterIndex.GetSortedKeyList();
-                        foreach (string lsFilterKey in laFilterKey)
+                        MaxIndex loPropertyFilterList = new MaxIndex();
+                        string lsLastValue = string.Empty;
+                        for (int lnF = 0; lnF < laFilterKey.Length; lnF++)
                         {
-                            if (loResponseFilterNameList.Contains(lsFilterKey))
+                            string lsFilterKey = laFilterKey[lnF];
+                            MaxIndex loResponseFilterPart = loResponseFilterIndex[lsFilterKey] as MaxIndex;
+                            string lsFilterName = loResponseFilterPart.GetValueString(MaxEntity.FilterName);
+                            if (loResponseFilterNameList.Contains(lsFilterName))
                             {
-                                string lsValue = loResponseFilterIndex.GetValueString(lsFilterKey);
+                                string lsValue = loResponseFilterPart.GetValueString(MaxEntity.FilterValue);
                                 if (lsValue.Contains("\t"))
                                 {
+                                    if (loPropertyFilterList.Count > 0)
+                                    {
+                                        string[] laPropertyFilterListCurrentKey = loPropertyFilterList.GetSortedKeyList();
+                                        ((MaxIndex)loPropertyFilterList[laPropertyFilterListCurrentKey[laPropertyFilterListCurrentKey.Length - 1]]).Add(MaxEntity.FilterEndGroup, 1);
+                                    }
+
                                     //// Values that contain a tab character are split into multiple values and treated as an OR condition
                                     string[] laPartValue = lsValue.Split(new char[] { '\t' });
                                     for (int lnPV = 0; lnPV < laPartValue.Length; lnPV++)
                                     {
                                         MaxIndex loFilterPart = new MaxIndex();
-                                        if (loR.Count > 0)
+                                        if (lnPV > 0)
                                         {
                                             loFilterPart.Add(MaxEntity.FilterCondition, MaxEntity.FilterConditionOr);
                                         }
-
-                                        loFilterPart.Add(MaxEntity.FilterName, lsFilterKey);
-                                        loFilterPart.Add(MaxEntity.FilterOperator, MaxEntity.FilterOperatorEqual);
-                                        loFilterPart.Add(MaxEntity.FilterValue, laPartValue[lnPV]);
-                                        if (lnPV == 0)
+                                        else 
                                         {
                                             loFilterPart.Add(MaxEntity.FilterStartGroup, 1);
-                                            if (loR.Count > 0)
+                                            if (loPropertyFilterList.Count > 0)
                                             {
-                                                if (loResponseFilterIndex.Contains(lsFilterKey + "Condition"))
-                                                {
-                                                    loFilterPart.Add(MaxEntity.FilterCondition, loResponseFilterIndex.GetValueString(lsFilterKey + "Condition"));
-                                                }
-                                                else
-                                                {
-                                                    loFilterPart.Add(MaxEntity.FilterCondition, MaxEntity.FilterConditionAnd);
-                                                }
+                                                loFilterPart.Add(MaxEntity.FilterCondition, MaxEntity.FilterConditionAnd);
                                             }
                                         }
-                                        else if (lnPV == laPartValue.Length - 1)
+
+                                        loFilterPart.Add(MaxEntity.FilterName, lsFilterName);
+                                        if (loResponseFilterPart.Contains(MaxEntity.FilterOperator))
+                                        {
+                                            loFilterPart.Add(MaxEntity.FilterOperator, loResponseFilterPart.GetValueString(MaxEntity.FilterOperator));
+                                        }
+                                        else
+                                        {
+                                            loFilterPart.Add(MaxEntity.FilterOperator, MaxEntity.FilterOperatorEqual);
+                                        }
+
+                                        loFilterPart.Add(MaxEntity.FilterValue, laPartValue[lnPV]);
+                                        if (lnPV == laPartValue.Length - 1)
                                         {
                                             loFilterPart.Add(MaxEntity.FilterEndGroup, 1);
                                         }
 
-                                        loR.Add(loFilterPart);
+                                        loPropertyFilterList.Add(loFilterPart);
                                     }
                                 }
                                 else
                                 {
                                     MaxIndex loFilterPart = new MaxIndex();
-                                    if (loR.Count > 0)
+                                    if (lsLastValue.Contains("\t"))
                                     {
-                                        if (loResponseFilterIndex.Contains(lsFilterKey + "Condition"))
-                                        {
-                                            loFilterPart.Add(MaxEntity.FilterCondition, loResponseFilterIndex.GetValueString(lsFilterKey + "Condition"));
-                                        }
-                                        else
-                                        {
-                                            loFilterPart.Add(MaxEntity.FilterCondition, MaxEntity.FilterConditionAnd);
-                                        }
+                                        loFilterPart.Add(MaxEntity.FilterStartGroup, 1);
                                     }
 
-                                    loFilterPart.Add(MaxEntity.FilterStartGroup, 1);
-                                    loFilterPart.Add(MaxEntity.FilterName, lsFilterKey);
-                                    if (loResponseFilterIndex.Contains(lsFilterKey + "Operator"))
+                                    if (loResponseFilterPart.Contains(MaxEntity.FilterCondition))
                                     {
-                                        loFilterPart.Add(MaxEntity.FilterOperator, loResponseFilterIndex.GetValueString(lsFilterKey + "Operator"));
+                                        loFilterPart.Add(MaxEntity.FilterCondition, loResponseFilterPart.GetValueString(MaxEntity.FilterCondition));
+                                    }
+                                    else if (loPropertyFilterList.Count > 0)
+                                    {
+                                        loFilterPart.Add(MaxEntity.FilterCondition, MaxEntity.FilterConditionAnd);
+                                    }
+
+                                    loFilterPart.Add(MaxEntity.FilterName, lsFilterName);
+                                    if (loResponseFilterPart.Contains(MaxEntity.FilterOperator))
+                                    {
+                                        loFilterPart.Add(MaxEntity.FilterOperator, loResponseFilterPart.GetValueString(MaxEntity.FilterOperator));
                                     }
                                     else
                                     {
@@ -2528,10 +2541,24 @@ namespace MaxFactry.Base.BusinessLayer
                                     }
 
                                     loFilterPart.Add(MaxEntity.FilterValue, lsValue);
-                                    loFilterPart.Add(MaxEntity.FilterEndGroup, 1);
-                                    loR.Add(loFilterPart);
+                                    loPropertyFilterList.Add(loFilterPart);
                                 }
+
+                                lsLastValue = lsValue;
                             }
+                        }
+
+                        string[] laPropertyFilterListKey = loPropertyFilterList.GetSortedKeyList();
+                        ((MaxIndex)loPropertyFilterList[laPropertyFilterListKey[0]]).Add(MaxEntity.FilterStartGroup, 1);
+                        ((MaxIndex)loPropertyFilterList[laPropertyFilterListKey[laPropertyFilterListKey.Length - 1]]).Add(MaxEntity.FilterEndGroup, 1);
+                        if (loR.Count > 0 && !((MaxIndex)loPropertyFilterList[laPropertyFilterListKey[0]]).Contains(MaxEntity.FilterCondition))
+                        {
+                            ((MaxIndex)loPropertyFilterList[laPropertyFilterListKey[0]]).Add(MaxEntity.FilterCondition, MaxEntity.FilterConditionAnd);
+                        }
+
+                        foreach (string lsPropertyFilterListKey in laPropertyFilterListKey)
+                        {
+                            loR.Add(loPropertyFilterList[lsPropertyFilterListKey]);
                         }
                     }
                 }
