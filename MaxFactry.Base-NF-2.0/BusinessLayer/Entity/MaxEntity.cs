@@ -133,6 +133,7 @@
 // <change date="7/7/2026" author="Brian A. Lakstins" description="Create property filter on Entity so that it can use entity properties and filtering property names can be added.">
 // <change date="7/7/2026" author="Brian A. Lakstins" description="Add filter conditions only when there is already another filter.">
 // <change date="7/8/2026" author="Brian A. Lakstins" description="Update filter handling to use lists of filters as a way to group them.">
+// <change date="7/9/2026" author="Brian A. Lakstins" description="Fix getting property filter when there are no matches for a group.">
 // </changelog>
 #endregion
 
@@ -2548,17 +2549,20 @@ namespace MaxFactry.Base.BusinessLayer
                             }
                         }
 
-                        string[] laPropertyFilterListKey = loPropertyFilterList.GetSortedKeyList();
-                        ((MaxIndex)loPropertyFilterList[laPropertyFilterListKey[0]]).Add(MaxEntity.FilterStartGroup, 1);
-                        ((MaxIndex)loPropertyFilterList[laPropertyFilterListKey[laPropertyFilterListKey.Length - 1]]).Add(MaxEntity.FilterEndGroup, 1);
-                        if (loR.Count > 0 && !((MaxIndex)loPropertyFilterList[laPropertyFilterListKey[0]]).Contains(MaxEntity.FilterCondition))
+                        if (loPropertyFilterList.Count > 0)
                         {
-                            ((MaxIndex)loPropertyFilterList[laPropertyFilterListKey[0]]).Add(MaxEntity.FilterCondition, MaxEntity.FilterConditionAnd);
-                        }
+                            string[] laPropertyFilterListKey = loPropertyFilterList.GetSortedKeyList();
+                            ((MaxIndex)loPropertyFilterList[laPropertyFilterListKey[0]]).Add(MaxEntity.FilterStartGroup, 1);
+                            ((MaxIndex)loPropertyFilterList[laPropertyFilterListKey[laPropertyFilterListKey.Length - 1]]).Add(MaxEntity.FilterEndGroup, 1);
+                            if (loR.Count > 0 && !((MaxIndex)loPropertyFilterList[laPropertyFilterListKey[0]]).Contains(MaxEntity.FilterCondition))
+                            {
+                                ((MaxIndex)loPropertyFilterList[laPropertyFilterListKey[0]]).Add(MaxEntity.FilterCondition, MaxEntity.FilterConditionAnd);
+                            }
 
-                        foreach (string lsPropertyFilterListKey in laPropertyFilterListKey)
-                        {
-                            loR.Add(loPropertyFilterList[lsPropertyFilterListKey]);
+                            foreach (string lsPropertyFilterListKey in laPropertyFilterListKey)
+                            {
+                                loR.Add(loPropertyFilterList[lsPropertyFilterListKey]);
+                            }
                         }
                     }
                 }
