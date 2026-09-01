@@ -34,6 +34,7 @@
 // <change date="5/3/2024" author="Brian A. Lakstins" description="Add a way to specify a time out.">
 // <change date="1/20/2025" author="Brian A. Lakstins" description="Check request url and use it if it's a string.">
 // <change date="12/31/2025" author="Brian A. Lakstins" description="Handle any response content">
+// <change date="9/1/2026" author="Brian A. Lakstins" description="Add flexibility for Authentication header">
 // </changelog>
 #endregion
 
@@ -234,11 +235,18 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
                 if (!string.IsNullOrEmpty(lsClientId) && !string.IsNullOrEmpty(lsClientSecret))
                 {
                     string lsAuth = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(string.Format("{0}:{1}", lsClientId, lsClientSecret)));
-                    loR.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", lsAuth); ;
+                    loR.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", lsAuth);
                 }
                 else if (!string.IsNullOrEmpty(lsToken))
                 {
-                    loR.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", lsToken);
+                    if (lsToken.Contains(" "))
+                    {
+                        loR.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(lsToken.Substring(0, lsToken.IndexOf(" ")), lsToken.Substring(lsToken.IndexOf(" ") + 1));
+                    }
+                    else
+                    {
+                        loR.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", lsToken);
+                    }
                 }
 
                 System.Net.Http.Headers.CacheControlHeaderValue loCache = new System.Net.Http.Headers.CacheControlHeaderValue();
