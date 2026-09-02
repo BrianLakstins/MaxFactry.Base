@@ -35,6 +35,7 @@
 // <change date="1/20/2025" author="Brian A. Lakstins" description="Check request url and use it if it's a string.">
 // <change date="12/31/2025" author="Brian A. Lakstins" description="Handle any response content">
 // <change date="9/1/2026" author="Brian A. Lakstins" description="Add flexibility for Authentication header">
+// <change date="9/2/2026" author="Brian A. Lakstins" description="Add header that matches Authentication header">
 // </changelog>
 #endregion
 
@@ -241,7 +242,10 @@ namespace MaxFactry.Base.DataLayer.Library.Provider
                 {
                     if (lsToken.Contains(" "))
                     {
-                        loR.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(lsToken.Substring(0, lsToken.IndexOf(" ")), lsToken.Substring(lsToken.IndexOf(" ") + 1));
+                        string lsName = lsToken.Substring(0, lsToken.IndexOf(" "));
+                        string lsValue = lsToken.Substring(lsToken.IndexOf(" ") + 1);
+                        loR.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(lsName, lsValue);
+                        loR.DefaultRequestHeaders.Add(lsName, lsValue);
                     }
                     else
                     {
